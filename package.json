@@ -12,7 +12,6 @@
     "test": "vitest run",
     "package": "npm run build && electron-builder build --publish never",
     "package-all": "npm run build && electron-builder build -mwl",
-    "package-ci": "npm run build && electron-builder --publish always",
     "package-linux": "npm run build && electron-builder build --linux",
     "package-win": "npm run build && electron-builder build --win --x64",
     "postinstall": "electron-builder install-app-deps"
@@ -30,6 +29,12 @@
       "target": [
         {
           "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
           "arch": [
             "arm64"
           ]

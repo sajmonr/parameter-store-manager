@@ -9,7 +9,8 @@ Are you tired of the AWS Console yet? Can't figure out `name` `starts-with` vs `
 Built with Electron, React and electron-vite.
 
 ## Quick Start
-- Download the binary here (Supports Windows, MacOS, Linux): https://github.com/smblee/parameter-store-manager/releases
+
+- Download the `.dmg` for macOS (Apple Silicon) from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases). The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app` (see [Building from source](#building-from-source)).
 - Set up AWS Credentials (there are several ways to do this. E.g. `~/.aws/credentials` method) https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
 - Run the downloaded binary!
 
@@ -116,6 +117,46 @@ $ npm run package -- --[option]
 ```bash
 DEBUG_PROD=true release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager
 ```
+
+## Contributing
+
+### Naming commits and pull requests
+
+Pull requests are **squash-merged**, so the PR title becomes the commit on `main`. Titles must follow [Conventional Commits](https://www.conventionalcommits.org/); a `PR title` check enforces it. Commits inside a PR can be named however you like.
+
+The format is `type(optional scope): description`, for example:
+
+```
+feat: add bulk delete
+fix(settings): keep the profile when the region changes
+docs: explain credential_process profiles
+```
+
+The type decides what the next release looks like:
+
+| Type                                                        | Use it for                  | Next version          | In the changelog         |
+| ----------------------------------------------------------- | --------------------------- | --------------------- | ------------------------ |
+| `feat`                                                      | A new feature               | minor (0.6.0 → 0.7.0) | Features                 |
+| `fix`                                                       | A bug fix                   | patch (0.6.0 → 0.6.1) | Bug Fixes                |
+| `perf`                                                      | A performance improvement   | patch                 | Performance Improvements |
+| `revert`                                                    | Reverting an earlier change | patch                 | Reverts                  |
+| `docs`, `style`, `refactor`, `test`, `build`, `ci`, `chore` | Everything else             | no release on its own | not listed               |
+
+Breaking changes: add `!` after the type, for example `feat!: drop Intel builds`. While the version is below 1.0.0 this bumps the minor version; from 1.0.0 on it bumps the major version. (A `BREAKING CHANGE: ...` paragraph also works, but only if it ends up in the squash-merge commit message.)
+
+Use lowercase, write the description in the imperative ("add", not "added"), and leave out the trailing period.
+
+### Releasing
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please); nobody creates tags or releases by hand.
+
+1. Merging PRs into `main` makes release-please open (or update) a PR titled `chore(main): release X.Y.Z`. It bumps `version` in `package.json` and `package-lock.json` and adds the new entries to `CHANGELOG.md`, based on the PR titles merged since the last release.
+2. When you want to release, merge that PR.
+3. The `Release` workflow then tags `vX.Y.Z`, builds the macOS app, attaches the `.dmg`, `.zip`, `latest-mac.yml` and blockmaps to a draft GitHub Release, and publishes it.
+
+To release a specific version instead of the calculated one, add a `Release-As: 1.0.0` line to the body of a commit on `main` (for example in the squash-merge commit message).
+
+If the build fails, the release stays a draft and users never see it. For a transient failure, re-run the failed job. If the build needs a code fix, delete the draft release and its tag, then merge the fix; it ships with the next release.
 
 ## TODOS
 
