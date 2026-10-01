@@ -10,7 +10,6 @@ environment:
 cache:
   - '%LOCALAPPDATA%/Yarn'
   - node_modules
-  - flow-typed
   - '%USERPROFILE%\.electron'
 
 matrix:
@@ -32,7 +31,4 @@ install:
 test_script:
   - npm run package-ci
   - npm run lint
-  # - npm run flow
-  #  - npm run test
-  - npm run build-e2e
-#  - npm run test-e2e
+  - npm test

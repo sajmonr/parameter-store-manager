@@ -6,7 +6,7 @@ Are you tired of the AWS Console yet? Can't figure out `name` `starts-with` vs `
 
 ![alt text](https://raw.githubusercontent.com/smblee/parameter-store-manager/master/resources/screenshot.png)
 
-Built with `electron-react-boilerplate`.
+Built with Electron, React and electron-vite.
 
 ## Quick Start
 - Download the binary here (Supports Windows, MacOS, Linux): https://github.com/smblee/parameter-store-manager/releases
@@ -36,10 +36,10 @@ Built with `electron-react-boilerplate`.
 
 ## Building from source
 
-Requirements: Node.js 20 or newer (current LTS recommended) and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`).
+Requirements: Node.js 22.12 or newer and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
-$ npm install        # also runs electron-builder install-app-deps and builds the dev DLL
+$ npm install
 $ npm run package    # builds and packages the app for the current platform
 ```
 
@@ -58,24 +58,36 @@ $ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
 
 Auto-update is currently disabled; install new versions by rebuilding or downloading a new release.
 
-Notes:
+`.npmrc` sets `legacy-peer-deps=true` because antd 3's dependencies declare React 16 peer ranges while the app uses React 17.
 
-- `.npmrc` sets `legacy-peer-deps=true`, because several of the pinned dependencies have peer ranges that npm would otherwise reject.
-- The build still uses webpack 4, which needs `NODE_OPTIONS=--openssl-legacy-provider` on Node 17+. The npm scripts set this for you.
-
-## Run
-
-Start the app in the `dev` environment. This starts the renderer process in [**hot-module-replacement**](https://webpack.js.org/guides/hmr-react/) mode and starts a webpack dev server that sends hot updates to the renderer process:
+## Development
 
 ```bash
-$ npm run dev
+$ npm run dev        # starts the app with hot reloading (electron-vite)
+$ npm run build      # builds main, preload and renderer into out/
+$ npm start          # runs the built app from out/
+$ npm test           # unit tests (Vitest)
+$ npm run lint       # ESLint
+$ npm run format     # Prettier
 ```
 
-If you don't need autofocus when your files was changed, then run `dev` with env `START_MINIMIZED=true`:
+Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
 
-```bash
-$ START_MINIMIZED=true npm run dev
-```
+### Project layout
+
+- `src/main` – Electron main process. It owns the AWS SDK clients (`aws.js`), the settings store (`settings.js`) and the IPC handlers (`ipc.js`).
+- `src/preload` – exposes a small `window.api` to the renderer through `contextBridge`.
+- `src/renderer` – the React UI. It has no Node.js access (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`) and talks to AWS only through `window.api`.
+
+### AWS credentials
+
+Credentials are resolved in the main process in this order:
+
+1. `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment variables
+2. `AMAZON_ACCESS_KEY_ID` / `AMAZON_SECRET_ACCESS_KEY` / `AMAZON_SESSION_TOKEN` environment variables
+3. The profile set in Settings (or the default profile) from `~/.aws/credentials` and `~/.aws/config`, including SSO, assumed roles and `credential_process`
+
+Changing the profile or a region in Settings takes effect on the next refresh; no restart is needed.
 
 ## Packaging
 
@@ -101,38 +113,11 @@ To package apps with options:
 $ npm run package -- --[option]
 ```
 
-:bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable:
+:bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable when you start it:
 
 ```bash
-DEBUG_PROD=true npm run package
+DEBUG_PROD=true release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager
 ```
-
-## CSS Modules
-
-This boilerplate is configured to use [css-modules](https://github.com/css-modules/css-modules) out of the box.
-
-All `.css` file extensions will use css-modules unless it has `.global.css`.
-
-If you need global styles, stylesheets with `.global.css` will not go through the
-css-modules loader. e.g. `app.global.css`
-
-If you want to import global css libraries (like `bootstrap`), you can just write the following code in `.global.css`:
-
-```css
-@import '~bootstrap/dist/css/bootstrap.css';
-```
-
-## SASS support
-
-If you want to use Sass in your app, you only need to import `.sass` files instead of `.css` once:
-
-```js
-import './app.global.scss';
-```
-
-## Static Type Checking
-
-This project comes with Flow support out of the box! You can annotate your code with types, [get Flow errors as ESLint errors](https://github.com/amilajack/eslint-plugin-flowtype-errors), and get [type errors during runtime](https://github.com/codemix/flow-runtime) during development. Types are completely optional.
 
 ## TODOS
 
