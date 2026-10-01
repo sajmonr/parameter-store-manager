@@ -35,16 +35,17 @@ const { Content, Footer, Sider } = Layout;
 class Home extends Component {
   static propTypes = {
     allParametersErrored: PropTypes.bool,
-    allParametersLastUpdatedDate: PropTypes.instanceOf(Date).isRequired,
+    allParametersLastUpdatedDate: PropTypes.instanceOf(Date),
     allParametersLoaded: PropTypes.bool,
     allParametersLoading: PropTypes.bool,
     deleteParameter: PropTypes.func.isRequired,
     fetchAllParameters: PropTypes.func.isRequired,
-    parameters: PropTypes.arrayOf().isRequired
+    parameters: PropTypes.arrayOf(PropTypes.object).isRequired
   };
 
   static defaultProps = {
     allParametersErrored: false,
+    allParametersLastUpdatedDate: null,
     allParametersLoaded: false,
     allParametersLoading: false
   };

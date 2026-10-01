@@ -33,7 +33,35 @@ Built with `electron-react-boilerplate`.
 - Delete parameter
 - Copy parameter values with one click
 - Refetch/refresh parameters
-- Program Auto Updater/Update checker (Buggy?)
+
+## Building from source
+
+Requirements: Node.js 20 or newer (current LTS recommended) and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`).
+
+```bash
+$ npm install        # also runs electron-builder install-app-deps and builds the dev DLL
+$ npm run package    # builds and packages the app for the current platform
+```
+
+On macOS this produces a native Apple Silicon (arm64) build in `release/`:
+
+- `release/ParameterStoreManager-<version>-arm64.dmg`
+- `release/mac-arm64/ParameterStoreManager.app`
+
+To confirm the binary is native: `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
+
+The app is ad-hoc signed (there is no Developer ID signature or notarization), so macOS Gatekeeper blocks it the first time you open it. After copying it to `/Applications`, clear the quarantine flag:
+
+```bash
+$ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
+```
+
+Auto-update is currently disabled; install new versions by rebuilding or downloading a new release.
+
+Notes:
+
+- `.npmrc` sets `legacy-peer-deps=true`, because several of the pinned dependencies have peer ranges that npm would otherwise reject.
+- The build still uses webpack 4, which needs `NODE_OPTIONS=--openssl-legacy-provider` on Node 17+. The npm scripts set this for you.
 
 ## Run
 
@@ -71,17 +99,6 @@ To package apps with options:
 
 ```bash
 $ npm run package -- --[option]
-```
-
-To run End-to-End Test
-
-```bash
-$ npm run build-e2e
-$ npm run test-e2e
-
-# Running e2e tests in a minimized window
-$ START_MINIMIZED=true npm run build-e2e
-$ npm run test-e2e
 ```
 
 :bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable:

@@ -260,9 +260,11 @@ export default merge.smart(baseConfig, {
     before() {
       if (process.env.START_HOT) {
         console.log('Starting Main Process...');
+        // Electron rejects --openssl-legacy-provider (needed only by webpack 4).
+        const { NODE_OPTIONS, ...env } = process.env;
         spawn('npm', ['run', 'start-main-dev'], {
           shell: true,
-          env: process.env,
+          env,
           stdio: 'inherit'
         })
           .on('close', code => process.exit(code))

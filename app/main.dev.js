@@ -11,18 +11,11 @@
  * @flow
  */
 import { app, BrowserWindow } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 
-export default class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+// Lets the renderer process use electron-store (it talks to the main process over IPC).
+Store.initRenderer();
 
 let mainWindow = null;
 
@@ -44,7 +37,9 @@ const installExtensions = async () => {
   const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
 
   return Promise.all(
-    extensions.map(name => installer.default(installer[name], forceDownload))
+    extensions.map(name =>
+      installer.default(installer[name], { forceDownload })
+    )
   ).catch(console.log);
 };
 
@@ -71,7 +66,13 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    // The renderer uses aws-sdk and electron-store directly, so it needs Node.
+    // Temporary until this moves to IPC (Tier 2).
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
@@ -96,13 +97,4 @@ app.on('ready', async () => {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
-
-  // eslint-disable-next-line no-unused-vars
-  let updater;
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  if (process.env.NODE_ENV === 'production') {
-    updater = new AppUpdater();
-  }
 });

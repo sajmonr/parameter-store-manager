@@ -9,7 +9,7 @@ const { Search } = Input;
 
 export default class SearchTree extends React.Component {
   static propTypes = {
-    data: PropTypes.arrayOf().isRequired,
+    data: PropTypes.arrayOf(PropTypes.object).isRequired,
     onTreeSelect: PropTypes.func.isRequired
   };
 
