@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux';
 import chunk from 'lodash/chunk';
 import pAll from 'p-all';
-import { notification } from 'antd';
 import { createSelector } from 'reselect';
 import * as api from '../clients/api';
+import { feedback } from '../feedback';
 
 const FETCH_ALL_PARAMETERS_REQUEST = 'FETCH_ALL_PARAMETERS_REQUEST';
 const FETCH_ALL_PARAMETERS_FAILURE = 'FETCH_ALL_PARAMETERS_FAILURE';
@@ -118,7 +118,7 @@ const fetchAllParameters = () => async dispatch => {
     } while (nextToken);
   } catch (err) {
     dispatch({ type: FETCH_ALL_PARAMETERS_FAILURE, payload: err });
-    notification.error({
+    feedback.notification.error({
       message:
         'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
       description: describeError(err)

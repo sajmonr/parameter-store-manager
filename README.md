@@ -58,8 +58,6 @@ $ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
 
 Auto-update is currently disabled; install new versions by rebuilding or downloading a new release.
 
-`.npmrc` sets `legacy-peer-deps=true` because antd 3's dependencies declare React 16 peer ranges while the app uses React 17.
-
 ## Development
 
 ```bash

@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Form, Icon, Input, message, Modal, Tooltip } from 'antd';
+import { Button, Form, Input, Modal, Tooltip } from 'antd';
+import { QuestionCircleOutlined, SettingOutlined } from '@ant-design/icons';
 import { availableSettings, getSetting, saveSettings } from '../settings';
-import { formShape } from './formDataShape.propType';
+import { feedback } from '../feedback';
 
 const formItemLayout = {
   labelCol: { span: 6 },
@@ -11,150 +12,115 @@ const formItemLayout = {
 const buttonItemLayout = {
   wrapperCol: { span: 14, offset: 4 }
 };
+const required = [{ required: true, message: 'Please provide a value.' }];
 
-class SettingsButton extends Component {
-  static defaultProps = {
-    buttonBlock: true
-  };
+const labelWithHelp = (label, help) => (
+  <span>
+    {label}&nbsp;
+    <Tooltip title={help}>
+      <QuestionCircleOutlined />
+    </Tooltip>
+  </span>
+);
 
-  static propTypes = {
-    buttonBlock: PropTypes.bool,
-    form: PropTypes.shape(formShape).isRequired
-  };
+const SettingsForm = ({ onSaved }) => {
+  // Read when the modal opens, so the form always shows the current settings.
+  const [initialValues] = useState(() =>
+    Object.fromEntries(
+      Object.values(availableSettings).map(key => [key, getSetting(key)])
+    )
+  );
 
-  state = { visible: false };
+  const handleSubmit = values =>
+    // set the whole object at once.
+    saveSettings(values)
+      .then(() => {
+        feedback.message.success('Settings were saved.');
+        onSaved();
+      })
+      .catch(saveError => {
+        feedback.message.error(
+          `Something went wrong while saving settings: ${saveError.message}`
+        );
+      });
 
-  showModal = () => {
-    this.setState({
-      visible: true
-    });
-  };
-
-  handleCancel = () => {
-    this.setState({
-      visible: false
-    });
-  };
-
-  handleSubmit = e => {
-    e.preventDefault();
-    const { form } = this.props;
-    const { validateFields } = form;
-    validateFields((validationErr, values) => {
-      if (!validationErr) {
-        // set the whole object at once.
-        saveSettings(values)
-          .then(() => {
-            message.success('Settings were saved.');
-            this.setState({
-              visible: false
-            });
-          })
-          .catch(saveError => {
-            message.error(
-              `Something went wrong while saving settings: ${saveError.message}`
-            );
-          });
-      }
-    });
-  };
-
-  render() {
-    const { form } = this.props;
-    const { getFieldDecorator } = form;
-    const { visible } = this.state;
-    return (
-      <div>
-        <Button icon="setting" onClick={this.showModal} />
-        {!visible ? null : (
-          <Modal
-            width={700}
-            title="Settings"
-            visible={visible}
-            onCancel={this.handleCancel}
-            footer={[
-              <Button key="close" onClick={this.handleCancel}>
-                Close
-              </Button>
-            ]}
-          >
-            <Form onSubmit={this.handleSubmit}>
-              <Form.Item
-                label={
-                  <span>
-                    Path Delimiter&nbsp;
-                    <Tooltip title="If the typical parameter looks like this: 'path-to-parameter-value', the delimiter would be '-'. The recommended path delimiter is '/'.">
-                      <Icon type="question-circle-o" />
-                    </Tooltip>
-                  </span>
-                }
-                {...formItemLayout}
-              >
-                {getFieldDecorator(availableSettings.pathDelimiter, {
-                  initialValue: getSetting(availableSettings.pathDelimiter),
-                  rules: [
-                    {
-                      required: true,
-                      message: 'Please provide a value.'
-                    }
-                  ]
-                })(<Input placeholder="/" />)}
-              </Form.Item>
-              <Form.Item label="AWS SSM Region" {...formItemLayout}>
-                {getFieldDecorator(availableSettings.ssmRegion, {
-                  initialValue: getSetting(availableSettings.ssmRegion),
-                  rules: [
-                    {
-                      required: true,
-                      message: 'Please provide a value.'
-                    }
-                  ]
-                })(<Input placeholder="eu-west-1" />)}
-              </Form.Item>
-              <Form.Item label="AWS KMS Region" {...formItemLayout}>
-                {getFieldDecorator(availableSettings.kmsRegion, {
-                  initialValue: getSetting(availableSettings.kmsRegion),
-                  rules: [
-                    {
-                      required: true,
-                      message: 'Please provide a value.'
-                    }
-                  ]
-                })(<Input placeholder="eu-west-1" />)}
-              </Form.Item>
-              <Form.Item
-                label={
-                  <span>
-                    AWS Profile&nbsp;
-                    <Tooltip title="Leave empty to use the default profile. A changed profile is used for the next refresh.">
-                      <Icon type="question-circle-o" />
-                    </Tooltip>
-                  </span>
-                }
-                {...formItemLayout}
-              >
-                {getFieldDecorator(availableSettings.profile, {
-                  initialValue: getSetting(availableSettings.profile),
-                  rules: [
-                    {
-                      required: false,
-                      message: 'Optional'
-                    }
-                  ]
-                })(<Input placeholder="" />)}
-              </Form.Item>
-              <Form.Item {...buttonItemLayout}>
-                <Button type="primary" htmlType="submit">
-                  Save
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
+  return (
+    <Form
+      name="settings"
+      initialValues={initialValues}
+      onFinish={handleSubmit}
+      {...formItemLayout}
+    >
+      <Form.Item
+        label={labelWithHelp(
+          'Path Delimiter',
+          "If the typical parameter looks like this: 'path-to-parameter-value', the delimiter would be '-'. The recommended path delimiter is '/'."
         )}
-      </div>
-    );
-  }
-}
+        name={availableSettings.pathDelimiter}
+        rules={required}
+      >
+        <Input placeholder="/" />
+      </Form.Item>
+      <Form.Item
+        label="AWS SSM Region"
+        name={availableSettings.ssmRegion}
+        rules={required}
+      >
+        <Input placeholder="eu-west-1" />
+      </Form.Item>
+      <Form.Item
+        label="AWS KMS Region"
+        name={availableSettings.kmsRegion}
+        rules={required}
+      >
+        <Input placeholder="eu-west-1" />
+      </Form.Item>
+      <Form.Item
+        label={labelWithHelp(
+          'AWS Profile',
+          'Leave empty to use the default profile. A changed profile is used for the next refresh.'
+        )}
+        name={availableSettings.profile}
+      >
+        <Input placeholder="" />
+      </Form.Item>
+      <Form.Item {...buttonItemLayout}>
+        <Button type="primary" htmlType="submit">
+          Save
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
 
-const WrappedSettingsButton = Form.create({ name: 'settings' })(SettingsButton);
-export default WrappedSettingsButton;
+SettingsForm.propTypes = {
+  onSaved: PropTypes.func.isRequired
+};
+
+const SettingsButton = () => {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+
+  return (
+    <div>
+      <Button icon={<SettingOutlined />} onClick={() => setOpen(true)} />
+      {open && (
+        <Modal
+          width={700}
+          title="Settings"
+          open
+          onCancel={close}
+          footer={[
+            <Button key="close" onClick={close}>
+              Close
+            </Button>
+          ]}
+        >
+          <SettingsForm onSaved={close} />
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default SettingsButton;

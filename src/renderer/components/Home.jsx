@@ -9,6 +9,7 @@ import {
   Table,
   Typography
 } from 'antd';
+import { SyncOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
 import { bindActionCreators } from 'redux';
@@ -83,7 +84,10 @@ class Home extends Component {
   };
 
   onTreeSelect = keys => {
-    this.setState({ tableCursor: this.stripTrailingPathDelimiter(keys[0]) });
+    // Deselecting a tree node passes no keys; that clears the filter.
+    this.setState({
+      tableCursor: this.stripTrailingPathDelimiter(keys[0] || '')
+    });
   };
 
   onTableFilterChange = e => {
@@ -123,29 +127,27 @@ class Home extends Component {
 
             // if last index
             if (idx === paths.length - 1) {
-              return (
-                <Breadcrumb.Item href="#" key={pathString + idx}>
+              return {
+                key: pathString + idx,
+                href: '#',
+                title: (
                   <Paragraph strong copyable={{ text: pathString }}>
                     {path}
                   </Paragraph>
-                </Breadcrumb.Item>
-              );
+                )
+              };
             }
-            return (
-              <Breadcrumb.Item
-                href="#"
-                onClick={() => this.onTreeSelect([pathSoFar])}
-
-                key={pathString + idx}
-              >
-                {path}
-              </Breadcrumb.Item>
-            );
+            return {
+              key: pathString + idx,
+              href: '#',
+              onClick: () => this.onTreeSelect([pathSoFar]),
+              title: path
+            };
           });
 
           return (
             <span style={{ wordBreak: 'break-word' }}>
-              <Breadcrumb>{breadCrumbItems}</Breadcrumb>
+              <Breadcrumb items={breadCrumbItems} />
             </span>
           );
         }
@@ -188,6 +190,7 @@ class Home extends Component {
         title: 'LastModifiedDate',
         dataIndex: 'LastModifiedDate',
         key: 'LastModifiedDate',
+        width: 220,
         sorter: (a, b) =>
           new Date(a.LastModifiedDate) - new Date(b.LastModifiedDate),
         render: date => (
@@ -231,6 +234,8 @@ class Home extends Component {
         }
       }
     ];
+
+    const tableWidth = columns.reduce((sum, column) => sum + column.width, 0);
 
     return (
       <Layout>
@@ -279,7 +284,10 @@ class Home extends Component {
                       flex: '1 1 auto'
                     }}
                   >
-                    <Spin tip="Loading and building parameter tree..." />
+                    <Spin tip="Loading and building parameter tree...">
+                      {/* antd shows the tip only when Spin wraps content. */}
+                      <div style={{ padding: 50 }} />
+                    </Spin>
                   </div>
                 )}
               </div>
@@ -299,7 +307,7 @@ class Home extends Component {
                       <Button
                         type="primary"
                         shape="circle"
-                        icon="sync"
+                        icon={<SyncOutlined />}
                         loading={allParametersLoading}
                         onClick={fetchAllParameters}
                       />
@@ -317,8 +325,10 @@ class Home extends Component {
               />
               <Table
                 dataSource={paramsToShowOnTable}
+                rowKey="Name"
                 columns={columns}
-                scroll={{ x: 900, y: 'calc(100vh - 200px)' }}
+                // Every column has a width; scroll horizontally rather than squeeze one to 0px.
+                scroll={{ x: tableWidth, y: 'calc(100vh - 200px)' }}
                 loading={allParametersLoading}
                 className="your-table"
               />

@@ -60,7 +60,7 @@ class CreationFormButton extends Component {
             width={700}
             title={modalText}
             centered
-            visible={visible}
+            open={visible}
             onCancel={this.handleCancel}
             footer={[
               <Button key="back" onClick={this.handleCancel}>

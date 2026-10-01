@@ -4,7 +4,6 @@ import { Input, Tree } from 'antd';
 import * as filters from '../utils/filters';
 import { availableSettings, getSetting, onSettingChange } from '../settings';
 
-const { TreeNode } = Tree;
 const { Search } = Input;
 
 export default class SearchTree extends React.Component {
@@ -116,14 +115,11 @@ export default class SearchTree extends React.Component {
           ) : (
             <span>{item.title}</span>
           );
-        if (item.children) {
-          return (
-            <TreeNode key={item.key} title={title}>
-              {loop(item.children)}
-            </TreeNode>
-          );
-        }
-        return <TreeNode key={item.key} title={title} />;
+        return {
+          key: item.key,
+          title,
+          children: item.children ? loop(item.children) : undefined
+        };
       });
     return (
       <div>
@@ -137,9 +133,8 @@ export default class SearchTree extends React.Component {
           onSelect={onTreeSelect}
           expandedKeys={expandedKeys}
           checkStrictly
-        >
-          {loop(filteredTreeRootNode.children)}
-        </Tree>
+          treeData={loop(filteredTreeRootNode.children || [])}
+        />
       </div>
     );
   }
