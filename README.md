@@ -40,13 +40,13 @@ Built with `electron-react-boilerplate`.
 Start the app in the `dev` environment. This starts the renderer process in [**hot-module-replacement**](https://webpack.js.org/guides/hmr-react/) mode and starts a webpack dev server that sends hot updates to the renderer process:
 
 ```bash
-$ yarn dev
+$ npm run dev
 ```
 
 If you don't need autofocus when your files was changed, then run `dev` with env `START_MINIMIZED=true`:
 
 ```bash
-$ START_MINIMIZED=true yarn dev
+$ START_MINIMIZED=true npm run dev
 ```
 
 ## Packaging
@@ -54,7 +54,7 @@ $ START_MINIMIZED=true yarn dev
 To package apps for the local platform:
 
 ```bash
-$ yarn package
+$ npm run package
 ```
 
 To package apps for all platforms:
@@ -64,30 +64,30 @@ First, refer to the [Multi Platform Build docs](https://www.electron.build/multi
 Then,
 
 ```bash
-$ yarn package-all
+$ npm run package-all
 ```
 
 To package apps with options:
 
 ```bash
-$ yarn package --[option]
+$ npm run package -- --[option]
 ```
 
 To run End-to-End Test
 
 ```bash
-$ yarn build-e2e
-$ yarn test-e2e
+$ npm run build-e2e
+$ npm run test-e2e
 
 # Running e2e tests in a minimized window
-$ START_MINIMIZED=true yarn build-e2e
-$ yarn test-e2e
+$ START_MINIMIZED=true npm run build-e2e
+$ npm run test-e2e
 ```
 
 :bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable:
 
 ```bash
-DEBUG_PROD=true yarn package
+DEBUG_PROD=true npm run package
 ```
 
 ## CSS Modules
