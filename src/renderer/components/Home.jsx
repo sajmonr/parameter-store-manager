@@ -3,6 +3,7 @@ import {
   Alert,
   Breadcrumb,
   Button,
+  Flex,
   Input,
   Layout,
   Spin,
@@ -117,7 +118,6 @@ class Home extends Component {
         title: 'Name',
         dataIndex: 'Name',
         key: 'Name',
-        width: 300,
 
         sorter: (a, b) => (a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0),
         render: pathString => {
@@ -157,7 +157,6 @@ class Home extends Component {
         title: 'Value',
         dataIndex: 'Value',
         key: 'Value',
-        width: 300,
 
         render: value => (
           <Paragraph style={{ wordBreak: 'break-word' }} copyable>
@@ -169,7 +168,6 @@ class Home extends Component {
         title: 'Description',
         dataIndex: 'Description',
         key: 'Description',
-        width: 250,
         render: value => {
           return value ? (
             <Paragraph style={{ wordBreak: 'break-word' }} copyable>
@@ -187,10 +185,10 @@ class Home extends Component {
         width: 120
       },
       {
-        title: 'LastModifiedDate',
+        title: 'Last Modified',
         dataIndex: 'LastModifiedDate',
         key: 'LastModifiedDate',
-        width: 220,
+        width: 160,
         sorter: (a, b) =>
           new Date(a.LastModifiedDate) - new Date(b.LastModifiedDate),
         render: date => (
@@ -203,7 +201,6 @@ class Home extends Component {
         title: 'Actions',
         key: 'Actions',
         width: 100,
-        fixed: 'right',
         render: e => {
           const currentData = {
             name: e.Name,
@@ -214,7 +211,7 @@ class Home extends Component {
           };
           const { deleteParameter } = this.props;
           return (
-            <Layout>
+            <Flex vertical gap={6}>
               <CreationFormButton
                 buttonText="Edit"
                 modalText="Edit"
@@ -229,13 +226,11 @@ class Home extends Component {
                 resetOnClose
               />
               <DeleteButton name={e.Name} onDelete={deleteParameter} />
-            </Layout>
+            </Flex>
           );
         }
       }
     ];
-
-    const tableWidth = columns.reduce((sum, column) => sum + column.width, 0);
 
     return (
       <Layout>
@@ -255,21 +250,16 @@ class Home extends Component {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  height: '100%'
+                  height: '100%',
+                  padding: 8
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    minHeight: '35px'
-                  }}
-                >
+                <Flex gap={8} style={{ marginBottom: 8 }}>
                   <SettingsButton />
-                  <CreationFormButton
-                    buttonType="primary"
-                    style={{ flexGrow: 1, marginLeft: '20px' }}
-                  />
-                </div>
+                  <div style={{ flex: 1 }}>
+                    <CreationFormButton buttonType="primary" />
+                  </div>
+                </Flex>
                 {allParametersErrored || allParametersLoaded ? (
                   <SearchTree
                     data={parameters}
@@ -292,7 +282,8 @@ class Home extends Component {
                 )}
               </div>
             </Sider>
-            <Content style={{ minHeight: '100%', width: '100%' }}>
+            {/* min-width: 0 lets this flex item shrink to fit next to the Sider. */}
+            <Content style={{ minHeight: '100%', minWidth: 0 }}>
               <Alert
                 message={
                   <div>
@@ -327,8 +318,9 @@ class Home extends Component {
                 dataSource={paramsToShowOnTable}
                 rowKey="Name"
                 columns={columns}
-                // Every column has a width; scroll horizontally rather than squeeze one to 0px.
-                scroll={{ x: tableWidth, y: 'calc(100vh - 200px)' }}
+                // Name, Value and Description share the space left by the fixed-width
+                // columns and wrap, so the table never scrolls horizontally.
+                scroll={{ y: 'calc(100vh - 200px)' }}
                 loading={allParametersLoading}
                 className="your-table"
               />

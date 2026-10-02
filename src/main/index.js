@@ -30,8 +30,11 @@ const installExtensions = async () => {
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1280,
+    height: 800,
+    // Below this the six table columns get too narrow to read.
+    minWidth: 1100,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
