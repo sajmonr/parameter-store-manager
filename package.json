@@ -14,7 +14,7 @@
     "package-all": "npm run build && electron-builder build -mwl",
     "package-linux": "npm run build && electron-builder build --linux",
     "package-win": "npm run build && electron-builder build --win --x64",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "install-electron && electron-builder install-app-deps"
   },
   "homepage": "https://github.com/sajmonr/parameter-store-manager",
   "main": "./out/main/index.js",
