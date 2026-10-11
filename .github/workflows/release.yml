@@ -55,6 +55,8 @@ jobs:
       - run: npm test
       - run: npm run package
 
+      # The app reads latest-mac.yml from the latest release to tell users
+      # about new versions (src/main/updates.js), so it must stay attached.
       - name: Attach files to the draft release
         run: |
           gh release upload "$TAG" --clobber \

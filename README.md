@@ -57,7 +57,7 @@ The app is ad-hoc signed (there is no Developer ID signature or notarization), s
 $ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
 ```
 
-Auto-update is currently disabled; install new versions by rebuilding or downloading a new release.
+The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice when a newer one exists; **Check for Updates…** in the application menu (the Help menu on Windows and Linux) does the same on demand. To update, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command above again. A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
 
 ## Development
 

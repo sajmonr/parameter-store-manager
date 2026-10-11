@@ -5,6 +5,10 @@ vi.mock('./settings', () => ({
   getAllSettings: vi.fn(() => ({ profile: '' })),
   setSettings: vi.fn(values => values)
 }));
+vi.mock('./updates', () => ({
+  checkOnStartup: vi.fn(async () => ({ status: 'up-to-date', version: '1' })),
+  openReleasePage: vi.fn(async () => {})
+}));
 vi.mock('./aws', () => ({
   describeParameters: vi.fn(async () => ({ parameters: [], nextToken: 'n' })),
   getParameters: vi.fn(async () => ({ parameters: [], invalidParameters: [] })),
@@ -14,6 +18,7 @@ vi.mock('./aws', () => ({
 }));
 
 const aws = await import('./aws');
+const updates = await import('./updates');
 const { invokeHandler, isTrustedSender, registerIpcHandlers } =
   await import('./ipc');
 
@@ -60,6 +65,19 @@ describe('invokeHandler', () => {
     const response = await invokeHandler(channel, args);
     expect(response.ok).toBe(false);
     expect(response.error.name).toBe('InvalidRequest');
+  });
+
+  it('returns the update check result', async () => {
+    await expect(invokeHandler('updates:check', [])).resolves.toEqual({
+      ok: true,
+      result: { status: 'up-to-date', version: '1' }
+    });
+    expect(updates.checkOnStartup).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the release page without taking a URL from the renderer', async () => {
+    await invokeHandler('updates:openReleasePage', ['https://evil.example']);
+    expect(updates.openReleasePage).toHaveBeenCalledWith();
   });
 
   it('passes only known fields to putParameter', async () => {

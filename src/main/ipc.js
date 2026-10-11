@@ -1,6 +1,7 @@
 import log from 'electron-log/main';
 import * as aws from './aws';
 import { getAllSettings, setSettings } from './settings';
+import { checkOnStartup, openReleasePage } from './updates';
 
 const PARAMETER_TYPES = ['String', 'SecureString'];
 // SSM GetParameters accepts at most 10 names per call.
@@ -63,7 +64,12 @@ export const handlers = {
 
   'settings:getAll': () => getAllSettings(),
 
-  'settings:set': values => setSettings(values)
+  'settings:set': values => setSettings(values),
+
+  // Neither takes renderer input: the URL to open is decided in the main process.
+  'updates:check': () => checkOnStartup(),
+
+  'updates:openReleasePage': () => openReleasePage()
 };
 
 // Only the app's own page may call these handlers.

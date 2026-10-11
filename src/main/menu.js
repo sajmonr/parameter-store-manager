@@ -1,4 +1,5 @@
 import { app, Menu } from 'electron';
+import { checkInteractively } from './updates';
 
 export default class MenuBuilder {
   constructor(mainWindow, isDebug) {
@@ -45,6 +46,13 @@ export default class MenuBuilder {
         {
           label: 'About Parameter Store Manager',
           selector: 'orderFrontStandardAboutPanel:'
+        },
+        { type: 'separator' },
+        {
+          label: 'Check for Updates…',
+          click: () => {
+            checkInteractively();
+          }
         },
         { type: 'separator' },
         { label: 'Services', submenu: [] },
@@ -206,9 +214,22 @@ export default class MenuBuilder {
             ]
       },
       {
-        label: `Current &Version: ${
-          app.isPackaged ? app.getVersion() : 'DEVELOPMENT'
-        }`
+        label: '&Help',
+        submenu: [
+          {
+            label: 'Check for &Updates…',
+            click: () => {
+              checkInteractively();
+            }
+          },
+          { type: 'separator' },
+          {
+            label: `Current &Version: ${
+              app.isPackaged ? app.getVersion() : 'DEVELOPMENT'
+            }`,
+            enabled: false
+          }
+        ]
       }
     ];
 
