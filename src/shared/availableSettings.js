@@ -3,7 +3,8 @@ const availableSettings = {
   pathDelimiter: 'pathDelimiter',
   ssmRegion: 'ssmRegion',
   kmsRegion: 'kmsRegion',
-  profile: 'profile'
+  profile: 'profile',
+  theme: 'theme'
 };
 
 export default availableSettings;

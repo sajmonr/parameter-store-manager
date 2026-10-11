@@ -19,6 +19,12 @@ const schema = {
   [availableSettings.profile]: {
     type: 'string',
     default: ''
+  },
+  // Passed to Electron's nativeTheme.themeSource.
+  [availableSettings.theme]: {
+    type: 'string',
+    enum: ['system', 'light', 'dark'],
+    default: 'system'
   }
 };
 

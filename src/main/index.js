@@ -3,10 +3,10 @@
  * reaches them only through the IPC handlers in ./ipc and the preload script.
  */
 import path from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
 import MenuBuilder from './menu';
 import { registerIpcHandlers } from './ipc';
-import { onSettingsChange } from './settings';
+import { availableSettings, getSetting, onSettingsChange } from './settings';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -35,6 +35,8 @@ const createWindow = () => {
     // Below this the six table columns get too narrow to read.
     minWidth: 1100,
     minHeight: 600,
+    // Matches antd's layout background, so the window doesn't flash before the first paint.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
@@ -85,7 +87,10 @@ app.whenReady().then(async () => {
   }
 
   registerIpcHandlers(ipcMain, devServerUrl);
+  // Also drives prefers-color-scheme in the renderer, which picks the antd theme.
+  nativeTheme.themeSource = getSetting(availableSettings.theme);
   onSettingsChange(settings => {
+    nativeTheme.themeSource = settings[availableSettings.theme];
     if (mainWindow) mainWindow.webContents.send('settings:changed', settings);
   });
 

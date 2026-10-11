@@ -8,7 +8,8 @@ import {
   Layout,
   Spin,
   Table,
-  Typography
+  Typography,
+  theme
 } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
@@ -31,6 +32,12 @@ const { Paragraph } = Typography;
 const { Search } = Input;
 
 const { Content, Footer, Sider } = Layout;
+
+// Home is a class component, so it can't read theme tokens itself.
+const PanelLayout = props => {
+  const { token } = theme.useToken();
+  return <Layout style={{ background: token.colorBgContainer }} {...props} />;
+};
 
 class Home extends Component {
   static propTypes = {
@@ -236,11 +243,11 @@ class Home extends Component {
       <Layout>
         <Content />
         <Content>
-          <Layout style={{ background: '#fff' }}>
+          <PanelLayout>
             <Sider
+              theme="light"
               width={300}
               style={{
-                background: '#fff',
                 overflow: 'auto',
                 height: '100vh',
                 left: 0
@@ -325,7 +332,7 @@ class Home extends Component {
                 className="your-table"
               />
             </Content>
-          </Layout>
+          </PanelLayout>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Hopefully this helps</Footer>
       </Layout>
