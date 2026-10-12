@@ -1,6 +1,6 @@
 {
   "name": "parameter-store-manager",
-  "productName": "ParameterStoreManager",
+  "productName": "Parameter Store Manager",
   "version": "0.6.1",
   "description": "AWS Parameter store manager application that allows easy viewing and managing of parameters.",
   "scripts": {
@@ -19,8 +19,9 @@
   "homepage": "https://github.com/sajmonr/parameter-store-manager",
   "main": "./out/main/index.js",
   "build": {
-    "productName": "ParameterStoreManager",
+    "productName": "Parameter Store Manager",
     "appId": "org.sajmonr.ParameterStoreManager",
+    "artifactName": "${name}-${version}-${arch}.${ext}",
     "files": [
       "out/**/*",
       "package.json"

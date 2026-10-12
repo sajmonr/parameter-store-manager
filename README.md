@@ -10,7 +10,7 @@ Built with Electron, React and electron-vite.
 
 ## Quick Start
 
-- Download the `.dmg` for macOS (Apple Silicon) from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases). The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app` (see [Building from source](#building-from-source)).
+- Download the `.dmg` for macOS (Apple Silicon) from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases). The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine "/Applications/Parameter Store Manager.app"` (see [Building from source](#building-from-source)).
 - Set up AWS Credentials (there are several ways to do this. E.g. `~/.aws/credentials` method) https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
 - Run the downloaded binary!
 
@@ -46,15 +46,15 @@ $ npm run package    # builds and packages the app for the current platform
 
 On macOS this produces a native Apple Silicon (arm64) build in `release/`:
 
-- `release/ParameterStoreManager-<version>-arm64.dmg`
-- `release/mac-arm64/ParameterStoreManager.app`
+- `release/parameter-store-manager-<version>-arm64.dmg`
+- `release/mac-arm64/Parameter Store Manager.app`
 
-To confirm the binary is native: `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
+To confirm the binary is native: `file "release/mac-arm64/Parameter Store Manager.app/Contents/MacOS/Parameter Store Manager"` should report `arm64`.
 
 The app is ad-hoc signed (there is no Developer ID signature or notarization), so macOS Gatekeeper blocks it the first time you open it. After copying it to `/Applications`, clear the quarantine flag:
 
 ```bash
-$ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
+$ xattr -dr com.apple.quarantine "/Applications/Parameter Store Manager.app"
 ```
 
 Auto-update is currently disabled; install new versions by rebuilding or downloading a new release.
@@ -115,7 +115,7 @@ $ npm run package -- --[option]
 :bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable when you start it:
 
 ```bash
-DEBUG_PROD=true release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager
+DEBUG_PROD=true "release/mac-arm64/Parameter Store Manager.app/Contents/MacOS/Parameter Store Manager"
 ```
 
 ## Contributing
@@ -160,7 +160,6 @@ If the build fails, the release stays a draft and users never see it. For a tran
 
 ## TODOS
 
-- Add app icon
 - ~~Set up CI for release. (Windows, Mac, Linux)~~
 - Clean up the code base and all the unneeded boilerplate code.
 - ~~Create other releases besides Windows.~~
