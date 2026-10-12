@@ -114,7 +114,8 @@ $ npm run build      # builds main, preload and renderer into out/
 $ npm start          # runs the built app from out/
 $ npm test           # unit tests (Vitest)
 $ npm run lint       # ESLint
-$ npm run format     # Prettier
+$ npm run format     # Prettier (writes)
+$ npm run format:check  # Prettier (CI check, no writes)
 ```
 
 Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
