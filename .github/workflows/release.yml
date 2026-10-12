@@ -28,6 +28,7 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
   build:
+    name: build (${{ matrix.os }})
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
     strategy:

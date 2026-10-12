@@ -10,12 +10,39 @@ Built with Electron, React and electron-vite.
 
 ## Quick Start
 
-- Download the app for your platform from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases):
-  - **macOS (Apple Silicon):** the `.dmg`. The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app` (see [Building from source](#building-from-source)).
-  - **Windows (x64):** `ParameterStoreManager-Setup-<version>.exe`. The installer is not code-signed, so Windows SmartScreen warns about it the first time; click **More info**, then **Run anyway**.
-  - **Linux (x64):** the `.deb` (Debian, Ubuntu), the `.rpm` (Fedora, RHEL, openSUSE) or the `.AppImage` (any distribution; `chmod +x` it and run it).
-- Set up AWS Credentials (there are several ways to do this. E.g. `~/.aws/credentials` method) https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
-- Run the downloaded binary!
+Download the app for your platform from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases), set up AWS credentials (there are several ways to do this, e.g. the [`~/.aws/credentials` file](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)) and run it.
+
+### macOS
+
+Download `ParameterStoreManager-<version>-arm64.dmg` (Apple Silicon) and copy the app to `/Applications`. The app is ad-hoc signed (there is no Developer ID signature or notarization), so Gatekeeper blocks it the first time you open it. Clear the quarantine flag:
+
+```bash
+$ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
+```
+
+To update, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command again.
+
+### Windows
+
+Download and run `ParameterStoreManager-Setup-<version>.exe` (x64). The installer is not code-signed, so Windows SmartScreen warns about it the first time; click **More info**, then **Run anyway**.
+
+To update, run the new setup `.exe`; it replaces the installed version.
+
+### Linux
+
+Download the package for your distribution (x64): the `.deb` for Debian and Ubuntu, the `.rpm` for Fedora, RHEL and openSUSE, or the `.AppImage` for any distribution.
+
+```bash
+$ sudo apt install ./parameter-store-manager_<version>_amd64.deb    # Debian, Ubuntu
+$ sudo dnf install ./parameter-store-manager-<version>.x86_64.rpm  # Fedora, RHEL
+$ chmod +x ParameterStoreManager-<version>.AppImage && ./ParameterStoreManager-<version>.AppImage
+```
+
+To update, install the new `.deb` or `.rpm` over the old one, or replace the `.AppImage`.
+
+### Updates
+
+The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice, with the update steps for your platform, when a newer one exists. **Check for Updates…** in the application menu (the Help menu on Windows and Linux) does the same on demand. Each platform reads its own manifest from the release (`latest-mac.yml`, `latest.yml` or `latest-linux.yml`). A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
 
 ## Current Features
 
@@ -40,29 +67,38 @@ Built with Electron, React and electron-vite.
 
 ## Building from source
 
-Requirements: Node.js 22.12 or newer and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`). On Linux, `rpmbuild` for the `.rpm` target (`sudo apt-get install rpm` on Debian and Ubuntu).
+All platforms need Node.js 22.12 or newer and npm. `npm run package` builds and packages the app for the current platform into `release/`. The [Build workflow](.github/workflows/build.yml) packages all three platforms on every pull request and keeps the installers as workflow artifacts.
+
+### macOS
+
+Install the Xcode Command Line Tools (`xcode-select --install`), then:
 
 ```bash
 $ npm install
-$ npm run package    # builds and packages the app for the current platform
+$ npm run package
 ```
 
-On macOS this produces a native Apple Silicon (arm64) build in `release/`:
+This produces a native Apple Silicon (arm64) build: `release/ParameterStoreManager-<version>-arm64.dmg` and `release/mac-arm64/ParameterStoreManager.app`. To confirm the binary is native, `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
 
-- `release/ParameterStoreManager-<version>-arm64.dmg`
-- `release/mac-arm64/ParameterStoreManager.app`
-
-To confirm the binary is native: `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
-
-On Windows it produces `release/ParameterStoreManager-Setup-<version>.exe`, and on Linux the `.deb`, `.rpm` and `.AppImage`, all x64. The [Build workflow](.github/workflows/build.yml) packages all three platforms on every pull request and keeps the installers as workflow artifacts.
-
-The app is ad-hoc signed (there is no Developer ID signature or notarization), so macOS Gatekeeper blocks it the first time you open it. After copying it to `/Applications`, clear the quarantine flag:
+### Windows
 
 ```bash
-$ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
+$ npm install
+$ npm run package
 ```
 
-The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice when a newer one exists; **Check for Updates…** in the application menu does the same on demand. On Windows and Linux the item lives in the Help menu. Each platform reads its own manifest from the release (`latest-mac.yml`, `latest.yml` or `latest-linux.yml`), and the notice says how to update: on macOS, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command above again; on Windows, run the new setup `.exe`, which replaces the installed version; on Linux, install the new `.deb` or `.rpm` over the old one, or replace the `.AppImage`. A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
+This produces the x64 installer `release/ParameterStoreManager-Setup-<version>.exe`.
+
+### Linux
+
+The `.rpm` target needs `rpmbuild`; on Debian and Ubuntu install it with `sudo apt-get install rpm`. Then:
+
+```bash
+$ npm install
+$ npm run package
+```
+
+This produces the x64 `release/parameter-store-manager_<version>_amd64.deb`, `release/parameter-store-manager-<version>.x86_64.rpm` and `release/ParameterStoreManager-<version>.AppImage`.
 
 ## Development
 
