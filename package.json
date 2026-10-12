@@ -19,9 +19,7 @@
   "homepage": "https://github.com/sajmonr/parameter-store-manager",
   "main": "./out/main/index.js",
   "build": {
-    "productName": "Parameter Store Manager",
     "appId": "org.sajmonr.ParameterStoreManager",
-    "artifactName": "${name}-${version}-${arch}.${ext}",
     "files": [
       "out/**/*",
       "package.json"
@@ -42,7 +40,8 @@
         }
       ],
       "identity": "-",
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "artifactName": "${name}-${version}-${arch}.${ext}"
     },
     "dmg": {
       "contents": [
@@ -60,18 +59,29 @@
     },
     "win": {
       "target": [
-        "nsis",
-        "msi"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
+    },
+    "nsis": {
+      "artifactName": "${name}-Setup-${version}.${ext}"
     },
     "linux": {
       "target": [
         "deb",
         "rpm",
-        "snap",
         "AppImage"
       ],
-      "category": "Development"
+      "category": "Development",
+      "maintainer": "sajmonr <a.simonicek@yahoo.ca>",
+      "executableName": "parameter-store-manager"
+    },
+    "appImage": {
+      "artifactName": "${name}-${version}-${arch}.${ext}"
     },
     "directories": {
       "buildResources": "resources",
@@ -116,7 +126,6 @@
     "glob-to-regexp": "^0.4.1",
     "globals": "^17.13.0",
     "javascript-time-ago": "^2.6.4",
-    "lodash": "^4.18.1",
     "p-all": "^5.0.1",
     "prettier": "^3.9.9",
     "prop-types": "^15.8.1",
@@ -135,8 +144,7 @@
     "@aws-sdk/client-kms": "^3.1144.0",
     "@aws-sdk/client-ssm": "^3.1144.0",
     "@aws-sdk/credential-providers": "^3.1144.0",
-    "electron-log": "^5.4.4",
-    "electron-updater": "^6.8.9"
+    "electron-log": "^5.4.4"
   },
   "engines": {
     "node": ">=22.12"

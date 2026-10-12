@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Form, Input, Modal, Tooltip } from 'antd';
-import { QuestionCircleOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Modal, Segmented, Tooltip } from 'antd';
+import {
+  DesktopOutlined,
+  MoonOutlined,
+  QuestionCircleOutlined,
+  SettingOutlined,
+  SunOutlined
+} from '@ant-design/icons';
 import { availableSettings, getSetting, saveSettings } from '../settings';
 import { feedback } from '../feedback';
 
@@ -13,6 +19,11 @@ const buttonItemLayout = {
   wrapperCol: { span: 14, offset: 4 }
 };
 const required = [{ required: true, message: 'Please provide a value.' }];
+const themeOptions = [
+  { value: 'system', label: 'System', icon: <DesktopOutlined /> },
+  { value: 'light', label: 'Light', icon: <SunOutlined /> },
+  { value: 'dark', label: 'Dark', icon: <MoonOutlined /> }
+];
 
 const labelWithHelp = (label, help) => (
   <span>
@@ -83,6 +94,9 @@ const SettingsForm = ({ onSaved }) => {
         name={availableSettings.profile}
       >
         <Input placeholder="" />
+      </Form.Item>
+      <Form.Item label="Theme" name={availableSettings.theme}>
+        <Segmented options={themeOptions} />
       </Form.Item>
       <Form.Item {...buttonItemLayout}>
         <Button type="primary" htmlType="submit">

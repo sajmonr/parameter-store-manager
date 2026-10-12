@@ -14,8 +14,35 @@ permissions:
 
 jobs:
   build:
-    # GitHub's macOS runners are Apple Silicon (arm64).
-    runs-on: macos-latest
+    name: build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # GitHub's macOS runners are Apple Silicon (arm64).
+          - os: macos-latest
+            name: mac-arm64
+            assets: release/*.dmg
+          - os: windows-latest
+            name: win-x64
+            assets: release/*.exe
+          # Each Linux runner packages for its own architecture.
+          - os: ubuntu-latest
+            name: linux-x64
+            assets: |
+              release/*.deb
+              release/*.rpm
+              release/*.AppImage
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
+            assets: |
+              release/*.deb
+              release/*.rpm
+              release/*.AppImage
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v7
 
@@ -24,13 +51,19 @@ jobs:
           node-version: lts/*
           cache: npm
 
+      # electron-builder needs rpmbuild for the .rpm target.
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
       - run: npm ci
-      - run: npm run lint
+      # Lint once; the result doesn't depend on the platform.
+      - if: matrix.name == 'linux-x64'
+        run: npm run lint
       - run: npm test
       - run: npm run package
 
       - uses: actions/upload-artifact@v7
         with:
-          name: parameter-store-manager-mac-arm64
-          path: release/*.dmg
+          name: parameter-store-manager-${{ matrix.name }}
+          path: ${{ matrix.assets }}
           if-no-files-found: error

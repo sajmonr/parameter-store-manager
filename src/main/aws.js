@@ -14,29 +14,12 @@ import {
 } from '@aws-sdk/credential-providers';
 import { availableSettings, getSetting } from './settings';
 
-// Same as aws-sdk v2's `new EnvironmentCredentials('AMAZON')`.
-const fromAmazonEnv = () => async () => {
-  const {
-    AMAZON_ACCESS_KEY_ID: accessKeyId,
-    AMAZON_SECRET_ACCESS_KEY: secretAccessKey,
-    AMAZON_SESSION_TOKEN: sessionToken
-  } = process.env;
-  if (!accessKeyId || !secretAccessKey) {
-    const error = new Error('AMAZON_* credentials are not set.');
-    // Lets createCredentialChain move on to the next provider.
-    error.tryNextLink = true;
-    throw error;
-  }
-  return { accessKeyId, secretAccessKey, sessionToken };
-};
-
-// Order matches the v2 chain: env AWS_* -> env AMAZON_* -> shared ini profile
-// (which also covers SSO, assumed roles and credential_process) -> credential_process.
+// Order: env AWS_* -> shared ini profile (which also covers SSO, assumed
+// roles and credential_process) -> credential_process.
 export const createCredentialProvider = profile => {
   const options = { profile: profile || undefined, ignoreCache: true };
   return createCredentialChain(
     fromEnv(),
-    fromAmazonEnv(),
     fromIni(options),
     fromProcess(options)
   );

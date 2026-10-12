@@ -98,9 +98,6 @@ const CreationForm = ({ initialFormData = null, editFlow }) => {
           >
             <Radio.Button value="service">Service</Radio.Button>
             <Radio.Button value="generic">Generic</Radio.Button>
-            <Radio.Button value="client" disabled>
-              Client
-            </Radio.Button>
           </Radio.Group>
         </div>
       )}

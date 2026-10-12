@@ -21,5 +21,9 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.on('settings:changed', listener);
       return () => ipcRenderer.removeListener('settings:changed', listener);
     }
+  },
+  updates: {
+    check: () => ipcRenderer.invoke('updates:check'),
+    openReleasePage: () => ipcRenderer.invoke('updates:openReleasePage')
   }
 });

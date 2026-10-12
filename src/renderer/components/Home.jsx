@@ -8,7 +8,8 @@ import {
   Layout,
   Spin,
   Table,
-  Typography
+  Typography,
+  theme
 } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
@@ -31,6 +32,12 @@ const { Paragraph } = Typography;
 const { Search } = Input;
 
 const { Content, Footer, Sider } = Layout;
+
+// Home is a class component, so it can't read theme tokens itself.
+const PanelLayout = props => {
+  const { token } = theme.useToken();
+  return <Layout style={{ background: token.colorBgContainer }} {...props} />;
+};
 
 class Home extends Component {
   static propTypes = {
@@ -234,13 +241,12 @@ class Home extends Component {
 
     return (
       <Layout>
-        <Content />
         <Content>
-          <Layout style={{ background: '#fff' }}>
+          <PanelLayout>
             <Sider
+              theme="light"
               width={300}
               style={{
-                background: '#fff',
                 overflow: 'auto',
                 height: '100vh',
                 left: 0
@@ -322,10 +328,9 @@ class Home extends Component {
                 // columns and wrap, so the table never scrolls horizontally.
                 scroll={{ y: 'calc(100vh - 200px)' }}
                 loading={allParametersLoading}
-                className="your-table"
               />
             </Content>
-          </Layout>
+          </PanelLayout>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Hopefully this helps</Footer>
       </Layout>
@@ -339,7 +344,6 @@ function mapStateToProps(state) {
     allParametersLoaded: parameterSelectors.getIsAllParametersLoaded(state),
     allParametersLoading: parameterSelectors.getIsAllParametersLoading(state),
     allParametersErrored: parameterSelectors.getHasAllParametersErrored(state),
-    allServiceNames: parameterSelectors.getAllServiceNames(state),
     allParametersLastUpdatedDate:
       parameterSelectors.getAllParametersLastUpdatedDate(state)
   };
