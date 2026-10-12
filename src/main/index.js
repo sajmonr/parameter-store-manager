@@ -27,6 +27,11 @@ const installExtensions = async () => {
   }).catch(console.log);
 };
 
+// Matches antd's layout background, so the window doesn't flash the wrong
+// color before the first paint or on reload.
+const windowBackground = () =>
+  nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5';
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     show: false,
@@ -35,8 +40,7 @@ const createWindow = () => {
     // Below this the six table columns get too narrow to read.
     minWidth: 1100,
     minHeight: 600,
-    // Matches antd's layout background, so the window doesn't flash before the first paint.
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5',
+    backgroundColor: windowBackground(),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
@@ -92,6 +96,10 @@ app.whenReady().then(async () => {
   onSettingsChange(settings => {
     nativeTheme.themeSource = settings[availableSettings.theme];
     if (mainWindow) mainWindow.webContents.send('settings:changed', settings);
+  });
+  // Fires for both a theme setting change and an OS appearance change.
+  nativeTheme.on('updated', () => {
+    if (mainWindow) mainWindow.setBackgroundColor(windowBackground());
   });
 
   createWindow();
