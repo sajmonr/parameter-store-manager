@@ -58,18 +58,25 @@
     },
     "win": {
       "target": [
-        "nsis",
-        "msi"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "linux": {
       "target": [
         "deb",
         "rpm",
-        "snap",
         "AppImage"
       ],
-      "category": "Development"
+      "category": "Development",
+      "maintainer": "sajmonr <a.simonicek@yahoo.ca>"
     },
     "directories": {
       "buildResources": "resources",

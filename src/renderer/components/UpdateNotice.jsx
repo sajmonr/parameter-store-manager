@@ -20,7 +20,7 @@ const UpdateNotice = () => {
           key: 'update-available',
           message: `Version ${result.version} is available`,
           description:
-            'Download it from the release page, then replace the app in /Applications.',
+            result.instructions || 'Download it from the release page.',
           duration: 0,
           btn: (
             <Button

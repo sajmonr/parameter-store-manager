@@ -13,17 +13,18 @@ vi.mock('electron', () => ({
 const log = (await import('electron-log/main')).default;
 const electron = await import('electron');
 const {
-  LATEST_MANIFEST_URL,
   RELEASES_URL,
   checkForRenderer,
   checkForUpdates,
   checkInteractively,
   checkOnStartup,
   isNewer,
+  latestManifestUrl,
   openReleasePage,
   parseManifestVersion,
   parseVersion,
-  releaseTagUrl
+  releaseTagUrl,
+  updateInstructions
 } = await import('./updates');
 
 const MANIFEST = `version: 0.6.1
@@ -103,22 +104,55 @@ describe('parseManifestVersion', () => {
   });
 });
 
-describe('checkForUpdates', () => {
-  it('reports a newer release with its tag page', async () => {
-    const fetch = fetchReturning(MANIFEST);
-    await expect(
-      checkForUpdates({ currentVersion: '0.6.0', fetch })
-    ).resolves.toEqual({
-      status: 'available',
-      version: '0.6.1',
-      url: releaseTagUrl('0.6.1')
-    });
-    expect(fetch).toHaveBeenCalledWith(
-      LATEST_MANIFEST_URL,
-      expect.objectContaining({ cache: 'no-store' })
+describe('latestManifestUrl', () => {
+  it.each([
+    ['darwin', 'arm64', 'latest-mac.yml'],
+    ['win32', 'x64', 'latest.yml'],
+    ['linux', 'x64', 'latest-linux.yml'],
+    ['linux', 'arm64', 'latest-linux-arm64.yml'],
+    ['freebsd', 'x64', 'latest-linux.yml']
+  ])('points %s %s at %s in the latest release', (platform, arch, file) => {
+    expect(latestManifestUrl(platform, arch)).toBe(
+      `${RELEASES_URL}/latest/download/${file}`
     );
-    expect(log.warn).not.toHaveBeenCalled();
   });
+});
+
+describe('updateInstructions', () => {
+  it.each([
+    ['darwin', '/Applications'],
+    ['win32', 'Setup .exe'],
+    ['linux', '.AppImage']
+  ])('tells %s users what to download', (platform, hint) => {
+    expect(updateInstructions(platform)).toContain(hint);
+  });
+});
+
+describe('checkForUpdates', () => {
+  it.each([
+    ['darwin', 'arm64'],
+    ['win32', 'x64'],
+    ['linux', 'x64'],
+    ['linux', 'arm64']
+  ])(
+    'reports a newer release with its tag page on %s %s',
+    async (platform, arch) => {
+      const fetch = fetchReturning(MANIFEST);
+      await expect(
+        checkForUpdates({ currentVersion: '0.6.0', fetch, platform, arch })
+      ).resolves.toEqual({
+        status: 'available',
+        version: '0.6.1',
+        url: releaseTagUrl('0.6.1'),
+        instructions: updateInstructions(platform)
+      });
+      expect(fetch).toHaveBeenCalledWith(
+        latestManifestUrl(platform, arch),
+        expect.objectContaining({ cache: 'no-store' })
+      );
+      expect(log.warn).not.toHaveBeenCalled();
+    }
+  );
 
   it('is up to date when the versions match', async () => {
     await expect(
@@ -189,7 +223,8 @@ describe('checkOnStartup', () => {
     expect(first).toEqual({
       status: 'available',
       version: '9.9.9',
-      url: releaseTagUrl('9.9.9')
+      url: releaseTagUrl('9.9.9'),
+      instructions: updateInstructions(process.platform)
     });
     expect(second).toBe(first);
     expect(electron.net.fetch).toHaveBeenCalledTimes(1);
@@ -215,7 +250,8 @@ describe('checkForRenderer', () => {
     expect(first).toEqual({
       status: 'available',
       version: '9.9.9',
-      url: releaseTagUrl('9.9.9')
+      url: releaseTagUrl('9.9.9'),
+      instructions: updateInstructions(process.platform)
     });
     expect(second).toEqual({ status: 'already-notified', version: '9.9.9' });
     expect(electron.net.fetch).not.toHaveBeenCalled();
