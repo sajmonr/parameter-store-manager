@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux';
-import chunk from 'lodash/chunk';
 import pAll from 'p-all';
 import { createSelector } from 'reselect';
 import * as api from '../clients/api';
@@ -32,6 +31,14 @@ const DELETE_PARAMETER_SUCCESS = 'DELETE_PARAMETER_SUCCESS';
 
 // AWS limits GetParameters to 10 names per call.
 const VALUES_BATCH_SIZE = 10;
+
+const chunk = (items, size) => {
+  const chunks = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+};
 
 const describeError = err => [err.code, err.message].filter(Boolean).join(': ');
 
@@ -292,23 +299,10 @@ function valuesByName(state = {}, action) {
   }
 }
 
-const fetchParameterValuesKey = name => `FETCH_PARAMETER_VALUES:${name}`;
-const setAllTo = (bool, stringKeys) =>
-  stringKeys.reduce((map, stringKey) => {
-    map[stringKey] = bool;
-    return map;
-  }, {});
-
 function lastUpdatedDate(state = {}, action) {
   switch (action.type) {
     case FETCH_ALL_PARAMETERS_SUCCESS:
       return { ...state, FETCH_ALL_PARAMETERS: new Date() };
-    case FETCH_KMS_KEYS_REQUEST:
-      return { ...state, FETCH_KMS_KEYS: true };
-    case FETCH_KMS_KEYS_FAILURE:
-    case FETCH_KMS_KEYS_SUCCESS:
-      return { ...state, FETCH_KMS_KEYS: new Date() };
-
     default:
       return state;
   }
@@ -321,23 +315,6 @@ function isLoading(state = {}, action) {
     case FETCH_ALL_PARAMETERS_FAILURE:
     case FETCH_ALL_PARAMETERS_SUCCESS:
       return { ...state, FETCH_ALL_PARAMETERS: false };
-    case FETCH_PARAMETER_VALUES_REQUEST:
-      return {
-        ...state,
-        ...setAllTo(
-          true,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
-    case FETCH_PARAMETER_VALUES_SUCCESS:
-    case FETCH_PARAMETER_VALUES_FAILURE:
-      return {
-        ...state,
-        ...setAllTo(
-          false,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
     case FETCH_KMS_KEYS_REQUEST:
       return { ...state, FETCH_KMS_KEYS: true };
     case FETCH_KMS_KEYS_FAILURE:
@@ -356,24 +333,6 @@ function isLoaded(state = {}, action) {
       return { ...state, FETCH_ALL_PARAMETERS: false };
     case FETCH_ALL_PARAMETERS_SUCCESS:
       return { ...state, FETCH_ALL_PARAMETERS: true };
-    case FETCH_PARAMETER_VALUES_REQUEST:
-    case FETCH_PARAMETER_VALUES_FAILURE:
-      return {
-        ...state,
-        ...setAllTo(
-          false,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
-    case FETCH_PARAMETER_VALUES_SUCCESS:
-      return {
-        ...state,
-        ...setAllTo(
-          true,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
-
     case FETCH_KMS_KEYS_REQUEST:
     case FETCH_KMS_KEYS_FAILURE:
       return { ...state, FETCH_KMS_KEYS: false };
@@ -392,23 +351,6 @@ function hasError(state = {}, action) {
       return { ...state, FETCH_ALL_PARAMETERS: false };
     case FETCH_ALL_PARAMETERS_FAILURE:
       return { ...state, FETCH_ALL_PARAMETERS: true };
-    case FETCH_PARAMETER_VALUES_REQUEST:
-    case FETCH_PARAMETER_VALUES_SUCCESS:
-      return {
-        ...state,
-        ...setAllTo(
-          false,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
-    case FETCH_PARAMETER_VALUES_FAILURE:
-      return {
-        ...state,
-        ...setAllTo(
-          true,
-          action.payload.names.map(name => fetchParameterValuesKey(name))
-        )
-      };
     case FETCH_KMS_KEYS_REQUEST:
     case FETCH_KMS_KEYS_SUCCESS:
       return { ...state, FETCH_KMS_KEYS: false };
@@ -475,18 +417,6 @@ const getIsKmsKeyLoading = state => state.parameters.isLoading.FETCH_KMS_KEYS;
 const getKmsKeyLoadHasError = state => state.parameters.hasError.FETCH_KMS_KEYS;
 const getKmsKeys = state => state.parameters.kmsKeys;
 
-const getAllServiceNames = createSelector([getNames], names => {
-  const regex = /\/services\/.+\/([\w\d]+)\/.+/;
-  return [
-    ...new Set(
-      names.map(name => {
-        const matches = name.match(regex);
-        return matches ? matches[1] : null;
-      })
-    )
-  ].filter(name => name);
-});
-
 export const selectors = {
   getAllParameters,
   getIsAllParametersLoaded,
@@ -496,6 +426,5 @@ export const selectors = {
   getIsKmsKeyLoading,
   getKmsKeyLoadHasError,
   getKmsKeys,
-  getAllServiceNames,
   getAllParametersLastUpdatedDate
 };

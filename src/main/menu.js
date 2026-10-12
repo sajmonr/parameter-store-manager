@@ -23,8 +23,9 @@ export default class MenuBuilder {
     return menu;
   }
 
+  // DevTools stay closed until toggled from the View menu, matching the
+  // `showDevTools: false` passed to electron-debug in index.js.
   setupDevelopmentEnvironment() {
-    this.mainWindow.webContents.openDevTools();
     this.mainWindow.webContents.on('context-menu', (e, props) => {
       const { x, y } = props;
 
@@ -69,14 +70,6 @@ export default class MenuBuilder {
         },
         { label: 'Show All', selector: 'unhideAllApplications:' },
         { type: 'separator' },
-        {
-          label: 'Restart',
-          accelerator: 'Command+Shift+R',
-          click: () => {
-            app.relaunch();
-            app.quit();
-          }
-        },
         {
           label: 'Quit',
           accelerator: 'Command+Q',

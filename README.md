@@ -4,7 +4,7 @@ Are you tired of the AWS Console yet? Can't figure out `name` `starts-with` vs `
 
 #### Parameter Store Manager is a desktop application that helps users easily view/search/manage AWS parameter store parameters.
 
-![alt text](https://raw.githubusercontent.com/smblee/parameter-store-manager/master/resources/screenshot.png)
+![alt text](resources/screenshot.png)
 
 Built with Electron, React and electron-vite.
 
@@ -83,8 +83,7 @@ Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
 Credentials are resolved in the main process in this order:
 
 1. `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment variables
-2. `AMAZON_ACCESS_KEY_ID` / `AMAZON_SECRET_ACCESS_KEY` / `AMAZON_SESSION_TOKEN` environment variables
-3. The profile set in Settings (or the default profile) from `~/.aws/credentials` and `~/.aws/config`, including SSO, assumed roles and `credential_process`
+2. The profile set in Settings (or the default profile) from `~/.aws/credentials` and `~/.aws/config`, including SSO, assumed roles and `credential_process`
 
 Changing the profile or a region in Settings takes effect on the next refresh; no restart is needed.
 
@@ -160,14 +159,10 @@ If the build fails, the release stays a draft and users never see it. For a tran
 
 ## TODOS
 
-- Add app icon
 - ~~Set up CI for release. (Windows, Mac, Linux)~~
-- Clean up the code base and all the unneeded boilerplate code.
 - ~~Create other releases besides Windows.~~
-- Add tests
 - Support other types of add use cases besides the assumed `services` pattern.
 - Ability to view previous versions
-- Logging
 - Backup
 - Autocomplete (service names)
 - ~~Configure AWS Setup (Environments, etc.)~~

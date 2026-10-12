@@ -19,7 +19,6 @@
   "homepage": "https://github.com/sajmonr/parameter-store-manager",
   "main": "./out/main/index.js",
   "build": {
-    "productName": "ParameterStoreManager",
     "appId": "org.sajmonr.ParameterStoreManager",
     "files": [
       "out/**/*",
@@ -115,7 +114,6 @@
     "glob-to-regexp": "^0.4.1",
     "globals": "^17.13.0",
     "javascript-time-ago": "^2.6.4",
-    "lodash": "^4.18.1",
     "p-all": "^5.0.1",
     "prettier": "^3.9.9",
     "prop-types": "^15.8.1",

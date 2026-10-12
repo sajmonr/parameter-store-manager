@@ -67,7 +67,7 @@ export const expandFilteredNodes = (n, f, m = defaultMatcher) => {
   const helper = (node, filter, matcher) => {
     let { children } = node;
     if (!children || children.length === 0) {
-      return Object.assign({}, node, { toggled: false });
+      return node;
     }
     const childrenWithMatches = node.children.filter(child =>
       findNode(child, filter, matcher)
@@ -80,10 +80,7 @@ export const expandFilteredNodes = (n, f, m = defaultMatcher) => {
       );
       keys.push(node.key);
     }
-    return Object.assign({}, node, {
-      children,
-      toggled: shouldExpand
-    });
+    return Object.assign({}, node, { children });
   };
 
   const newNode = helper(n, f, m);
