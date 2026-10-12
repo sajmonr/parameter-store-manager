@@ -3,8 +3,9 @@ import { App, Button } from 'antd';
 import * as api from '../clients/api';
 
 // Asks the main process whether a newer release exists and, if so, shows a
-// non-blocking notice. The main process memoises the check, so remounting
-// (for example after a reload) neither re-fetches nor shows a second notice.
+// non-blocking notice. The main process hands out an 'available' result only
+// once per process, so remounting (for example after a reload) neither
+// re-fetches nor shows a second notice.
 const UpdateNotice = () => {
   const { notification } = App.useApp();
 

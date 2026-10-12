@@ -6,7 +6,7 @@ vi.mock('./settings', () => ({
   setSettings: vi.fn(values => values)
 }));
 vi.mock('./updates', () => ({
-  checkOnStartup: vi.fn(async () => ({ status: 'up-to-date', version: '1' })),
+  checkForRenderer: vi.fn(async () => ({ status: 'up-to-date', version: '1' })),
   openReleasePage: vi.fn(async () => {})
 }));
 vi.mock('./aws', () => ({
@@ -72,7 +72,7 @@ describe('invokeHandler', () => {
       ok: true,
       result: { status: 'up-to-date', version: '1' }
     });
-    expect(updates.checkOnStartup).toHaveBeenCalledTimes(1);
+    expect(updates.checkForRenderer).toHaveBeenCalledTimes(1);
   });
 
   it('opens the release page without taking a URL from the renderer', async () => {

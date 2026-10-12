@@ -96,15 +96,29 @@ const runCheck = () =>
 
 let lastAvailable = null;
 let startupCheck = null;
+let noticeHandedOut = false;
 
 // Memoised for the life of the process, so reloading the renderer doesn't
-// re-fetch or show the notice twice.
+// re-fetch.
 export const checkOnStartup = () => {
   if (!shouldCheckOnStartup()) {
     return Promise.resolve({ status: 'skipped' });
   }
   if (!startupCheck) startupCheck = runCheck();
   return startupCheck;
+};
+
+// What the renderer gets. An 'available' result is handed out once per
+// process; a remounted renderer (reload) gets 'already-notified' instead, so
+// the notice can't be shown twice.
+export const checkForRenderer = async () => {
+  const result = await checkOnStartup();
+  if (result.status !== 'available') return result;
+  if (noticeHandedOut) {
+    return { status: 'already-notified', version: result.version };
+  }
+  noticeHandedOut = true;
+  return result;
 };
 
 // The renderer never supplies a URL; we open what the last check found.

@@ -15,6 +15,7 @@ const electron = await import('electron');
 const {
   LATEST_MANIFEST_URL,
   RELEASES_URL,
+  checkForRenderer,
   checkForUpdates,
   checkInteractively,
   checkOnStartup,
@@ -197,6 +198,27 @@ describe('checkOnStartup', () => {
     expect(electron.shell.openExternal).toHaveBeenCalledWith(
       releaseTagUrl('9.9.9')
     );
+  });
+});
+
+describe('checkForRenderer', () => {
+  it('hands out an available result only once per process', async () => {
+    process.env.CHECK_UPDATES = 'true';
+    electron.net.fetch.mockResolvedValue(okResponse('version: 9.9.9\n'));
+
+    // The startup check is memoised for the process, so this sees the 9.9.9
+    // result fetched in the test above without another request. The first
+    // call is the initial mount; the second is a remount after a reload.
+    const first = await checkForRenderer();
+    const second = await checkForRenderer();
+
+    expect(first).toEqual({
+      status: 'available',
+      version: '9.9.9',
+      url: releaseTagUrl('9.9.9')
+    });
+    expect(second).toEqual({ status: 'already-notified', version: '9.9.9' });
+    expect(electron.net.fetch).not.toHaveBeenCalled();
   });
 });
 

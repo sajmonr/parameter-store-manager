@@ -47,7 +47,8 @@ export const setSettings = values => call(bridge().settings.set, values);
 export const onSettingsChange = callback =>
   bridge().settings.onChange(callback);
 
-// Resolves to { status: 'available' | 'up-to-date' | 'error' | 'skipped', ... }.
+// Resolves to { status: 'available' | 'already-notified' | 'up-to-date' |
+// 'error' | 'skipped', ... }.
 export const checkForUpdates = () => call(bridge().updates.check);
 
 export const openReleasePage = () => call(bridge().updates.openReleasePage);
