@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { App as AntApp, ConfigProvider, theme as antdTheme } from 'antd';
 import Home from './components/Home';
+import UpdateNotice from './components/UpdateNotice';
 import { FeedbackBridge } from './feedback';
 
 const fontFamily = 'Arial, Helvetica, "Helvetica Neue", serif';
@@ -34,6 +35,7 @@ const App = ({ store }) => {
         <AntApp>
           {/* Must render before Home, which shows notifications on mount. */}
           <FeedbackBridge />
+          <UpdateNotice />
           <Home />
         </AntApp>
       </ConfigProvider>
