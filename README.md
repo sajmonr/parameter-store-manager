@@ -30,19 +30,25 @@ To update, run the new setup `.exe`; it replaces the installed version.
 
 ### Linux
 
-Download the package for your distribution (x64): the `.deb` for Debian and Ubuntu, the `.rpm` for Fedora, RHEL and openSUSE, or the `.AppImage` for any distribution.
+Download the package for your distribution and architecture: the `.deb` for Debian and Ubuntu, the `.rpm` for Fedora, RHEL and openSUSE, or the `.AppImage` for any distribution. Each comes for x64 (`amd64`, `x86_64`) and arm64 (`arm64`, `aarch64`); `uname -m` tells you which you have.
 
 ```bash
+# x64
 $ sudo apt install ./parameter-store-manager_<version>_amd64.deb    # Debian, Ubuntu
 $ sudo dnf install ./parameter-store-manager-<version>.x86_64.rpm  # Fedora, RHEL
 $ chmod +x ParameterStoreManager-<version>.AppImage && ./ParameterStoreManager-<version>.AppImage
+
+# arm64
+$ sudo apt install ./parameter-store-manager_<version>_arm64.deb     # Debian, Ubuntu
+$ sudo dnf install ./parameter-store-manager-<version>.aarch64.rpm   # Fedora, RHEL
+$ chmod +x ParameterStoreManager-<version>-arm64.AppImage && ./ParameterStoreManager-<version>-arm64.AppImage
 ```
 
 To update, install the new `.deb` or `.rpm` over the old one, or replace the `.AppImage`.
 
 ### Updates
 
-The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice, with the update steps for your platform, when a newer one exists. **Check for Updates…** in the application menu (the Help menu on Windows and Linux) does the same on demand. Each platform reads its own manifest from the release (`latest-mac.yml`, `latest.yml` or `latest-linux.yml`). A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
+The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice, with the update steps for your platform, when a newer one exists. **Check for Updates…** in the application menu (the Help menu on Windows and Linux) does the same on demand. Each platform reads its own manifest from the release (`latest-mac.yml`, `latest.yml`, `latest-linux.yml` or `latest-linux-arm64.yml`). A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
 
 ## Current Features
 
@@ -67,7 +73,7 @@ The app can't update itself: without a Developer ID signature macOS refuses to i
 
 ## Building from source
 
-All platforms need Node.js 22.12 or newer and npm. `npm run package` builds and packages the app for the current platform into `release/`. The [Build workflow](.github/workflows/build.yml) packages all three platforms on every pull request and keeps the installers as workflow artifacts.
+All platforms need Node.js 22.12 or newer and npm. `npm run package` builds and packages the app for the current platform into `release/`. The [Build workflow](.github/workflows/build.yml) packages all three platforms (Linux for both x64 and arm64) on every pull request and keeps the installers as workflow artifacts.
 
 ### macOS
 
@@ -98,7 +104,7 @@ $ npm install
 $ npm run package
 ```
 
-This produces the x64 `release/parameter-store-manager_<version>_amd64.deb`, `release/parameter-store-manager-<version>.x86_64.rpm` and `release/ParameterStoreManager-<version>.AppImage`.
+This produces packages for the machine's architecture. On x64: `release/parameter-store-manager_<version>_amd64.deb`, `release/parameter-store-manager-<version>.x86_64.rpm` and `release/ParameterStoreManager-<version>.AppImage`. On arm64: `release/parameter-store-manager_<version>_arm64.deb`, `release/parameter-store-manager-<version>.aarch64.rpm` and `release/ParameterStoreManager-<version>-arm64.AppImage`.
 
 ## Development
 
@@ -192,7 +198,7 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 
 1. Merging PRs into `main` makes release-please open (or update) a PR titled `chore(main): release X.Y.Z`. It bumps `version` in `package.json` and `package-lock.json` and adds the new entries to `CHANGELOG.md`, based on the PR titles merged since the last release.
 2. When you want to release, merge that PR.
-3. The `Release` workflow then tags `vX.Y.Z` and builds the app on macOS, Windows and Linux in parallel. Each build attaches its installers, blockmaps and update manifest (`latest-mac.yml`, `latest.yml`, `latest-linux.yml`) to a draft GitHub Release. Once all three have succeeded, the release is published.
+3. The `Release` workflow then tags `vX.Y.Z` and builds the app on macOS, Windows and Linux in parallel. Linux is built twice, on an x64 and an arm64 runner. Each build attaches its installers, blockmaps and update manifest (`latest-mac.yml`, `latest.yml`, `latest-linux.yml`, `latest-linux-arm64.yml`) to a draft GitHub Release. Once all of them have succeeded, the release is published.
 
 To release a specific version instead of the calculated one, add a `Release-As: 1.0.0` line to the body of a commit on `main` (for example in the squash-merge commit message).
 
