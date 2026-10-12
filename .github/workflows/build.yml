@@ -57,7 +57,7 @@ jobs:
 
       - run: npm ci
       # Lint once; the result doesn't depend on the platform.
-      - if: runner.os == 'Linux'
+      - if: matrix.name == 'linux-x64'
         run: npm run lint
       - run: npm test
       - run: npm run package
