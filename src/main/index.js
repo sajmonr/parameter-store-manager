@@ -20,11 +20,9 @@ const installExtensions = async () => {
     REACT_DEVELOPER_TOOLS,
     REDUX_DEVTOOLS
   } = await import('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-
-  return installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS], {
-    forceDownload
-  }).catch(console.log);
+  return installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS]).catch(
+    console.log
+  );
 };
 
 // Matches antd's layout background, so the window doesn't flash the wrong

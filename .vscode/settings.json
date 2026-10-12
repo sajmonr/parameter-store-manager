@@ -1,9 +1,0 @@
-{
-  "search.exclude": {
-    ".git": true,
-    "node_modules": true,
-    "out": true,
-    "release": true,
-    "package-lock.json": true
-  }
-}

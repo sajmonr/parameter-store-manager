@@ -241,7 +241,6 @@ class Home extends Component {
 
     return (
       <Layout>
-        <Content />
         <Content>
           <PanelLayout>
             <Sider
@@ -329,7 +328,6 @@ class Home extends Component {
                 // columns and wrap, so the table never scrolls horizontally.
                 scroll={{ y: 'calc(100vh - 200px)' }}
                 loading={allParametersLoading}
-                className="your-table"
               />
             </Content>
           </PanelLayout>
@@ -346,7 +344,6 @@ function mapStateToProps(state) {
     allParametersLoaded: parameterSelectors.getIsAllParametersLoaded(state),
     allParametersLoading: parameterSelectors.getIsAllParametersLoading(state),
     allParametersErrored: parameterSelectors.getHasAllParametersErrored(state),
-    allServiceNames: parameterSelectors.getAllServiceNames(state),
     allParametersLastUpdatedDate:
       parameterSelectors.getAllParametersLastUpdatedDate(state)
   };
