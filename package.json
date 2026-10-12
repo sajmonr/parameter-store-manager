@@ -1,6 +1,6 @@
 {
   "name": "parameter-store-manager",
-  "productName": "ParameterStoreManager",
+  "productName": "Parameter Store Manager",
   "version": "0.6.1",
   "description": "AWS Parameter store manager application that allows easy viewing and managing of parameters.",
   "scripts": {
@@ -9,6 +9,7 @@
     "start": "electron-vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "package": "npm run build && electron-builder build --publish never",
     "package-all": "npm run build && electron-builder build -mwl",
@@ -40,7 +41,8 @@
         }
       ],
       "identity": "-",
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "artifactName": "${name}-${version}-${arch}.${ext}"
     },
     "dmg": {
       "contents": [
@@ -67,7 +69,7 @@
       ]
     },
     "nsis": {
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "${name}-Setup-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -76,7 +78,11 @@
         "AppImage"
       ],
       "category": "Development",
-      "maintainer": "sajmonr <a.simonicek@yahoo.ca>"
+      "maintainer": "sajmonr <a.simonicek@yahoo.ca>",
+      "executableName": "parameter-store-manager"
+    },
+    "appImage": {
+      "artifactName": "${name}-${version}-${arch}.${ext}"
     },
     "directories": {
       "buildResources": "resources",

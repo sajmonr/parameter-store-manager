@@ -13,6 +13,22 @@ permissions:
   contents: read
 
 jobs:
+  # Lint and formatting do not depend on the platform, so they run once here
+  # instead of in every build leg.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
   build:
     name: build (${{ matrix.name }})
     strategy:
@@ -56,14 +72,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y rpm
 
       - run: npm ci
-      # Lint once; the result doesn't depend on the platform.
-      - if: matrix.name == 'linux-x64'
-        run: npm run lint
       - run: npm test
       - run: npm run package
 
       - uses: actions/upload-artifact@v7
         with:
-          name: ParameterStoreManager-${{ matrix.name }}
+          name: parameter-store-manager-${{ matrix.name }}
           path: ${{ matrix.assets }}
           if-no-files-found: error

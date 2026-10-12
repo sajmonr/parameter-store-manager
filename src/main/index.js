@@ -2,6 +2,7 @@
  * Electron main process. AWS clients and settings live here; the renderer
  * reaches them only through the IPC handlers in ./ipc and the preload script.
  */
+import './userData';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
 import MenuBuilder from './menu';

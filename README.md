@@ -14,17 +14,17 @@ Download the app for your platform from the [Releases page](https://github.com/s
 
 ### macOS
 
-Download `ParameterStoreManager-<version>-arm64.dmg` (Apple Silicon) and copy the app to `/Applications`. The app is ad-hoc signed (there is no Developer ID signature or notarization), so Gatekeeper blocks it the first time you open it. Clear the quarantine flag:
+Download `parameter-store-manager-<version>-arm64.dmg` (Apple Silicon) and copy the app to `/Applications`. The app is ad-hoc signed (there is no Developer ID signature or notarization), so Gatekeeper blocks it the first time you open it. Clear the quarantine flag:
 
 ```bash
-$ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
+$ xattr -dr com.apple.quarantine "/Applications/Parameter Store Manager.app"
 ```
 
 To update, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command again.
 
 ### Windows
 
-Download and run `ParameterStoreManager-Setup-<version>.exe` (x64). The installer is not code-signed, so Windows SmartScreen warns about it the first time; click **More info**, then **Run anyway**.
+Download and run `parameter-store-manager-Setup-<version>.exe` (x64). The installer is not code-signed, so Windows SmartScreen warns about it the first time; click **More info**, then **Run anyway**.
 
 To update, run the new setup `.exe`; it replaces the installed version.
 
@@ -36,12 +36,12 @@ Download the package for your distribution and architecture: the `.deb` for Debi
 # x64
 $ sudo apt install ./parameter-store-manager_<version>_amd64.deb    # Debian, Ubuntu
 $ sudo dnf install ./parameter-store-manager-<version>.x86_64.rpm  # Fedora, RHEL
-$ chmod +x ParameterStoreManager-<version>.AppImage && ./ParameterStoreManager-<version>.AppImage
+$ chmod +x parameter-store-manager-<version>-x86_64.AppImage && ./parameter-store-manager-<version>-x86_64.AppImage
 
 # arm64
 $ sudo apt install ./parameter-store-manager_<version>_arm64.deb     # Debian, Ubuntu
 $ sudo dnf install ./parameter-store-manager-<version>.aarch64.rpm   # Fedora, RHEL
-$ chmod +x ParameterStoreManager-<version>-arm64.AppImage && ./ParameterStoreManager-<version>-arm64.AppImage
+$ chmod +x parameter-store-manager-<version>-arm64.AppImage && ./parameter-store-manager-<version>-arm64.AppImage
 ```
 
 To update, install the new `.deb` or `.rpm` over the old one, or replace the `.AppImage`.
@@ -84,7 +84,7 @@ $ npm install
 $ npm run package
 ```
 
-This produces a native Apple Silicon (arm64) build: `release/ParameterStoreManager-<version>-arm64.dmg` and `release/mac-arm64/ParameterStoreManager.app`. To confirm the binary is native, `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
+This produces a native Apple Silicon (arm64) build: `release/parameter-store-manager-<version>-arm64.dmg` and `release/mac-arm64/Parameter Store Manager.app`. To confirm the binary is native, `file "release/mac-arm64/Parameter Store Manager.app/Contents/MacOS/Parameter Store Manager"` should report `arm64`.
 
 ### Windows
 
@@ -93,7 +93,7 @@ $ npm install
 $ npm run package
 ```
 
-This produces the x64 installer `release/ParameterStoreManager-Setup-<version>.exe`.
+This produces the x64 installer `release/parameter-store-manager-Setup-<version>.exe`.
 
 ### Linux
 
@@ -104,7 +104,7 @@ $ npm install
 $ npm run package
 ```
 
-This produces packages for the machine's architecture. On x64: `release/parameter-store-manager_<version>_amd64.deb`, `release/parameter-store-manager-<version>.x86_64.rpm` and `release/ParameterStoreManager-<version>.AppImage`. On arm64: `release/parameter-store-manager_<version>_arm64.deb`, `release/parameter-store-manager-<version>.aarch64.rpm` and `release/ParameterStoreManager-<version>-arm64.AppImage`.
+This produces packages for the machine's architecture. On x64: `release/parameter-store-manager_<version>_amd64.deb`, `release/parameter-store-manager-<version>.x86_64.rpm` and `release/parameter-store-manager-<version>-x86_64.AppImage`. On arm64: `release/parameter-store-manager_<version>_arm64.deb`, `release/parameter-store-manager-<version>.aarch64.rpm` and `release/parameter-store-manager-<version>-arm64.AppImage`.
 
 ## Development
 
@@ -114,7 +114,8 @@ $ npm run build      # builds main, preload and renderer into out/
 $ npm start          # runs the built app from out/
 $ npm test           # unit tests (Vitest)
 $ npm run lint       # ESLint
-$ npm run format     # Prettier
+$ npm run format     # Prettier (writes)
+$ npm run format:check  # Prettier (CI check, no writes)
 ```
 
 Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
@@ -161,7 +162,7 @@ $ npm run package -- --[option]
 :bulb: You can debug your production build with devtools by simply setting the `DEBUG_PROD` env variable when you start it:
 
 ```bash
-DEBUG_PROD=true release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager
+DEBUG_PROD=true "release/mac-arm64/Parameter Store Manager.app/Contents/MacOS/Parameter Store Manager"
 ```
 
 ## Contributing
