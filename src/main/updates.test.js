@@ -106,12 +106,13 @@ describe('parseManifestVersion', () => {
 
 describe('latestManifestUrl', () => {
   it.each([
-    ['darwin', 'latest-mac.yml'],
-    ['win32', 'latest.yml'],
-    ['linux', 'latest-linux.yml'],
-    ['freebsd', 'latest-linux.yml']
-  ])('points %s at %s in the latest release', (platform, file) => {
-    expect(latestManifestUrl(platform)).toBe(
+    ['darwin', 'arm64', 'latest-mac.yml'],
+    ['win32', 'x64', 'latest.yml'],
+    ['linux', 'x64', 'latest-linux.yml'],
+    ['linux', 'arm64', 'latest-linux-arm64.yml'],
+    ['freebsd', 'x64', 'latest-linux.yml']
+  ])('points %s %s at %s in the latest release', (platform, arch, file) => {
+    expect(latestManifestUrl(platform, arch)).toBe(
       `${RELEASES_URL}/latest/download/${file}`
     );
   });
@@ -128,12 +129,17 @@ describe('updateInstructions', () => {
 });
 
 describe('checkForUpdates', () => {
-  it.each(['darwin', 'win32', 'linux'])(
-    'reports a newer release with its tag page on %s',
-    async platform => {
+  it.each([
+    ['darwin', 'arm64'],
+    ['win32', 'x64'],
+    ['linux', 'x64'],
+    ['linux', 'arm64']
+  ])(
+    'reports a newer release with its tag page on %s %s',
+    async (platform, arch) => {
       const fetch = fetchReturning(MANIFEST);
       await expect(
-        checkForUpdates({ currentVersion: '0.6.0', fetch, platform })
+        checkForUpdates({ currentVersion: '0.6.0', fetch, platform, arch })
       ).resolves.toEqual({
         status: 'available',
         version: '0.6.1',
@@ -141,7 +147,7 @@ describe('checkForUpdates', () => {
         instructions: updateInstructions(platform)
       });
       expect(fetch).toHaveBeenCalledWith(
-        latestManifestUrl(platform),
+        latestManifestUrl(platform, arch),
         expect.objectContaining({ cache: 'no-store' })
       );
       expect(log.warn).not.toHaveBeenCalled();

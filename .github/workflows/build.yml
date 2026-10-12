@@ -26,8 +26,15 @@ jobs:
           - os: windows-latest
             name: win-x64
             assets: release/*.exe
+          # Each Linux runner packages for its own architecture.
           - os: ubuntu-latest
             name: linux-x64
+            assets: |
+              release/*.deb
+              release/*.rpm
+              release/*.AppImage
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
             assets: |
               release/*.deb
               release/*.rpm

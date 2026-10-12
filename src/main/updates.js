@@ -2,8 +2,8 @@
  * Release notifier. The app is ad-hoc signed, so electron-updater can't
  * install updates on macOS (Squirrel.Mac requires a Developer ID signature).
  * Instead we read the version from the platform's manifest (`latest-mac.yml`,
- * `latest.yml` or `latest-linux.yml`) that the Release workflow attaches to
- * every GitHub Release and tell the user when a newer one exists. Everything
+ * `latest.yml`, `latest-linux.yml` or `latest-linux-arm64.yml`) that the
+ * Release workflow attaches to every GitHub Release and tell the user when a newer one exists. Everything
  * here fails quietly: a failed check only logs.
  */
 import { app, dialog, net, shell } from 'electron';
@@ -15,15 +15,19 @@ const REPO = 'parameter-store-manager';
 export const RELEASES_URL = `https://github.com/${OWNER}/${REPO}/releases`;
 export const releaseTagUrl = version => `${RELEASES_URL}/tag/v${version}`;
 
-// electron-builder's manifest names; everything else is a Linux build.
+// electron-builder's manifest names; everything else is a Linux build, which
+// gets a separate manifest per architecture.
 const MANIFESTS = { darwin: 'latest-mac.yml', win32: 'latest.yml' };
+const manifestName = (platform, arch) =>
+  MANIFESTS[platform] ||
+  (arch === 'arm64' ? 'latest-linux-arm64.yml' : 'latest-linux.yml');
 
 // A release-asset download, not the REST API, so no per-IP rate limit applies.
 // `releases/latest` only ever resolves to the newest full (non-draft,
 // non-prerelease) release. Each platform reads its own manifest, so a platform
 // whose build is missing from a release is never told about it.
-export const latestManifestUrl = platform =>
-  `${RELEASES_URL}/latest/download/${MANIFESTS[platform] || 'latest-linux.yml'}`;
+export const latestManifestUrl = (platform, arch) =>
+  `${RELEASES_URL}/latest/download/${manifestName(platform, arch)}`;
 
 const INSTRUCTIONS = {
   darwin:
@@ -73,9 +77,10 @@ const errorResult = message => {
 export const checkForUpdates = async ({
   currentVersion,
   fetch,
-  platform = process.platform
+  platform = process.platform,
+  arch = process.arch
 }) => {
-  const manifestUrl = latestManifestUrl(platform);
+  const manifestUrl = latestManifestUrl(platform, arch);
   let response;
   try {
     response = await fetch(manifestUrl, {
