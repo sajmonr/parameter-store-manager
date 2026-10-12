@@ -10,7 +10,10 @@ Built with Electron, React and electron-vite.
 
 ## Quick Start
 
-- Download the `.dmg` for macOS (Apple Silicon) from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases). The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app` (see [Building from source](#building-from-source)).
+- Download the app for your platform from the [Releases page](https://github.com/sajmonr/parameter-store-manager/releases):
+  - **macOS (Apple Silicon):** the `.dmg`. The app is not notarized, so after copying it to `/Applications` run `xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app` (see [Building from source](#building-from-source)).
+  - **Windows (x64):** `ParameterStoreManager-Setup-<version>.exe`. The installer is not code-signed, so Windows SmartScreen warns about it the first time; click **More info**, then **Run anyway**.
+  - **Linux (x64):** the `.deb` (Debian, Ubuntu), the `.rpm` (Fedora, RHEL, openSUSE) or the `.AppImage` (any distribution; `chmod +x` it and run it).
 - Set up AWS Credentials (there are several ways to do this. E.g. `~/.aws/credentials` method) https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
 - Run the downloaded binary!
 
@@ -37,7 +40,7 @@ Built with Electron, React and electron-vite.
 
 ## Building from source
 
-Requirements: Node.js 22.12 or newer and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`).
+Requirements: Node.js 22.12 or newer and npm. On macOS, the Xcode Command Line Tools (`xcode-select --install`). On Linux, `rpmbuild` for the `.rpm` target (`sudo apt-get install rpm` on Debian and Ubuntu).
 
 ```bash
 $ npm install
@@ -51,13 +54,15 @@ On macOS this produces a native Apple Silicon (arm64) build in `release/`:
 
 To confirm the binary is native: `file release/mac-arm64/ParameterStoreManager.app/Contents/MacOS/ParameterStoreManager` should report `arm64`.
 
+On Windows it produces `release/ParameterStoreManager-Setup-<version>.exe`, and on Linux the `.deb`, `.rpm` and `.AppImage`, all x64. The [Build workflow](.github/workflows/build.yml) packages all three platforms on every pull request and keeps the installers as workflow artifacts.
+
 The app is ad-hoc signed (there is no Developer ID signature or notarization), so macOS Gatekeeper blocks it the first time you open it. After copying it to `/Applications`, clear the quarantine flag:
 
 ```bash
 $ xattr -dr com.apple.quarantine /Applications/ParameterStoreManager.app
 ```
 
-The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice when a newer one exists; **Check for Updates…** in the application menu does the same on demand. To update on macOS, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command above again. Releases are published for macOS only; on Windows and Linux (where the item lives in the Help menu) the notice just means a newer version is available to build from source. A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
+The app can't update itself: without a Developer ID signature macOS refuses to install a downloaded update. Instead, on startup it reads the version of the [latest release](https://github.com/sajmonr/parameter-store-manager/releases/latest) and shows a notice when a newer one exists; **Check for Updates…** in the application menu does the same on demand. On Windows and Linux the item lives in the Help menu. Each platform reads its own manifest from the release (`latest-mac.yml`, `latest.yml` or `latest-linux.yml`), and the notice says how to update: on macOS, download the new `.dmg`, replace the app in `/Applications` and run the `xattr` command above again; on Windows, run the new setup `.exe`, which replaces the installed version; on Linux, install the new `.deb` or `.rpm` over the old one, or replace the `.AppImage`. A failed check (for example, offline) is only written to the log. The startup check runs only in the packaged app; set `CHECK_UPDATES=true` to run it from `npm run dev`.
 
 ## Development
 
@@ -151,11 +156,11 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 
 1. Merging PRs into `main` makes release-please open (or update) a PR titled `chore(main): release X.Y.Z`. It bumps `version` in `package.json` and `package-lock.json` and adds the new entries to `CHANGELOG.md`, based on the PR titles merged since the last release.
 2. When you want to release, merge that PR.
-3. The `Release` workflow then tags `vX.Y.Z`, builds the macOS app, attaches the `.dmg`, `.zip`, `latest-mac.yml` and blockmaps to a draft GitHub Release, and publishes it.
+3. The `Release` workflow then tags `vX.Y.Z` and builds the app on macOS, Windows and Linux in parallel. Each build attaches its installers, blockmaps and update manifest (`latest-mac.yml`, `latest.yml`, `latest-linux.yml`) to a draft GitHub Release. Once all three have succeeded, the release is published.
 
 To release a specific version instead of the calculated one, add a `Release-As: 1.0.0` line to the body of a commit on `main` (for example in the squash-merge commit message).
 
-If the build fails, the release stays a draft and users never see it. For a transient failure, re-run the failed job. If the build needs a code fix, delete the draft release and its tag, then merge the fix; it ships with the next release.
+If any platform's build fails, the release stays a draft and users never see it. For a transient failure, re-run the failed job; the other platforms' files are already attached. If the build needs a code fix, delete the draft release and its tag, then merge the fix; it ships with the next release.
 
 ## TODOS
 

@@ -1,9 +1,10 @@
 /**
  * Release notifier. The app is ad-hoc signed, so electron-updater can't
  * install updates on macOS (Squirrel.Mac requires a Developer ID signature).
- * Instead we read the version from the `latest-mac.yml` manifest that the
- * Release workflow attaches to every GitHub Release and tell the user when a
- * newer one exists. Everything here fails quietly: a failed check only logs.
+ * Instead we read the version from the platform's manifest (`latest-mac.yml`,
+ * `latest.yml` or `latest-linux.yml`) that the Release workflow attaches to
+ * every GitHub Release and tell the user when a newer one exists. Everything
+ * here fails quietly: a failed check only logs.
  */
 import { app, dialog, net, shell } from 'electron';
 import log from 'electron-log/main';
@@ -12,11 +13,28 @@ const OWNER = 'sajmonr';
 const REPO = 'parameter-store-manager';
 
 export const RELEASES_URL = `https://github.com/${OWNER}/${REPO}/releases`;
+export const releaseTagUrl = version => `${RELEASES_URL}/tag/v${version}`;
+
+// electron-builder's manifest names; everything else is a Linux build.
+const MANIFESTS = { darwin: 'latest-mac.yml', win32: 'latest.yml' };
+
 // A release-asset download, not the REST API, so no per-IP rate limit applies.
 // `releases/latest` only ever resolves to the newest full (non-draft,
-// non-prerelease) release.
-export const LATEST_MANIFEST_URL = `${RELEASES_URL}/latest/download/latest-mac.yml`;
-export const releaseTagUrl = version => `${RELEASES_URL}/tag/v${version}`;
+// non-prerelease) release. Each platform reads its own manifest, so a platform
+// whose build is missing from a release is never told about it.
+export const latestManifestUrl = platform =>
+  `${RELEASES_URL}/latest/download/${MANIFESTS[platform] || 'latest-linux.yml'}`;
+
+const INSTRUCTIONS = {
+  darwin:
+    'Download the new .dmg, replace the app in /Applications and run the xattr command from the README again.',
+  win32:
+    'Download and run the new Setup .exe; it replaces the installed version.'
+};
+
+export const updateInstructions = platform =>
+  INSTRUCTIONS[platform] ||
+  'Download the new .deb, .rpm or .AppImage from the release page and install it over the current one.';
 
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -49,12 +67,18 @@ const errorResult = message => {
   return { status: 'error', message };
 };
 
-// Resolves to { status: 'available', version, url }, { status: 'up-to-date',
-// version } or { status: 'error', message }. Never rejects.
-export const checkForUpdates = async ({ currentVersion, fetch }) => {
+// Resolves to { status: 'available', version, url, instructions },
+// { status: 'up-to-date', version } or { status: 'error', message }. Never
+// rejects.
+export const checkForUpdates = async ({
+  currentVersion,
+  fetch,
+  platform = process.platform
+}) => {
+  const manifestUrl = latestManifestUrl(platform);
   let response;
   try {
-    response = await fetch(LATEST_MANIFEST_URL, {
+    response = await fetch(manifestUrl, {
       cache: 'no-store',
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
     });
@@ -62,7 +86,7 @@ export const checkForUpdates = async ({ currentVersion, fetch }) => {
     return errorResult(error.message || String(error));
   }
   if (!response.ok) {
-    return errorResult(`HTTP ${response.status} from ${LATEST_MANIFEST_URL}`);
+    return errorResult(`HTTP ${response.status} from ${manifestUrl}`);
   }
 
   let version;
@@ -77,7 +101,12 @@ export const checkForUpdates = async ({ currentVersion, fetch }) => {
 
   if (isNewer(version, currentVersion)) {
     log.info(`Update available: ${version} (installed ${currentVersion}).`);
-    return { status: 'available', version, url: releaseTagUrl(version) };
+    return {
+      status: 'available',
+      version,
+      url: releaseTagUrl(version),
+      instructions: updateInstructions(platform)
+    };
   }
   return { status: 'up-to-date', version };
 };
@@ -135,7 +164,7 @@ export const checkInteractively = async () => {
     const { response } = await dialog.showMessageBox({
       type: 'info',
       message: `Version ${result.version} is available`,
-      detail: `You have ${installed}. Download the new version from the release page.`,
+      detail: `You have ${installed}. ${result.instructions}`,
       buttons: ['Open Release Page', 'Later'],
       defaultId: 0,
       cancelId: 1
