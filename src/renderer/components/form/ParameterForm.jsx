@@ -80,7 +80,8 @@ const ParameterForm = ({ prefill }) => {
   );
 
   const nameHelp = {
-    [NAME_ERRORS.invalid]: `Whitespace, / and \\ are not allowed in the name. Pick a folder on the left.`,
+    [NAME_ERRORS.characters]: 'Use letters, digits, _ . and - only.',
+    [NAME_ERRORS.emptySegment]: `Folder names can't be empty: remove the extra ${delimiter}.`,
     [NAME_ERRORS.exists]: (
       <>
         This name already exists.{' '}
@@ -158,7 +159,7 @@ const ParameterForm = ({ prefill }) => {
             <Form.Item name="name" noStyle>
               <Input
                 className={`${styles.mono} ${styles.name}`}
-                placeholder="ParameterName"
+                placeholder={`Name, or NewFolder${delimiter}Name`}
                 aria-label="Parameter name"
                 status={check.nameError ? 'error' : undefined}
                 autoFocus

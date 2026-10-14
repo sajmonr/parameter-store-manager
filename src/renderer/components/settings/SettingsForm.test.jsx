@@ -22,10 +22,13 @@ const setup = settings => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  api.listProfiles.mockResolvedValue([
-    { name: 'default', source: 'config' },
-    { name: 'dev', source: 'credentials' }
-  ]);
+  api.listProfiles.mockResolvedValue({
+    profiles: [
+      { name: 'default', source: 'config' },
+      { name: 'dev', source: 'credentials' }
+    ],
+    envProfile: null
+  });
   api.describeParameters.mockReturnValue(new Promise(() => {}));
 });
 
@@ -86,5 +89,31 @@ describe('SettingsForm', () => {
       )
     );
     await waitFor(() => expect(api.describeParameters).toHaveBeenCalled());
+  });
+
+  it('lists the named default profile apart from AWS_PROFILE', async () => {
+    const user = userEvent.setup();
+    api.listProfiles.mockResolvedValue({
+      profiles: [
+        { name: 'default', source: 'config' },
+        { name: 'dev', source: 'credentials' }
+      ],
+      envProfile: 'dev'
+    });
+    setup({ profile: '' });
+
+    expect(await screen.findByText('AWS_PROFILE=dev')).toBeInTheDocument();
+    await user.click(screen.getByRole('combobox', { name: 'Profile' }));
+    await user.click(
+      (await screen.findAllByText('default')).find(el =>
+        el.closest('.ant-select-item-option')
+      )
+    );
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(api.setSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ profile: 'default' })
+      )
+    );
   });
 });

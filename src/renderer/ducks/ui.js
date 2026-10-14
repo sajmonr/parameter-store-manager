@@ -180,10 +180,11 @@ const getSelectedParameter = createSelector(
   [
     parameterSelectors.getParametersByName,
     parameterSelectors.getValuesByName,
+    getNameSet,
     getSelectedName
   ],
-  (parametersByName, valuesByName, name) =>
-    name && parametersByName[name]
+  (parametersByName, valuesByName, names, name) =>
+    name && names.has(name) && parametersByName[name]
       ? { ...parametersByName[name], ...valuesByName[name] }
       : null
 );

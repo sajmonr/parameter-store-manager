@@ -48,10 +48,12 @@ describe('listProfiles', () => {
   it('merges both files, preferring the config file as the source', async () => {
     await writeFile(join(dir, 'config'), config);
     await writeFile(join(dir, 'credentials'), credentials);
-    const profiles = await listProfiles({
+    const { profiles, envProfile } = await listProfiles({
       AWS_CONFIG_FILE: join(dir, 'config'),
-      AWS_SHARED_CREDENTIALS_FILE: join(dir, 'credentials')
+      AWS_SHARED_CREDENTIALS_FILE: join(dir, 'credentials'),
+      AWS_PROFILE: 'dev'
     });
+    expect(envProfile).toBe('dev');
     expect(profiles).toEqual([
       { name: 'default', source: 'config' },
       { name: 'dev', source: 'config' },
@@ -66,6 +68,6 @@ describe('listProfiles', () => {
         AWS_CONFIG_FILE: join(dir, 'nope'),
         AWS_SHARED_CREDENTIALS_FILE: join(dir, 'nope2')
       })
-    ).toEqual([]);
+    ).toEqual({ profiles: [], envProfile: null });
   });
 });

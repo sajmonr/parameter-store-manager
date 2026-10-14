@@ -45,6 +45,17 @@ describe('createMatcher', () => {
     expect(filter('compass/*/Dash*')).toEqual([names[0]]);
   });
 
+  it('lets ** match zero or more folders', () => {
+    const nested = ['/dev/Password', '/dev/a/Password', '/dev/a/b/Password'];
+    const test = query => nested.filter(createMatcher(query, '/').test);
+    expect(test('/dev/**/Password')).toEqual(nested);
+    expect(test('**/Password')).toEqual(nested);
+    expect(test('/dev/**')).toEqual(nested);
+    expect(
+      ['app.Key', 'app.x.Key'].filter(createMatcher('app.**.Key', '.').test)
+    ).toEqual(['app.Key', 'app.x.Key']);
+  });
+
   it('keeps * and ? within one segment', () => {
     expect(filter('/development/*/Dashboard')).toEqual([]);
     expect(filter('/development/*/AppServer/Dash?oard')).toEqual([names[0]]);

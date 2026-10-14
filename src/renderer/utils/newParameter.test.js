@@ -14,17 +14,42 @@ describe('checkNewParameter', () => {
     });
   });
 
-  it('rejects whitespace, slashes and the delimiter in the name', () => {
-    expect(check({ name: 'a b' }).nameError).toBe('invalid');
-    expect(check({ name: 'a/b' }).nameError).toBe('invalid');
-    expect(check({ name: 'a\\b' }).nameError).toBe('invalid');
-    expect(
+  it('accepts the characters SSM allows', () => {
+    expect(check({ name: 'Db_host-1.primary' }).nameError).toBe(null);
+  });
+
+  it('rejects characters SSM does not allow', () => {
+    ['a b', 'Key#', 'Password@', 'a\\b', 'naïve'].forEach(name =>
+      expect(check({ name }).nameError).toBe('characters')
+    );
+  });
+
+  it('accepts new folders inside the name', () => {
+    const result = check({ name: 'Cache/Redis/Ttl' });
+    expect(result).toEqual({
+      fullPath: '/app/Cache/Redis/Ttl',
+      nameError: null,
+      ready: true
+    });
+  });
+
+  it('rejects empty folders from leading, trailing or doubled delimiters', () => {
+    ['/Ttl', 'Cache/', 'Cache//Ttl'].forEach(name =>
+      expect(check({ name }).nameError).toBe('emptySegment')
+    );
+  });
+
+  it('uses the configured delimiter for folders', () => {
+    const dotted = values =>
       checkNewParameter(
-        { folder: 'x.', name: 'a.b', value: 'v' },
+        { folder: 'app.', value: 'v', ...values },
         existing,
         '.'
-      ).nameError
-    ).toBe('invalid');
+      );
+    expect(dotted({ name: 'cache.Ttl' }).fullPath).toBe('app.cache.Ttl');
+    expect(dotted({ name: 'cache.Ttl' }).nameError).toBe(null);
+    expect(dotted({ name: 'cache..Ttl' }).nameError).toBe('emptySegment');
+    expect(dotted({ name: 'a/b' }).nameError).toBe('characters');
   });
 
   it('rejects a name that already exists', () => {

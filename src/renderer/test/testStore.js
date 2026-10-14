@@ -40,7 +40,10 @@ export const createTestStore = ({ parameters = [], settings = {} } = {}) => {
         nameValueMapping: Object.fromEntries(parameters.map(p => [p.Name, p]))
       }
     });
-    store.dispatch({ type: PARAMETER_LIST_LOADED, payload: parameters });
+    store.dispatch({
+      type: PARAMETER_LIST_LOADED,
+      payload: { names: parameters.map(p => p.Name) }
+    });
   }
   return store;
 };

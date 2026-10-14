@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import * as api from '../clients/api';
 import { renderWithStore } from '../test/render';
 import { createTestStore, makeParameter } from '../test/testStore';
-import AppShell from './AppShell';
+import AppShell, { siderMaxWidth } from './AppShell';
 
 vi.mock('../clients/api', () => import('../test/mockApi'));
 
@@ -163,5 +163,21 @@ describe('AppShell', () => {
     await waitFor(() =>
       expect(screen.getByText('No folders')).toBeInTheDocument()
     );
+  });
+});
+
+describe('siderMaxWidth', () => {
+  it('leaves room for the table next to the pane', () => {
+    expect(siderMaxWidth(1280, false)).toBe(480);
+    expect(siderMaxWidth(1100, false)).toBe(300);
+  });
+
+  it('ignores the pane when it is a drawer, up to 600px', () => {
+    expect(siderMaxWidth(960, true)).toBe(600);
+    expect(siderMaxWidth(700, true)).toBe(340);
+  });
+
+  it('never goes below the minimum width', () => {
+    expect(siderMaxWidth(900, false)).toBe(180);
   });
 });

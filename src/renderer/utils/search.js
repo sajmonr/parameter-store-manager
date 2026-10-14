@@ -6,10 +6,10 @@ const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
 export const isGlobQuery = (query, delimiter) =>
   /[*?]/.test(query) || (!!delimiter && query.startsWith(delimiter));
 
-// `**` matches any depth; `*` and `?` stay within one segment. A leading
-// delimiter anchors at the start of the name, otherwise the glob may start at
-// any segment boundary. Like a path prefix, the glob only has to match the
-// beginning of the rest of the name.
+// `**` matches any depth, including none: `a/**/b` matches `a/b`. `*` and `?`
+// stay within one segment. A leading delimiter anchors at the start of the
+// name, otherwise the glob may start at any segment boundary. Like a path
+// prefix, the glob only has to match the beginning of the rest of the name.
 export const globToRegExp = (glob, delimiter) => {
   const d = escapeRegExp(delimiter);
   const notDelimiter = delimiter.length === 1 ? `[^${d}]` : `(?:(?!${d}).)`;
@@ -17,7 +17,10 @@ export const globToRegExp = (glob, delimiter) => {
   let source = '';
   for (let i = 0; i < glob.length; i += 1) {
     const char = glob[i];
-    if (char === '*' && glob[i + 1] === '*') {
+    if (glob.startsWith(`**${delimiter}`, i)) {
+      source += `(?:.*${d})?`;
+      i += 1 + delimiter.length;
+    } else if (char === '*' && glob[i + 1] === '*') {
       source += '.*';
       i += 1;
     } else if (char === '*') {

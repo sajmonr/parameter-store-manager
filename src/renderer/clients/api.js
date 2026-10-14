@@ -40,7 +40,8 @@ export const deleteParameter = name => call(bridge().parameters.delete, name);
 
 export const listKmsAliases = () => call(bridge().kms.listAliases);
 
-// Resolves to [{ name, source: 'config' | 'credentials' }].
+// Resolves to { profiles: [{ name, source: 'config' | 'credentials' }],
+// envProfile: AWS_PROFILE or null }.
 export const listProfiles = () => call(bridge().aws.listProfiles);
 
 export const getAllSettings = () => call(bridge().settings.getAll);

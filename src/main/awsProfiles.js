@@ -21,8 +21,10 @@ export const parseProfileNames = (text, isConfigFile) => {
 
 const readOrEmpty = path => readFile(path, 'utf8').catch(() => '');
 
-// Resolves to [{ name, source }] sorted by name, where source is 'config' or
-// 'credentials'. Honors the same environment variables as the AWS SDK.
+// Resolves to { profiles: [{ name, source }], envProfile }. Profiles are
+// sorted by name; source is 'config' or 'credentials'. envProfile is
+// AWS_PROFILE, which the SDK uses when no profile is set, or null. Honors the
+// same environment variables as the AWS SDK.
 export const listProfiles = async (env = process.env) => {
   const awsDir = join(homedir(), '.aws');
   const [config, credentials] = await Promise.all([
@@ -38,5 +40,10 @@ export const listProfiles = async (env = process.env) => {
     if (!profiles.has(name))
       profiles.set(name, { name, source: 'credentials' });
   });
-  return [...profiles.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return {
+    profiles: [...profiles.values()].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    ),
+    envProfile: env.AWS_PROFILE || null
+  };
 };

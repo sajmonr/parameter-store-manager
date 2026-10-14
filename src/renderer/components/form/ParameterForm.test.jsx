@@ -38,11 +38,27 @@ describe('ParameterForm', () => {
     expect(screen.getByText('/dev/app/Timeout')).toBeInTheDocument();
   });
 
-  it('rejects slashes and whitespace in the name', async () => {
+  it('rejects characters SSM does not allow', async () => {
     const user = userEvent.setup();
     setup();
-    await user.type(screen.getByLabelText('Parameter name'), 'a/b');
-    expect(screen.getByText(/are not allowed in the name/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Parameter name'), 'Key#');
+    expect(
+      screen.getByText('Use letters, digits, _ . and - only.')
+    ).toBeInTheDocument();
+  });
+
+  it('creates new folders typed into the name', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(screen.getByLabelText('Parameter name'), 'Cache/Ttl');
+    await user.type(screen.getByRole('textbox', { name: 'Value' }), '30');
+    expect(screen.getByText('/dev/app/Cache/Ttl')).toBeInTheDocument();
+    await user.click(createButton());
+    await waitFor(() =>
+      expect(api.putParameter).toHaveBeenCalledWith(
+        expect.objectContaining({ name: '/dev/app/Cache/Ttl' })
+      )
+    );
   });
 
   it('links to a parameter that already exists', async () => {

@@ -16,6 +16,8 @@ import ParameterDetail from './ParameterDetail';
 import ParameterForm from '../form/ParameterForm';
 import styles from './DetailHost.module.css';
 
+export const PANE_WIDTH = 440;
+
 // Hosts the selected parameter or the new-parameter form: docked on the
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
 // while nothing is open.
@@ -63,7 +65,11 @@ const DetailHost = ({ narrow }) => {
 
   return (
     content && (
-      <aside className={styles.pane} aria-label="Details">
+      <aside
+        className={styles.pane}
+        style={{ width: PANE_WIDTH }}
+        aria-label="Details"
+      >
         {content}
       </aside>
     )

@@ -73,7 +73,7 @@ The app can't update itself: without a Developer ID signature macOS refuses to i
 
 ## Building from source
 
-All platforms need Node.js 22.12 or newer and npm. `npm run package` builds and packages the app for the current platform into `release/`. The [Build workflow](.github/workflows/build.yml) packages all three platforms (Linux for both x64 and arm64) on every pull request and keeps the installers as workflow artifacts.
+All platforms need Node.js 22.22.2 or newer and npm. `npm run package` builds and packages the app for the current platform into `release/`. The [Build workflow](.github/workflows/build.yml) packages all three platforms (Linux for both x64 and arm64) on every pull request and keeps the installers as workflow artifacts.
 
 ### macOS
 

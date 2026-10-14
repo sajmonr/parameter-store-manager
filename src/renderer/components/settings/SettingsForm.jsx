@@ -37,26 +37,32 @@ const regionOptions = current =>
     .sort()
     .map(region => ({ value: region, label: region }));
 
-// The empty profile means the SDK default (AWS_PROFILE, else "default"), so
-// it stands in for a profile named "default".
-const profileOptions = (profiles, current) => {
-  const sourceOf = name => {
+// The empty profile means the SDK default: AWS_PROFILE if set, otherwise the
+// profile named "default". Without AWS_PROFILE the two are the same, so the
+// empty profile is shown as "default"; with it, both are listed.
+const profileOptions = ({ profiles, envProfile }, current) => {
+  const sourceText = name => {
     const found = profiles.find(p => p.name === name);
-    return found && found.source;
+    return found && `from ~/.aws/${found.source}`;
   };
-  const names = profiles.map(p => p.name).filter(name => name !== 'default');
+  const names = profiles
+    .map(p => p.name)
+    .filter(name => envProfile || name !== 'default');
   if (current && !names.includes(current)) names.unshift(current);
+  const sdkDefault = envProfile
+    ? { value: '', name: 'SDK default', suffix: `AWS_PROFILE=${envProfile}` }
+    : { value: '', name: 'default', suffix: sourceText('default') };
   return [
-    { value: '', name: 'default', source: sourceOf('default') },
-    ...names.map(name => ({ value: name, name, source: sourceOf(name) }))
-  ].map(({ value, name, source }) => ({
+    sdkDefault,
+    ...names.map(name => ({ value: name, name, suffix: sourceText(name) }))
+  ].map(({ value, name, suffix }) => ({
     value,
     label: (
       <Flex justify="space-between" align="center" gap={8}>
         <span>{name}</span>
-        {source && (
+        {suffix && (
           <Typography.Text type="secondary" className={styles.suffix}>
-            from ~/.aws/{source}
+            {suffix}
           </Typography.Text>
         )}
       </Flex>
@@ -83,7 +89,7 @@ const SettingsForm = ({ onClose }) => {
   const { notification } = App.useApp();
   const [form] = Form.useForm();
   const saved = useSelector(settingsSelectors.getAllSettings);
-  const [profiles, setProfiles] = useState([]);
+  const [profiles, setProfiles] = useState({ profiles: [], envProfile: null });
   const [saving, setSaving] = useState(false);
   const [initialValues] = useState(() => ({
     ...saved,

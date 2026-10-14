@@ -8,7 +8,9 @@ export const getParameters = vi.fn();
 export const putParameter = vi.fn();
 export const deleteParameter = vi.fn();
 export const listKmsAliases = vi.fn(() => Promise.resolve([]));
-export const listProfiles = vi.fn(() => Promise.resolve([]));
+export const listProfiles = vi.fn(() =>
+  Promise.resolve({ profiles: [], envProfile: null })
+);
 export const setSettings = vi.fn(values => Promise.resolve(values));
 export const getAllSettings = vi.fn(() => Promise.resolve({}));
 export const onSettingsChange = vi.fn();
