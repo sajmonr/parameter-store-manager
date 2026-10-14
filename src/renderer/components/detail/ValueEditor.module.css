@@ -1,0 +1,14 @@
+.form :global(.ant-form-item) {
+  margin-bottom: 16px;
+}
+
+.value textarea {
+  font-family: var(--ant-font-family-code);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.hint {
+  flex: 1;
+  font-size: 12px;
+}

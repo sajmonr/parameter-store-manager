@@ -1,0 +1,30 @@
+.form :global(.ant-form-item) {
+  margin-bottom: 14px;
+}
+
+.group {
+  margin-bottom: 8px;
+}
+
+.groupTitle {
+  display: block;
+  margin: 4px 0 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.half {
+  flex: 1;
+  min-width: 0;
+}
+
+.delimiter {
+  width: 48px;
+  text-align: center;
+  font-family: var(--ant-font-family-code);
+}
+
+.suffix {
+  font-size: 12px;
+}

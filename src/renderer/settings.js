@@ -7,9 +7,8 @@ let current = {};
 const listeners = new Set();
 
 const update = settings => {
-  const previous = current;
   current = settings;
-  listeners.forEach(listener => listener(current, previous));
+  listeners.forEach(listener => listener(current));
 };
 
 export const loadSettings = async () => {
@@ -17,18 +16,15 @@ export const loadSettings = async () => {
   api.onSettingsChange(update);
 };
 
-export const getSetting = key => current[key];
+export const getAllSettings = () => current;
 
 export const saveSettings = async values =>
   update(await api.setSettings(values));
 
-// Calls `callback(newValue, oldValue)` whenever `key` changes; returns an unsubscribe function.
-export const onSettingChange = (key, callback) => {
-  const listener = (next, previous) => {
-    if (next[key] !== previous[key]) callback(next[key], previous[key]);
-  };
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+// Calls `callback(settings)` whenever the settings change; returns an unsubscribe function.
+export const onSettingsChange = callback => {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
 };
 
 export { availableSettings };

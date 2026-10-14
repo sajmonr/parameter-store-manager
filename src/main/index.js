@@ -36,8 +36,9 @@ const createWindow = () => {
     show: false,
     width: 1280,
     height: 800,
-    // Below this the six table columns get too narrow to read.
-    minWidth: 1100,
+    // Below 1100px the detail pane becomes a drawer; below this the table
+    // and folder tree get too narrow to read.
+    minWidth: 900,
     minHeight: 600,
     backgroundColor: windowBackground(),
     webPreferences: {

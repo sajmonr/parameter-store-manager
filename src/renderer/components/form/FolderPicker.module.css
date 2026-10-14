@@ -1,0 +1,10 @@
+.picker {
+  flex: 0 0 55%;
+  min-width: 0;
+}
+
+.picker :global(.ant-select-selection-item) {
+  direction: rtl;
+  text-align: left;
+  font-family: var(--ant-font-family-code);
+}

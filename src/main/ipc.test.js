@@ -5,6 +5,9 @@ vi.mock('./settings', () => ({
   getAllSettings: vi.fn(() => ({ profile: '' })),
   setSettings: vi.fn(values => values)
 }));
+vi.mock('./awsProfiles', () => ({
+  listProfiles: vi.fn(async () => [{ name: 'dev', source: 'config' }])
+}));
 vi.mock('./updates', () => ({
   checkForRenderer: vi.fn(async () => ({ status: 'up-to-date', version: '1' })),
   openReleasePage: vi.fn(async () => {})
@@ -65,6 +68,13 @@ describe('invokeHandler', () => {
     const response = await invokeHandler(channel, args);
     expect(response.ok).toBe(false);
     expect(response.error.name).toBe('InvalidRequest');
+  });
+
+  it('lists the AWS profiles', async () => {
+    await expect(invokeHandler('aws:listProfiles', [])).resolves.toEqual({
+      ok: true,
+      result: [{ name: 'dev', source: 'config' }]
+    });
   });
 
   it('returns the update check result', async () => {

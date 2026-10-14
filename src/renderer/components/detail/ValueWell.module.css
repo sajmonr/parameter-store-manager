@@ -1,0 +1,20 @@
+.well {
+  position: relative;
+  padding: 14px 14px 42px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-bg-layout);
+}
+
+.value {
+  display: block;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}

@@ -40,6 +40,9 @@ export const deleteParameter = name => call(bridge().parameters.delete, name);
 
 export const listKmsAliases = () => call(bridge().kms.listAliases);
 
+// Resolves to [{ name, source: 'config' | 'credentials' }].
+export const listProfiles = () => call(bridge().aws.listProfiles);
+
 export const getAllSettings = () => call(bridge().settings.getAll);
 
 export const setSettings = values => call(bridge().settings.set, values);

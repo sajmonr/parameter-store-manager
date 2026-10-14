@@ -1,0 +1,16 @@
+.header {
+  height: 52px;
+  padding: 0 16px;
+  line-height: normal;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.row {
+  height: 100%;
+}
+
+.end {
+  margin-left: auto;
+  flex: none;
+}

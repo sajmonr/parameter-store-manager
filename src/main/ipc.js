@@ -1,5 +1,6 @@
 import log from 'electron-log/main';
 import * as aws from './aws';
+import { listProfiles } from './awsProfiles';
 import { getAllSettings, setSettings } from './settings';
 import { checkForRenderer, openReleasePage } from './updates';
 
@@ -61,6 +62,8 @@ export const handlers = {
   },
 
   'kms:listAliases': () => aws.listKmsAliases(),
+
+  'aws:listProfiles': () => listProfiles(),
 
   'settings:getAll': () => getAllSettings(),
 

@@ -6,13 +6,18 @@ import 'antd/dist/reset.css';
 
 import App from './App';
 import configureStore from './store/configureStore';
-import { loadSettings } from './settings';
+import { getAllSettings, loadSettings, onSettingsChange } from './settings';
+import { actions as settingsActions } from './ducks/settings';
 import './app.global.css';
 
 TimeAgo.addDefaultLocale(en);
 
 loadSettings().then(() => {
-  createRoot(document.getElementById('root')).render(
-    <App store={configureStore()} />
+  const store = configureStore();
+  store.dispatch(settingsActions.settingsChanged(getAllSettings()));
+  onSettingsChange(settings =>
+    store.dispatch(settingsActions.settingsChanged(settings))
   );
+
+  createRoot(document.getElementById('root')).render(<App store={store} />);
 });

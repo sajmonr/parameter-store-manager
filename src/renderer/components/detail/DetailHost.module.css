@@ -1,0 +1,16 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 22px;
+}
+
+.pane {
+  composes: content;
+  flex: none;
+  width: 440px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-left: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-bg-container);
+}
