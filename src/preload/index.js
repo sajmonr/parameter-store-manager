@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('api', {
   kms: {
     listAliases: () => ipcRenderer.invoke('kms:listAliases')
   },
+  aws: {
+    listProfiles: () => ipcRenderer.invoke('aws:listProfiles')
+  },
   settings: {
     getAll: () => ipcRenderer.invoke('settings:getAll'),
     set: values => ipcRenderer.invoke('settings:set', values),

@@ -3,6 +3,7 @@ import pAll from 'p-all';
 import { createSelector } from 'reselect';
 import * as api from '../clients/api';
 import { feedback } from '../feedback';
+import { classifyFetchError, describeError } from '../utils/awsErrors';
 
 const FETCH_ALL_PARAMETERS_REQUEST = 'FETCH_ALL_PARAMETERS_REQUEST';
 const FETCH_ALL_PARAMETERS_FAILURE = 'FETCH_ALL_PARAMETERS_FAILURE';
@@ -32,6 +33,17 @@ const DELETE_PARAMETER_SUCCESS = 'DELETE_PARAMETER_SUCCESS';
 // AWS limits GetParameters to 10 names per call.
 const VALUES_BATCH_SIZE = 10;
 
+const withoutKey = (object, key) => {
+  const rest = { ...object };
+  delete rest[key];
+  return rest;
+};
+
+const pick = (object, keys) =>
+  Object.fromEntries(
+    keys.filter(key => key in object).map(key => [key, object[key]])
+  );
+
 const chunk = (items, size) => {
   const chunks = [];
   for (let i = 0; i < items.length; i += size) {
@@ -40,101 +52,137 @@ const chunk = (items, size) => {
   return chunks;
 };
 
-const describeError = err => [err.code, err.message].filter(Boolean).join(': ');
+// `isCurrent` reports whether the load that asked for these values is still
+// the latest one; results of an outdated load are dropped.
+const fetchParameterValues =
+  (names, isCurrent = () => true) =>
+  dispatch => {
+    dispatch({ type: FETCH_PARAMETER_VALUES_REQUEST, payload: { names } });
 
-const fetchParameterValues = names => dispatch => {
-  dispatch({ type: FETCH_PARAMETER_VALUES_REQUEST, payload: { names } });
+    const getParameterRequestActions = chunk(names, VALUES_BATCH_SIZE).map(
+      currBatchNames => () =>
+        api
+          .getParameters(currBatchNames)
+          .then(({ parameters, invalidParameters }) => {
+            const mapping = parameters.reduce((map, param) => {
+              map[param.Name] = param;
+              return map;
+            }, {});
 
-  const getParameterRequestActions = chunk(names, VALUES_BATCH_SIZE).map(
-    currBatchNames => () =>
-      api
-        .getParameters(currBatchNames)
-        .then(({ parameters, invalidParameters }) => {
-          const mapping = parameters.reduce((map, param) => {
-            map[param.Name] = param;
-            return map;
-          }, {});
+            return [mapping, invalidParameters];
+          })
+          .catch(err => {
+            console.error(
+              'Something went wrong while fetching parameters',
+              err
+            );
+            if (!isCurrent()) return [{}, []];
 
-          return [mapping, invalidParameters];
-        })
-        .catch(err => {
-          console.error('Something went wrong while fetching parameters', err);
+            dispatch({
+              type: FETCH_PARAMETER_VALUES_FAILURE,
+              payload: { names: currBatchNames }
+            });
+            return [{}, []];
+          })
+    );
 
+    return pAll(getParameterRequestActions, { concurrency: 2 }).then(
+      bulkResults => {
+        if (!isCurrent()) return [{}, []];
+        // bulkResults is a list of [mapping, invalidParameters]
+        const nameValueMapping = bulkResults.reduce(
+          (map, r) => ({ ...map, ...r[0] }),
+          {}
+        );
+        dispatch({
+          type: FETCH_PARAMETER_VALUES_SUCCESS,
+          payload: { names: Object.keys(nameValueMapping), nameValueMapping }
+        });
+
+        const invalidParameters = bulkResults.reduce(
+          (lst, r) => [...lst, ...r[1]],
+          []
+        );
+
+        if (invalidParameters.length) {
           dispatch({
             type: FETCH_PARAMETER_VALUES_FAILURE,
-            payload: { names: currBatchNames }
+            payload: { names: invalidParameters }
           });
-          return [{}, []];
-        })
-  );
+        }
 
-  return pAll(getParameterRequestActions, { concurrency: 2 }).then(
-    bulkResults => {
-      // bulkResults is a list of [mapping, invalidParameters]
-      const nameValueMapping = bulkResults.reduce(
-        (map, r) => ({ ...map, ...r[0] }),
-        {}
-      );
-      dispatch({
-        type: FETCH_PARAMETER_VALUES_SUCCESS,
-        payload: { names: Object.keys(nameValueMapping), nameValueMapping }
-      });
+        return [nameValueMapping, invalidParameters];
+      }
+    );
+  };
 
-      const invalidParameters = bulkResults.reduce(
-        (lst, r) => [...lst, ...r[1]],
-        []
-      );
+// Each load gets a number; only the latest load may change the state, so a
+// load for an old profile or region can't overwrite a newer one.
+let latestLoad = 0;
 
-      if (invalidParameters.length) {
+// A refresh keeps the loaded parameters until the new list arrives. `reset`
+// drops them first, for when the profile or region changed.
+const fetchAllParameters =
+  ({ reset = false } = {}) =>
+  async (dispatch, getState) => {
+    latestLoad += 1;
+    const load = latestLoad;
+    const isCurrent = () => load === latestLoad;
+    dispatch({ type: FETCH_ALL_PARAMETERS_REQUEST, payload: { reset } });
+
+    let allParameters = [];
+    let nextToken;
+
+    try {
+      do {
+        // Pages are loaded one after another so the table fills in progressively.
+
+        const page = await api.describeParameters(nextToken);
+        if (!isCurrent()) return;
+
         dispatch({
-          type: FETCH_PARAMETER_VALUES_FAILURE,
-          payload: { names: invalidParameters }
+          type: FETCH_ALL_PARAMETERS_BATCH_LOADED,
+          payload: page.parameters
         });
-      }
 
-      return [nameValueMapping, invalidParameters];
-    }
-  );
-};
+        const names = page.parameters.map(p => p.Name);
+        if (names.length) {
+          // initiate the action creator to fetch parameter values
+          dispatch(fetchParameterValues(names, isCurrent));
+        }
 
-const fetchAllParameters = () => async dispatch => {
-  dispatch({ type: FETCH_ALL_PARAMETERS_REQUEST });
-
-  let allParameters = [];
-  let nextToken;
-
-  try {
-    do {
-      // Pages are loaded one after another so the table fills in progressively.
-
-      const page = await api.describeParameters(nextToken);
-
+        allParameters = [...allParameters, ...page.parameters];
+        ({ nextToken } = page);
+      } while (nextToken);
+    } catch (err) {
+      if (!isCurrent()) return;
+      const kind = classifyFetchError(err);
       dispatch({
-        type: FETCH_ALL_PARAMETERS_BATCH_LOADED,
-        payload: page.parameters
+        type: FETCH_ALL_PARAMETERS_FAILURE,
+        payload: { kind, message: describeError(err) }
       });
+      // Expired sessions and denied access get their own screen instead.
+      if (kind) return;
+      feedback.notification.error({
+        message:
+          'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
+        description: describeError(err)
+      });
+      return;
+    }
 
-      const names = page.parameters.map(p => p.Name);
-      if (names.length) {
-        // initiate the action creator to fetch parameter values
-        dispatch(fetchParameterValues(names));
-      }
-
-      allParameters = [...allParameters, ...page.parameters];
-      ({ nextToken } = page);
-    } while (nextToken);
-  } catch (err) {
-    dispatch({ type: FETCH_ALL_PARAMETERS_FAILURE, payload: err });
-    feedback.notification.error({
-      message:
-        'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
-      description: describeError(err)
-    });
-    return;
-  }
-
-  dispatch({ type: FETCH_ALL_PARAMETERS_SUCCESS, payload: allParameters });
-};
+    // Creations and deletions made while loading are newer than the list.
+    const { created, deleted } = getState().parameters.changesDuringLoad;
+    const names = [
+      ...new Set([
+        ...allParameters
+          .map(p => p.Name)
+          .filter(name => !deleted.includes(name)),
+        ...created
+      ])
+    ];
+    dispatch({ type: FETCH_ALL_PARAMETERS_SUCCESS, payload: { names } });
+  };
 
 const fetchKmsKeys = () => dispatch => {
   dispatch({ type: FETCH_KMS_KEYS_REQUEST });
@@ -235,12 +283,14 @@ export const actions = {
 
 function parameterNames(state = [], action) {
   switch (action.type) {
-    // reset if fetch all request comes in
     case FETCH_ALL_PARAMETERS_REQUEST:
-      return [];
+      return action.payload.reset ? [] : state;
     case FETCH_ALL_PARAMETERS_BATCH_LOADED: {
       return [...new Set([...state, ...action.payload.map(res => res.Name)])];
     }
+    // Drops parameters that were deleted outside the app since the last load.
+    case FETCH_ALL_PARAMETERS_SUCCESS:
+      return action.payload.names;
     case CREATE_GENERIC_PARAMETER_SUCCESS: {
       return [...new Set([...state, action.payload.params.Name])];
     }
@@ -254,6 +304,10 @@ function parameterNames(state = [], action) {
 
 function parametersByName(state = {}, action) {
   switch (action.type) {
+    case FETCH_ALL_PARAMETERS_REQUEST:
+      return action.payload.reset ? {} : state;
+    case FETCH_ALL_PARAMETERS_SUCCESS:
+      return pick(state, action.payload.names);
     case FETCH_ALL_PARAMETERS_BATCH_LOADED: {
       const mapping = action.payload.reduce(
         (map, parameter) => ({
@@ -274,6 +328,8 @@ function parametersByName(state = {}, action) {
       };
       return { ...state, [action.payload.params.Name]: parameter };
     }
+    case DELETE_PARAMETER_SUCCESS:
+      return withoutKey(state, action.payload.name);
     default:
       return state;
   }
@@ -281,6 +337,10 @@ function parametersByName(state = {}, action) {
 
 function valuesByName(state = {}, action) {
   switch (action.type) {
+    case FETCH_ALL_PARAMETERS_REQUEST:
+      return action.payload.reset ? {} : state;
+    case FETCH_ALL_PARAMETERS_SUCCESS:
+      return pick(state, action.payload.names);
     case FETCH_PARAMETER_VALUES_SUCCESS: {
       return { ...state, ...action.payload.nameValueMapping };
     }
@@ -294,6 +354,8 @@ function valuesByName(state = {}, action) {
       };
       return { ...state, [action.payload.params.Name]: parameter };
     }
+    case DELETE_PARAMETER_SUCCESS:
+      return withoutKey(state, action.payload.name);
     default:
       return state;
   }
@@ -361,6 +423,45 @@ function hasError(state = {}, action) {
   }
 }
 
+// Names created or deleted in the app while a load runs. The loaded list is
+// older than these changes, so they are applied on top of it.
+function changesDuringLoad(state = { created: [], deleted: [] }, action) {
+  switch (action.type) {
+    case FETCH_ALL_PARAMETERS_REQUEST:
+      return { created: [], deleted: [] };
+    case CREATE_GENERIC_PARAMETER_SUCCESS: {
+      const name = action.payload.params.Name;
+      return {
+        created: [...state.created, name],
+        deleted: state.deleted.filter(n => n !== name)
+      };
+    }
+    case DELETE_PARAMETER_SUCCESS: {
+      const { name } = action.payload;
+      return {
+        created: state.created.filter(n => n !== name),
+        deleted: [...state.deleted, name]
+      };
+    }
+    default:
+      return state;
+  }
+}
+
+// { kind, message } of the last failed load; kind is null unless the error
+// has its own screen (see utils/awsErrors).
+function fetchError(state = null, action) {
+  switch (action.type) {
+    case FETCH_ALL_PARAMETERS_REQUEST:
+    case FETCH_ALL_PARAMETERS_SUCCESS:
+      return null;
+    case FETCH_ALL_PARAMETERS_FAILURE:
+      return action.payload;
+    default:
+      return state;
+  }
+}
+
 function kmsKeys(state = [], action) {
   switch (action.type) {
     case FETCH_KMS_KEYS_SUCCESS:
@@ -379,7 +480,9 @@ const parametersReducer = combineReducers({
   isLoaded,
   hasError,
   kmsKeys,
-  lastUpdatedDate
+  lastUpdatedDate,
+  fetchError,
+  changesDuringLoad
 });
 
 export default parametersReducer;
@@ -392,7 +495,10 @@ const getValuesByName = state => state.parameters.valuesByName;
 const getAllParameters = createSelector(
   [getNames, getParametersByName, getValuesByName],
   (names, parametersMap, valuesMap) => {
+    // A name without metadata can't be shown; skipping it keeps one stale
+    // name from breaking the whole list.
     return [...names]
+      .filter(name => parametersMap[name])
       .sort()
       .map(name => ({ ...parametersMap[name], ...valuesMap[name] }));
   }
@@ -412,6 +518,29 @@ const getAllParametersLastUpdatedDate = createSelector(
   lastUpdatedDates => lastUpdatedDates.FETCH_ALL_PARAMETERS
 );
 
+const getFetchError = state => state.parameters.fetchError;
+
+export const LOAD_STATES = {
+  loading: 'loading',
+  ready: 'ready',
+  empty: 'empty',
+  error: 'error',
+  expired: 'expired',
+  denied: 'denied'
+};
+
+// What the main area shows. Data that is already loaded stays visible while
+// a refresh runs or after a refresh fails with a generic error.
+const getLoadState = createSelector(
+  [getNames, getFetchError, getIsAllParametersLoaded],
+  (names, error, loaded) => {
+    if (error && error.kind) return LOAD_STATES[error.kind];
+    if (names.length) return LOAD_STATES.ready;
+    if (error) return LOAD_STATES.error;
+    return loaded ? LOAD_STATES.empty : LOAD_STATES.loading;
+  }
+);
+
 const getIsKmsKeyLoaded = state => state.parameters.isLoaded.FETCH_KMS_KEYS;
 const getIsKmsKeyLoading = state => state.parameters.isLoading.FETCH_KMS_KEYS;
 const getKmsKeyLoadHasError = state => state.parameters.hasError.FETCH_KMS_KEYS;
@@ -419,6 +548,11 @@ const getKmsKeys = state => state.parameters.kmsKeys;
 
 export const selectors = {
   getAllParameters,
+  getNames,
+  getParametersByName,
+  getValuesByName,
+  getFetchError,
+  getLoadState,
   getIsAllParametersLoaded,
   getIsAllParametersLoading,
   getHasAllParametersErrored,

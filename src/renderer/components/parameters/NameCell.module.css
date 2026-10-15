@@ -1,0 +1,13 @@
+.cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.selected {
+  color: var(--ant-color-primary);
+}
+
+.meta {
+  font-size: 12px;
+}

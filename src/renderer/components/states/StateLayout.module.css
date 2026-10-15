@@ -1,0 +1,65 @@
+.center {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+.content {
+  max-width: 460px;
+  text-align: center;
+}
+
+.hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.command {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.skeleton {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.skeletonRow {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.skeletonHeader {
+  composes: skeletonRow;
+  background: var(--ant-color-fill-alter);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+}
+
+.skeletonName {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The bars' widths are percentages of the column, not of antd's wrapper. */
+.skeletonName :global(.ant-skeleton-element),
+.skeletonValue :global(.ant-skeleton-element) {
+  display: block;
+  width: 100%;
+}
+
+.skeletonValue {
+  flex: 1;
+}

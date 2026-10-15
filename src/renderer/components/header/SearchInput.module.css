@@ -1,0 +1,36 @@
+.search {
+  flex: 1;
+  max-width: 540px;
+  min-width: 200px;
+}
+
+.search input {
+  font-family: var(--ant-font-family-code);
+}
+
+.search input::placeholder {
+  font-family: var(--ant-font-family);
+}
+
+.glob,
+.glob:hover,
+.glob:focus-within {
+  border-color: var(--ant-color-primary);
+}
+
+.icon {
+  color: var(--ant-color-text-tertiary);
+}
+
+.scope {
+  margin-inline-end: 2px;
+  font-family: var(--ant-font-family-code);
+  font-size: 12px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.globTag {
+  margin-inline-end: 0;
+}

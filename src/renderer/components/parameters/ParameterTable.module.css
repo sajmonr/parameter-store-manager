@@ -1,0 +1,40 @@
+.container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.table :global(.ant-table) {
+  border-radius: 0;
+}
+
+.table :global(.ant-table-container) {
+  border-radius: 0;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  border-radius: 0 !important;
+  font-size: 13px;
+}
+
+.table :global(.ant-table-row) {
+  cursor: pointer;
+}
+
+.table :global(.ant-table-tbody .ant-table-cell) {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.table .selected > :global(.ant-table-cell),
+.table .selected:hover > :global(.ant-table-cell) {
+  background: var(--ant-control-item-bg-active);
+}
+
+.table .selected > :global(.ant-table-cell:first-child) {
+  box-shadow: inset 2px 0 0 var(--ant-color-primary);
+}
+
+.lock {
+  color: var(--ant-color-warning);
+}
