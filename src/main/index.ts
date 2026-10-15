@@ -16,14 +16,9 @@ const devServerUrl = process.env.ELECTRON_RENDERER_URL;
 let mainWindow: BrowserWindow | null = null;
 
 const installExtensions = async () => {
-  const {
-    default: installExtension,
-    REACT_DEVELOPER_TOOLS,
-    REDUX_DEVTOOLS
-  } = await import('electron-devtools-installer');
-  return installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS]).catch(
-    console.log
-  );
+  const { default: installExtension, REACT_DEVELOPER_TOOLS } =
+    await import('electron-devtools-installer');
+  return installExtension(REACT_DEVELOPER_TOOLS).catch(console.log);
 };
 
 // Matches antd's layout background, so the window doesn't flash the wrong

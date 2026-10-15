@@ -1,6 +1,7 @@
 import Store from 'electron-store';
 import type { Schema } from 'electron-store';
 import availableSettings from '../shared/availableSettings';
+import { DEFAULT_SETTINGS } from '../shared/availableSettings';
 import type { SettingKey, Settings } from '../shared/availableSettings';
 
 export { availableSettings };
@@ -8,25 +9,25 @@ export { availableSettings };
 const schema: Schema<Settings> = {
   [availableSettings.pathDelimiter]: {
     type: 'string',
-    default: '/'
+    default: DEFAULT_SETTINGS.pathDelimiter
   },
   [availableSettings.ssmRegion]: {
     type: 'string',
-    default: 'eu-west-1'
+    default: DEFAULT_SETTINGS.ssmRegion
   },
   [availableSettings.kmsRegion]: {
     type: 'string',
-    default: 'eu-west-1'
+    default: DEFAULT_SETTINGS.kmsRegion
   },
   [availableSettings.profile]: {
     type: 'string',
-    default: ''
+    default: DEFAULT_SETTINGS.profile
   },
   // Passed to Electron's nativeTheme.themeSource.
   [availableSettings.theme]: {
     type: 'string',
     enum: ['system', 'light', 'dark'],
-    default: 'system'
+    default: DEFAULT_SETTINGS.theme
   }
 };
 

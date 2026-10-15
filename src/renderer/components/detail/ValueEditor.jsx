@@ -2,9 +2,8 @@ import React, { useId, useState } from 'react';
 import PropTypes from 'prop-types';
 import { App, Button, Flex, Form, Input, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as parameterActions } from '../../ducks/parameters';
-import { selectors as settingsSelectors } from '../../ducks/settings';
+import { usePutParameter } from '../../state/parameters';
+import { usePathDelimiter } from '../../state/settings';
 import { leafOf } from '../../utils/paths';
 import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/newParameter';
 import { isSubmitShortcut } from '../../utils/keys';
@@ -13,30 +12,26 @@ import styles from './ValueEditor.module.css';
 // Inline edit of the value and description. The name, type and KMS key
 // can't be changed here.
 const ValueEditor = ({ parameter, onDone }) => {
-  const dispatch = useDispatch();
   const { notification } = App.useApp();
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
+  const delimiter = usePathDelimiter();
+  const putParameter = usePutParameter();
   const [value, setValue] = useState(parameter.Value || '');
   const [description, setDescription] = useState(parameter.Description || '');
-  const [saving, setSaving] = useState(false);
+  const saving = putParameter.isPending;
   const id = useId();
   const canSave = isValueValid(value) && !saving;
 
   const save = () => {
     if (!canSave) return;
-    setSaving(true);
-    dispatch(
-      parameterActions.createGenericParameter(
-        {
-          name: parameter.Name,
-          type: parameter.Type,
-          kmsKey: parameter.KeyId,
-          value,
-          description
-        },
-        true
-      )
-    )
+    putParameter
+      .mutateAsync({
+        name: parameter.Name,
+        type: parameter.Type,
+        kmsKey: parameter.KeyId,
+        value,
+        description,
+        overwrite: true
+      })
       .then(result => {
         notification.success({
           message: 'Parameter saved',
@@ -45,7 +40,6 @@ const ValueEditor = ({ parameter, onDone }) => {
         onDone();
       })
       .catch(err => {
-        setSaving(false);
         notification.error({
           message: 'Parameter was not saved',
           description: err.message || ''

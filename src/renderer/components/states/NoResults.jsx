@@ -1,13 +1,12 @@
 import React from 'react';
 import { Button, Empty, Space, Typography } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { uiActions, useUiStore } from '../../state/ui';
+import { useMatcher } from '../../state/views';
 import styles from './StateLayout.module.css';
 
 const NoResults = () => {
-  const dispatch = useDispatch();
-  const { query } = useSelector(uiSelectors.getMatcher);
-  const scope = useSelector(uiSelectors.getScope);
+  const { query } = useMatcher();
+  const scope = useUiStore(state => state.scope);
 
   return (
     <div className={styles.center}>
@@ -28,14 +27,9 @@ const NoResults = () => {
         }
       >
         <Space>
-          <Button onClick={() => dispatch(uiActions.setQuery(''))}>
-            Clear search
-          </Button>
+          <Button onClick={() => uiActions.setQuery('')}>Clear search</Button>
           {scope && (
-            <Button
-              type="primary"
-              onClick={() => dispatch(uiActions.setScope(''))}
-            >
+            <Button type="primary" onClick={() => uiActions.setScope('')}>
               Search all folders
             </Button>
           )}

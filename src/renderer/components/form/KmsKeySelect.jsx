@@ -1,11 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Flex, Select, Typography } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  actions as parameterActions,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
+import { useKmsAliases } from '../../state/kms';
 import Mono from '../common/Mono';
 
 export const DEFAULT_KMS_KEY = 'alias/aws/ssm';
@@ -13,14 +9,7 @@ export const DEFAULT_KMS_KEY = 'alias/aws/ssm';
 const isAwsManaged = alias => alias.startsWith('alias/aws/');
 
 const KmsKeySelect = ({ value, onChange, ...rest }) => {
-  const dispatch = useDispatch();
-  const keys = useSelector(parameterSelectors.getKmsKeys);
-  const loading = useSelector(parameterSelectors.getIsKmsKeyLoading);
-  const loaded = useSelector(parameterSelectors.getIsKmsKeyLoaded);
-
-  useEffect(() => {
-    if (!loaded) dispatch(parameterActions.fetchKmsKeys());
-  }, [dispatch, loaded]);
+  const { data: keys = [], isFetching: loading } = useKmsAliases();
 
   // The default and current keys are listed even before the aliases load.
   const aliases = [
@@ -50,7 +39,7 @@ const KmsKeySelect = ({ value, onChange, ...rest }) => {
       value={value}
       onChange={onChange}
       options={options}
-      loading={!!loading}
+      loading={loading}
       showSearch
       optionFilterProp="value"
       {...rest}

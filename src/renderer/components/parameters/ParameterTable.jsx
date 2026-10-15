@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Table, Tooltip } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { uiActions, useUiStore } from '../../state/ui';
 import useElementSize from '../../hooks/useElementSize';
 import NameCell from './NameCell';
 import ValueCell from './ValueCell';
@@ -23,9 +22,8 @@ const isArrowNavigationTarget = target =>
   );
 
 const ParameterTable = ({ parameters }) => {
-  const dispatch = useDispatch();
-  const selectedName = useSelector(uiSelectors.getSelectedName);
-  const settingsOpen = useSelector(uiSelectors.getIsSettingsOpen);
+  const selectedName = useUiStore(state => state.selectedName);
+  const settingsOpen = useUiStore(state => state.settingsOpen);
   const [revealed, setRevealed] = useState({});
   const [ref, { width, height }] = useElementSize();
   const tableRef = useRef(null);
@@ -53,11 +51,11 @@ const ParameterTable = ({ parameters }) => {
             ? Math.min(parameters.length - 1, index + 1)
             : Math.max(0, index - 1);
       }
-      dispatch(uiActions.selectParameter(parameters[next].Name));
+      uiActions.selectParameter(parameters[next].Name);
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [dispatch, parameters, selectedName, settingsOpen]);
+  }, [parameters, selectedName, settingsOpen]);
 
   const columns = useMemo(
     () => [
@@ -115,7 +113,7 @@ const ParameterTable = ({ parameters }) => {
             parameter.Name === selectedName ? styles.selected : ''
           }
           onRow={parameter => ({
-            onClick: () => dispatch(uiActions.selectParameter(parameter.Name))
+            onClick: () => uiActions.selectParameter(parameter.Name)
           })}
         />
       )}

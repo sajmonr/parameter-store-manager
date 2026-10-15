@@ -1,16 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Drawer } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  LOAD_STATES,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
-import {
-  actions as uiActions,
-  PANE_MODES,
-  selectors as uiSelectors
-} from '../../ducks/ui';
+import { useParameters } from '../../state/parameters';
+import { uiActions, useUiStore } from '../../state/ui';
+import { useSelectedParameter } from '../../state/views';
 import useEscape from '../../hooks/useEscape';
 import ParameterDetail from './ParameterDetail';
 import ParameterForm from '../form/ParameterForm';
@@ -22,24 +15,19 @@ export const PANE_WIDTH = 440;
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
 // while nothing is open.
 const DetailHost = ({ narrow }) => {
-  const dispatch = useDispatch();
-  const loadState = useSelector(parameterSelectors.getLoadState);
-  const paneMode = useSelector(uiSelectors.getPaneMode);
-  const parameter = useSelector(uiSelectors.getSelectedParameter);
-  const prefill = useSelector(uiSelectors.getNewPrefill);
+  const { loadState } = useParameters();
+  const paneMode = useUiStore(state => state.paneMode);
+  const parameter = useSelectedParameter();
+  const prefill = useUiStore(state => state.newPrefill);
 
-  const close = () => dispatch(uiActions.closePane());
+  const close = uiActions.closePane;
 
   let content = null;
-  if (
-    paneMode === PANE_MODES.detail &&
-    parameter &&
-    loadState === LOAD_STATES.ready
-  ) {
+  if (paneMode === 'detail' && parameter && loadState === 'ready') {
     content = <ParameterDetail key={parameter.Name} parameter={parameter} />;
   } else if (
-    paneMode === PANE_MODES.new &&
-    (loadState === LOAD_STATES.ready || loadState === LOAD_STATES.empty)
+    paneMode === 'new' &&
+    (loadState === 'ready' || loadState === 'empty')
   ) {
     // A new prefill (another Duplicate) starts a fresh form.
     content = <ParameterForm key={JSON.stringify(prefill)} prefill={prefill} />;

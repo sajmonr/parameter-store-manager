@@ -6,13 +6,9 @@ import {
   ExclamationCircleFilled,
   StopOutlined
 } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  actions as parameterActions,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions } from '../../ducks/ui';
+import { useParameters } from '../../state/parameters';
+import { useSettingsStore } from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
 
 const Code = props => <Typography.Text code {...props} />;
@@ -20,10 +16,9 @@ const Code = props => <Typography.Text code {...props} />;
 // Shown instead of the table when parameters could not be loaded.
 // `kind` is 'expired', 'denied' or 'error' (anything else).
 const ConnectionError = ({ kind }) => {
-  const dispatch = useDispatch();
-  const profile = useSelector(settingsSelectors.getProfile);
-  const region = useSelector(settingsSelectors.getSsmRegion);
-  const error = useSelector(parameterSelectors.getFetchError);
+  const profile = useSettingsStore(settings => settings.profile);
+  const region = useSettingsStore(settings => settings.ssmRegion);
+  const { fetchError: error, refresh } = useParameters();
   const profileName = profile || 'default';
 
   let result;
@@ -77,13 +72,8 @@ const ConnectionError = ({ kind }) => {
         {...result}
         extra={
           <Space>
-            <Button onClick={() => dispatch(uiActions.openSettings())}>
-              Switch profile
-            </Button>
-            <Button
-              type="primary"
-              onClick={() => dispatch(parameterActions.fetchAllParameters())}
-            >
+            <Button onClick={uiActions.openSettings}>Switch profile</Button>
+            <Button type="primary" onClick={refresh}>
               Retry
             </Button>
           </Space>

@@ -103,7 +103,6 @@
   "keywords": [
     "electron",
     "react",
-    "redux",
     "aws",
     "parameterstore",
     "ssm",
@@ -113,6 +112,7 @@
   "devDependencies": {
     "@ant-design/icons": "^5.6.1",
     "@eslint/js": "^9.39.0",
+    "@tanstack/react-query": "^5.104.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
@@ -139,16 +139,12 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-redux": "^9.3.0",
     "react-time-ago": "^7.4.4",
-    "redux": "^5.0.1",
-    "redux-logger": "^3.0.6",
-    "redux-thunk": "^3.1.0",
-    "reselect": "^5.3.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2",
     "vite": "^7.3.6",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "zustand": "^5.0.15"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.1144.0",

@@ -21,3 +21,11 @@ export interface Settings {
 }
 
 export type SettingKey = keyof Settings;
+
+export const DEFAULT_SETTINGS: Settings = {
+  pathDelimiter: '/',
+  ssmRegion: 'eu-west-1',
+  kmsRegion: 'eu-west-1',
+  profile: '',
+  theme: 'system'
+};

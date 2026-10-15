@@ -1,15 +1,13 @@
 import React from 'react';
 import { Button, Empty, Space, Typography } from 'antd';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions } from '../../ducks/ui';
+import { useSettingsStore } from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
 
 const EmptyAccount = () => {
-  const dispatch = useDispatch();
-  const profile = useSelector(settingsSelectors.getProfile) || 'default';
-  const region = useSelector(settingsSelectors.getSsmRegion);
+  const profile = useSettingsStore(settings => settings.profile) || 'default';
+  const region = useSettingsStore(settings => settings.ssmRegion);
 
   return (
     <div className={styles.center}>
@@ -27,16 +25,13 @@ const EmptyAccount = () => {
         }
       >
         <Space>
-          <Button
-            icon={<SettingOutlined />}
-            onClick={() => dispatch(uiActions.openSettings())}
-          >
+          <Button icon={<SettingOutlined />} onClick={uiActions.openSettings}>
             Settings
           </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => dispatch(uiActions.openNewParameter())}
+            onClick={() => uiActions.openNewParameter()}
           >
             New parameter
           </Button>

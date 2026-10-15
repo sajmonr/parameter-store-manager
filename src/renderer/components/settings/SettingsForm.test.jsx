@@ -4,20 +4,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../clients/api';
-import { actions as uiActions } from '../../ducks/ui';
-import { renderWithStore } from '../../test/render';
-import { createTestStore, makeParameter } from '../../test/testStore';
+import { uiActions } from '../../state/ui';
+import { renderWithProviders } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
+import ParameterBrowser from '../parameters/ParameterBrowser';
 import SettingsModal from './SettingsModal';
 
 vi.mock('../../clients/api', () => import('../../test/mockApi'));
 
+// The browser loads the parameters of the current profile and region.
 const setup = settings => {
-  const store = createTestStore({
+  const queryClient = createTestState({
     parameters: [makeParameter('/a/b')],
     settings
   });
-  store.dispatch(uiActions.openSettings());
-  return renderWithStore(<SettingsModal />, { store });
+  uiActions.openSettings();
+  return renderWithProviders(
+    <>
+      <ParameterBrowser />
+      <SettingsModal />
+    </>,
+    { queryClient }
+  );
 };
 
 beforeEach(() => {

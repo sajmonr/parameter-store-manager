@@ -2,27 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Flex } from 'antd';
 import { CopyOutlined, EditOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions } from '../../ducks/ui';
+import { usePathDelimiter } from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import { folderOf, leafOf } from '../../utils/paths';
 import DeleteConfirm from './DeleteConfirm';
 
 const DetailActions = ({ parameter, onEdit }) => {
-  const dispatch = useDispatch();
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
+  const delimiter = usePathDelimiter();
 
   const duplicate = () =>
-    dispatch(
-      uiActions.openNewParameter({
-        folder: folderOf(parameter.Name, delimiter),
-        name: `${leafOf(parameter.Name, delimiter)}Copy`,
-        description: parameter.Description || '',
-        type: parameter.Type,
-        kmsKey: parameter.KeyId,
-        value: parameter.Value || ''
-      })
-    );
+    uiActions.openNewParameter({
+      folder: folderOf(parameter.Name, delimiter),
+      name: `${leafOf(parameter.Name, delimiter)}Copy`,
+      description: parameter.Description || '',
+      type: parameter.Type,
+      kmsKey: parameter.KeyId,
+      value: parameter.Value || ''
+    });
 
   return (
     <Flex gap={8}>

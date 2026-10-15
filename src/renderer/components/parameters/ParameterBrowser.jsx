@@ -1,10 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import {
-  LOAD_STATES,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
-import { selectors as uiSelectors } from '../../ducks/ui';
+import { useParameters } from '../../state/parameters';
+import { useMatcher, useVisibleParameters } from '../../state/views';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
 import StatusBar from './StatusBar';
@@ -16,11 +12,11 @@ import ConnectionError from '../states/ConnectionError';
 
 const renderContent = (loadState, visible, query) => {
   switch (loadState) {
-    case LOAD_STATES.loading:
+    case 'loading':
       return <TableSkeleton />;
-    case LOAD_STATES.empty:
+    case 'empty':
       return <EmptyAccount />;
-    case LOAD_STATES.ready:
+    case 'ready':
       break;
     default:
       return <ConnectionError kind={loadState} />;
@@ -38,9 +34,9 @@ const renderContent = (loadState, visible, query) => {
 
 // The main area: breadcrumb and table, or whichever state replaces them.
 const ParameterBrowser = () => {
-  const loadState = useSelector(parameterSelectors.getLoadState);
-  const visible = useSelector(uiSelectors.getVisibleParameters);
-  const { query } = useSelector(uiSelectors.getMatcher);
+  const { loadState } = useParameters();
+  const visible = useVisibleParameters();
+  const { query } = useMatcher();
 
   return (
     <>

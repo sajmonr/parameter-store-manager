@@ -4,20 +4,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../clients/api';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
-import { renderWithStore } from '../../test/render';
-import { createTestStore, makeParameter } from '../../test/testStore';
+import { uiActions, useUiStore } from '../../state/ui';
+import { renderWithProviders } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
 import ParameterForm from './ParameterForm';
 
 vi.mock('../../clients/api', () => import('../../test/mockApi'));
 
 const setup = (prefill = null) => {
-  const store = createTestStore({
+  const queryClient = createTestState({
     parameters: [makeParameter('/dev/app/Existing')]
   });
-  store.dispatch(uiActions.setScope('/dev/app/'));
-  store.dispatch(uiActions.openNewParameter(prefill));
-  return renderWithStore(<ParameterForm prefill={prefill} />, { store });
+  uiActions.setScope('/dev/app/');
+  uiActions.openNewParameter(prefill);
+  return renderWithProviders(<ParameterForm prefill={prefill} />, {
+    queryClient
+  });
 };
 const createButton = () =>
   screen.getByRole('button', { name: 'Create parameter' });
@@ -63,28 +65,24 @@ describe('ParameterForm', () => {
 
   it('links to a parameter that already exists', async () => {
     const user = userEvent.setup();
-    const { store } = setup();
+    setup();
     await user.type(screen.getByLabelText('Parameter name'), 'Existing');
     await user.type(screen.getByRole('textbox', { name: 'Value' }), 'v');
     expect(createButton()).toBeDisabled();
 
     await user.click(screen.getByText('Open it'));
-    expect(uiSelectors.getSelectedName(store.getState())).toBe(
-      '/dev/app/Existing'
-    );
+    expect(useUiStore.getState().selectedName).toBe('/dev/app/Existing');
   });
 
   it('creates the parameter and selects it', async () => {
     const user = userEvent.setup();
-    const { store } = setup();
+    setup();
     await user.type(screen.getByLabelText('Parameter name'), 'Timeout');
     await user.type(screen.getByRole('textbox', { name: 'Value' }), '30');
     await user.click(createButton());
 
     await waitFor(() =>
-      expect(uiSelectors.getSelectedName(store.getState())).toBe(
-        '/dev/app/Timeout'
-      )
+      expect(useUiStore.getState().selectedName).toBe('/dev/app/Timeout')
     );
     expect(api.putParameter).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Flex, Typography } from 'antd';
-import { useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
+import { usePathDelimiter } from '../../state/settings';
 import { leafOf } from '../../utils/paths';
 import useEscape from '../../hooks/useEscape';
 import BreakablePath from '../common/BreakablePath';
@@ -17,7 +16,7 @@ import ParameterMeta from './ParameterMeta';
 // The selected parameter. Rendered with key={name}, so editing and the
 // revealed value reset when the selection changes.
 const ParameterDetail = ({ parameter }) => {
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
+  const delimiter = usePathDelimiter();
   const [editing, setEditing] = useState(false);
   const [revealed, setRevealed] = useState(false);
 

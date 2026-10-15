@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { Empty, Skeleton, Tree } from 'antd';
 import { FolderOpenOutlined, FolderOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  LOAD_STATES,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { useParameters } from '../../state/parameters';
+import { uiActions, useUiStore } from '../../state/ui';
+import { useMatchedFolderTree, useMatcher } from '../../state/views';
 import useElementSize from '../../hooks/useElementSize';
 import HighlightText from '../common/HighlightText';
 import styles from './FolderTree.module.css';
@@ -17,12 +14,11 @@ const folderIcon = ({ expanded, isLeaf }) =>
 // Folders of the parameters that match the search, with match counts.
 // Selecting a folder scopes the table to it; selecting it again unscopes.
 const FolderTree = () => {
-  const dispatch = useDispatch();
-  const loadState = useSelector(parameterSelectors.getLoadState);
-  const tree = useSelector(uiSelectors.getMatchedFolderTree);
-  const matcher = useSelector(uiSelectors.getMatcher);
-  const scope = useSelector(uiSelectors.getScope);
-  const expandedFolders = useSelector(uiSelectors.getExpandedFolders);
+  const { loadState } = useParameters();
+  const tree = useMatchedFolderTree();
+  const matcher = useMatcher();
+  const scope = useUiStore(state => state.scope);
+  const expandedFolders = useUiStore(state => state.expandedFolders);
   const [ref, { height }] = useElementSize();
 
   // While searching, every matching branch starts expanded. Expanding or
@@ -42,12 +38,12 @@ const FolderTree = () => {
   const onExpand = keys =>
     searching
       ? setSearchExpansion({ query: matcher.query, keys })
-      : dispatch(uiActions.setExpandedFolders(keys));
+      : uiActions.setExpandedFolders(keys);
 
   const highlight = searching && !matcher.isGlob ? matcher.query : '';
 
   let content;
-  if (loadState === LOAD_STATES.loading) {
+  if (loadState === 'loading') {
     content = (
       <Skeleton
         active
@@ -72,7 +68,7 @@ const FolderTree = () => {
         onExpand={onExpand}
         selectedKeys={[scope]}
         onSelect={(_keys, { node }) =>
-          dispatch(uiActions.setScope(node.key === scope ? '' : node.key))
+          uiActions.setScope(node.key === scope ? '' : node.key)
         }
         titleRender={node => (
           <span className={styles.title}>

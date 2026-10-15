@@ -1,20 +1,15 @@
 import React from 'react';
 import { Button, Flex, Layout, Tooltip } from 'antd';
 import { PlusOutlined, SettingOutlined, SyncOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  actions as parameterActions,
-  selectors as parameterSelectors
-} from '../../ducks/parameters';
-import { actions as uiActions } from '../../ducks/ui';
+import { useParameters } from '../../state/parameters';
+import { uiActions } from '../../state/ui';
 import ProfileChip from './ProfileChip';
 import SearchInput from './SearchInput';
 import SyncStatus from './SyncStatus';
 import styles from './AppHeader.module.css';
 
 const AppHeader = () => {
-  const dispatch = useDispatch();
-  const loading = useSelector(parameterSelectors.getIsAllParametersLoading);
+  const { loading, refresh } = useParameters();
 
   return (
     <Layout.Header className={styles.header}>
@@ -26,22 +21,22 @@ const AppHeader = () => {
           <Tooltip title="Refresh">
             <Button
               aria-label="Refresh"
-              icon={<SyncOutlined spin={!!loading} />}
-              disabled={!!loading}
-              onClick={() => dispatch(parameterActions.fetchAllParameters())}
+              icon={<SyncOutlined spin={loading} />}
+              disabled={loading}
+              onClick={refresh}
             />
           </Tooltip>
           <Tooltip title="Settings">
             <Button
               aria-label="Settings"
               icon={<SettingOutlined />}
-              onClick={() => dispatch(uiActions.openSettings())}
+              onClick={uiActions.openSettings}
             />
           </Tooltip>
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => dispatch(uiActions.openNewParameter())}
+            onClick={() => uiActions.openNewParameter()}
           >
             New parameter
           </Button>

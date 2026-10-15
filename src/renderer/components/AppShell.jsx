@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Layout } from 'antd';
-import { useDispatch } from 'react-redux';
-import { actions as parameterActions } from '../ducks/parameters';
 import useMediaQuery from '../hooks/useMediaQuery';
 import useResizableWidth from '../hooks/useResizableWidth';
 import useWindowWidth from '../hooks/useWindowWidth';
@@ -31,7 +29,6 @@ export const siderMaxWidth = (windowWidth, narrow) =>
   );
 
 const AppShell = () => {
-  const dispatch = useDispatch();
   const narrow = useMediaQuery(NARROW_QUERY);
   const siderMax = siderMaxWidth(useWindowWidth(), narrow);
   const sider = useResizableWidth({
@@ -40,10 +37,6 @@ const AppShell = () => {
     min: SIDER_MIN_WIDTH,
     max: siderMax
   });
-
-  useEffect(() => {
-    dispatch(parameterActions.fetchAllParameters());
-  }, [dispatch]);
 
   return (
     <Layout className={styles.shell}>

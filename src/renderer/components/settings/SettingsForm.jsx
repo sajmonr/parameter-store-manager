@@ -12,12 +12,13 @@ import {
   Typography
 } from 'antd';
 import { DesktopOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
 import * as api from '../../clients/api';
-import { actions as parameterActions } from '../../ducks/parameters';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions } from '../../ducks/ui';
-import { availableSettings, saveSettings } from '../../settings';
+import {
+  availableSettings,
+  saveSettings,
+  useSettingsStore
+} from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import { AWS_REGIONS } from '../../utils/awsRegions';
 import styles from './SettingsForm.module.css';
 
@@ -85,10 +86,9 @@ Group.propTypes = {
 };
 
 const SettingsForm = ({ onClose }) => {
-  const dispatch = useDispatch();
   const { notification } = App.useApp();
   const [form] = Form.useForm();
-  const saved = useSelector(settingsSelectors.getAllSettings);
+  const saved = useSettingsStore();
   const [profiles, setProfiles] = useState({ profiles: [], envProfile: null });
   const [saving, setSaving] = useState(false);
   const [initialValues] = useState(() => ({
@@ -112,25 +112,20 @@ const SettingsForm = ({ onClose }) => {
     }
   };
 
-  // Reloads whatever the changed settings affect.
+  // Parameters and KMS keys are loaded per profile and region, so a change
+  // there loads them again by itself. The open pane and the folder state
+  // don't carry over.
   const applyChanges = next => {
     if (
       next[profile] !== saved[profile] ||
       next[ssmRegion] !== saved[ssmRegion]
     ) {
-      dispatch(uiActions.closePane());
-      dispatch(uiActions.setScope(''));
-      dispatch(parameterActions.fetchAllParameters({ reset: true }));
+      uiActions.closePane();
+      uiActions.setScope('');
     } else if (next[pathDelimiter] !== saved[pathDelimiter]) {
-      dispatch(uiActions.closePane());
-      dispatch(uiActions.setScope(''));
-      dispatch(uiActions.setExpandedFolders([]));
-    }
-    if (
-      next[profile] !== saved[profile] ||
-      next[kmsRegion] !== saved[kmsRegion]
-    ) {
-      dispatch(parameterActions.fetchKmsKeys());
+      uiActions.closePane();
+      uiActions.setScope('');
+      uiActions.setExpandedFolders([]);
     }
   };
 

@@ -2,28 +2,28 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { App, Button, Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as parameterActions } from '../../ducks/parameters';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions } from '../../ducks/ui';
+import { useDeleteParameter } from '../../state/parameters';
+import { usePathDelimiter } from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import { leafOf } from '../../utils/paths';
 import useEscape from '../../hooks/useEscape';
 import Mono from '../common/Mono';
 
 // The Delete button and its confirmation. Deleting closes the pane.
 const DeleteConfirm = ({ name }) => {
-  const dispatch = useDispatch();
   const { notification } = App.useApp();
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
+  const delimiter = usePathDelimiter();
+  const deleteParameter = useDeleteParameter();
   const [open, setOpen] = useState(false);
 
   useEscape(() => setOpen(false), open);
 
   const handleDelete = () =>
-    dispatch(parameterActions.deleteParameter(name))
+    deleteParameter
+      .mutateAsync(name)
       .then(() => {
         setOpen(false);
-        dispatch(uiActions.closePane());
+        uiActions.closePane();
         notification.success({
           message: 'Parameter deleted',
           description: name

@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../clients/api';
-import { renderWithStore } from '../test/render';
-import { createTestStore, makeParameter } from '../test/testStore';
+import { renderWithProviders } from '../test/render';
+import { makeParameter } from '../test/testState';
 import AppShell, { siderMaxWidth } from './AppShell';
 
 vi.mock('../clients/api', () => import('../test/mockApi'));
@@ -20,8 +20,7 @@ const parameters = [
   makeParameter('/prd/app/Title')
 ];
 
-const renderApp = () =>
-  renderWithStore(<AppShell />, { store: createTestStore() });
+const renderApp = () => renderWithProviders(<AppShell />);
 const awsError = name => Object.assign(new Error('nope'), { name });
 const table = () => document.querySelector('.ant-table');
 

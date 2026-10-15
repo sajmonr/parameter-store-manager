@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography } from 'antd';
-import { useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { selectors as uiSelectors } from '../../ducks/ui';
+import { usePathDelimiter } from '../../state/settings';
+import { useUiStore } from '../../state/ui';
 import { folderOf, leafOf } from '../../utils/paths';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
@@ -11,8 +10,8 @@ import styles from './NameCell.module.css';
 
 // The leaf name, and below it the folder relative to the scope and the age.
 const NameCell = ({ parameter, selected }) => {
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
-  const scope = useSelector(uiSelectors.getScope);
+  const delimiter = usePathDelimiter();
+  const scope = useUiStore(state => state.scope);
   const { Name, LastModifiedDate } = parameter;
   const relativeFolder = folderOf(Name, delimiter).slice(scope.length);
 

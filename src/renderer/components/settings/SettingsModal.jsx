@@ -1,14 +1,12 @@
 import React from 'react';
 import { Modal } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { uiActions, useUiStore } from '../../state/ui';
 import useEscape from '../../hooks/useEscape';
 import SettingsForm from './SettingsForm';
 
 const SettingsModal = () => {
-  const dispatch = useDispatch();
-  const open = useSelector(uiSelectors.getIsSettingsOpen);
-  const close = () => dispatch(uiActions.closeSettings());
+  const open = useUiStore(state => state.settingsOpen);
+  const close = uiActions.closeSettings;
 
   useEscape(close, open);
 

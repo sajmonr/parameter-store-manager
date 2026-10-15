@@ -1,18 +1,16 @@
 import React from 'react';
 import { Typography } from 'antd';
-import { useSelector } from 'react-redux';
-import { selectors as parameterSelectors } from '../../ducks/parameters';
+import { useParameters } from '../../state/parameters';
 import TimeAgo from '../common/TimeAgo';
 
 const SyncStatus = () => {
-  const loading = useSelector(parameterSelectors.getIsAllParametersLoading);
-  const error = useSelector(parameterSelectors.getFetchError);
-  const hasData = useSelector(
-    state => parameterSelectors.getNames(state).length > 0
-  );
-  const lastSynced = useSelector(
-    parameterSelectors.getAllParametersLastUpdatedDate
-  );
+  const {
+    loading,
+    fetchError: error,
+    parameters,
+    syncedAt: lastSynced
+  } = useParameters();
+  const hasData = parameters.length > 0;
 
   let content = null;
   if (loading) content = hasData ? 'Syncing…' : 'Loading parameters…';

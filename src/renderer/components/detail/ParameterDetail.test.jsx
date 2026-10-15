@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../clients/api';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
-import { renderWithStore } from '../../test/render';
-import { createTestStore, makeParameter } from '../../test/testStore';
+import { uiActions, useUiStore } from '../../state/ui';
+import { renderWithProviders } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
 import DetailHost from './DetailHost';
 
 vi.mock('../../clients/api', () => import('../../test/mockApi'));
@@ -19,9 +19,9 @@ const secret = makeParameter('/dev/app/Password', {
 });
 
 const setup = () => {
-  const store = createTestStore({ parameters: [secret] });
-  store.dispatch(uiActions.selectParameter(secret.Name));
-  return renderWithStore(<DetailHost narrow={false} />, { store });
+  const queryClient = createTestState({ parameters: [secret] });
+  uiActions.selectParameter(secret.Name);
+  return renderWithProviders(<DetailHost narrow={false} />, { queryClient });
 };
 
 beforeEach(() => vi.clearAllMocks());
@@ -67,23 +67,23 @@ describe('ParameterDetail', () => {
 
   it('leaves edit mode on Esc before closing the pane', async () => {
     const user = userEvent.setup();
-    const { store } = setup();
+    setup();
     await user.click(screen.getByRole('button', { name: /Edit/ }));
 
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(
       screen.queryByRole('button', { name: 'Save' })
     ).not.toBeInTheDocument();
-    expect(uiSelectors.getPaneMode(store.getState())).toBe('detail');
+    expect(useUiStore.getState().paneMode).toBe('detail');
 
     fireEvent.keyDown(window, { key: 'Escape' });
-    expect(uiSelectors.getPaneMode(store.getState())).toBe(null);
+    expect(useUiStore.getState().paneMode).toBe(null);
   });
 
   it('deletes after confirmation and closes the pane', async () => {
     const user = userEvent.setup();
     api.deleteParameter.mockResolvedValue({ name: secret.Name });
-    const { store } = setup();
+    setup();
 
     await user.click(screen.getByRole('button', { name: /Delete/ }));
     expect(screen.getByText('Delete this parameter?')).toBeInTheDocument();
@@ -92,18 +92,16 @@ describe('ParameterDetail', () => {
       .find(button => button.closest('.ant-popconfirm'));
     await user.click(confirm);
 
-    await waitFor(() =>
-      expect(uiSelectors.getPaneMode(store.getState())).toBe(null)
-    );
+    await waitFor(() => expect(useUiStore.getState().paneMode).toBe(null));
     expect(api.deleteParameter).toHaveBeenCalledWith('/dev/app/Password');
     expect(await screen.findByText('Parameter deleted')).toBeInTheDocument();
   });
 
   it('opens a prefilled form on Duplicate', async () => {
     const user = userEvent.setup();
-    const { store } = setup();
+    setup();
     await user.click(screen.getByRole('button', { name: /Duplicate/ }));
-    expect(uiSelectors.getNewPrefill(store.getState())).toEqual({
+    expect(useUiStore.getState().newPrefill).toEqual({
       folder: '/dev/app/',
       name: 'PasswordCopy',
       description: 'Login',

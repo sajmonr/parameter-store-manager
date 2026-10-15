@@ -2,9 +2,8 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { TreeSelect } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { selectors as uiSelectors } from '../../ducks/ui';
+import { usePathDelimiter } from '../../state/settings';
+import { useAllFolderTree } from '../../state/views';
 import { foldersOf, rootFolder } from '../../utils/paths';
 import Mono from '../common/Mono';
 import styles from './FolderPicker.module.css';
@@ -15,8 +14,8 @@ const ltr = text => `‎${text}‎`;
 
 // Picks the folder of a new parameter from the existing folders.
 const FolderPicker = ({ value, onChange, ...rest }) => {
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
-  const { roots } = useSelector(uiSelectors.getAllFolderTree);
+  const delimiter = usePathDelimiter();
+  const { roots } = useAllFolderTree();
   const root = rootFolder(delimiter);
 
   const treeData = useMemo(() => {

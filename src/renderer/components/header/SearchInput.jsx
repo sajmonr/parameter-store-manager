@@ -1,20 +1,19 @@
 import React from 'react';
 import { Input, Tag, Tooltip } from 'antd';
 import { FolderOutlined, SearchOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { usePathDelimiter } from '../../state/settings';
+import { uiActions, useUiStore } from '../../state/ui';
+import { useMatcher } from '../../state/views';
 import { shortFolder } from '../../utils/paths';
 import styles from './SearchInput.module.css';
 
 // One box for plain-text and glob search. The scoped folder shows as a tag
 // inside the box; closing the tag searches all folders again.
 const SearchInput = () => {
-  const dispatch = useDispatch();
-  const query = useSelector(uiSelectors.getQuery);
-  const scope = useSelector(uiSelectors.getScope);
-  const { isGlob } = useSelector(uiSelectors.getMatcher);
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
+  const query = useUiStore(state => state.query);
+  const scope = useUiStore(state => state.scope);
+  const { isGlob } = useMatcher();
+  const delimiter = usePathDelimiter();
 
   const scopeTag = scope && (
     <Tooltip title={scope}>
@@ -25,7 +24,7 @@ const SearchInput = () => {
         className={styles.scope}
         onClose={event => {
           event.preventDefault();
-          dispatch(uiActions.setScope(''));
+          uiActions.setScope('');
         }}
       >
         {shortFolder(scope, delimiter)}
@@ -38,7 +37,7 @@ const SearchInput = () => {
       className={isGlob ? `${styles.search} ${styles.glob}` : styles.search}
       aria-label="Search parameters"
       value={query}
-      onChange={event => dispatch(uiActions.setQuery(event.target.value))}
+      onChange={event => uiActions.setQuery(event.target.value)}
       allowClear
       prefix={
         <>

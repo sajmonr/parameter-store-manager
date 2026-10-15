@@ -12,10 +12,10 @@ import {
   Typography
 } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as parameterActions } from '../../ducks/parameters';
-import { selectors as settingsSelectors } from '../../ducks/settings';
-import { actions as uiActions, selectors as uiSelectors } from '../../ducks/ui';
+import { usePutParameter } from '../../state/parameters';
+import { usePathDelimiter } from '../../state/settings';
+import { uiActions, useUiStore } from '../../state/ui';
+import { useNameSet } from '../../state/views';
 import { rootFolder } from '../../utils/paths';
 import {
   checkNewParameter,
@@ -49,13 +49,13 @@ const optional = label => (
 // Creates one parameter. `prefill` comes from Duplicate; without it the form
 // starts empty in the scoped folder.
 const ParameterForm = ({ prefill }) => {
-  const dispatch = useDispatch();
   const { notification } = App.useApp();
   const [form] = Form.useForm();
-  const delimiter = useSelector(settingsSelectors.getPathDelimiter);
-  const scope = useSelector(uiSelectors.getScope);
-  const existingNames = useSelector(uiSelectors.getNameSet);
-  const [submitting, setSubmitting] = useState(false);
+  const delimiter = usePathDelimiter();
+  const scope = useUiStore(state => state.scope);
+  const existingNames = useNameSet();
+  const putParameter = usePutParameter();
+  const submitting = putParameter.isPending;
 
   const [initialValues] = useState(() => ({
     folder: scope || rootFolder(delimiter),
@@ -86,7 +86,7 @@ const ParameterForm = ({ prefill }) => {
       <>
         This name already exists.{' '}
         <Typography.Link
-          onClick={() => dispatch(uiActions.selectParameter(check.fullPath))}
+          onClick={() => uiActions.selectParameter(check.fullPath)}
         >
           Open it
         </Typography.Link>{' '}
@@ -98,25 +98,23 @@ const ParameterForm = ({ prefill }) => {
   const submit = () => {
     if (!check.ready || submitting) return;
     const values = form.getFieldsValue();
-    setSubmitting(true);
-    dispatch(
-      parameterActions.createGenericParameter({
+    putParameter
+      .mutateAsync({
         name: check.fullPath,
         description: values.description,
         type: values.type,
         kmsKey: values.kmsKey,
-        value: values.value
+        value: values.value,
+        overwrite: false
       })
-    )
       .then(() => {
         notification.success({
           message: 'Parameter created',
           description: check.fullPath
         });
-        dispatch(uiActions.showCreatedParameter(check.fullPath));
+        uiActions.showCreatedParameter(check.fullPath);
       })
       .catch(err => {
-        setSubmitting(false);
         notification.error({
           message: 'Parameter was not created',
           description: err.message || ''
@@ -190,9 +188,7 @@ const ParameterForm = ({ prefill }) => {
           <Typography.Text type="secondary" className={styles.hint}>
             {submitShortcutLabel} to create
           </Typography.Text>
-          <Button onClick={() => dispatch(uiActions.closePane())}>
-            Cancel
-          </Button>
+          <Button onClick={uiActions.closePane}>Cancel</Button>
           <Button
             type="primary"
             htmlType="submit"
