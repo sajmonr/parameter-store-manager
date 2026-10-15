@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { IpcMainInvokeEvent } from 'electron';
+import type { IpcChannel } from '../shared/ipc';
 
 vi.mock('electron-log/main', () => ({ default: { error: vi.fn() } }));
 vi.mock('./settings', () => ({
@@ -23,8 +25,8 @@ vi.mock('./aws', () => ({
   listKmsAliases: vi.fn(async () => [])
 }));
 
-const aws = await import('./aws');
-const updates = await import('./updates');
+const aws = vi.mocked(await import('./aws'));
+const updates = vi.mocked(await import('./updates'));
 const { invokeHandler, isTrustedSender, registerIpcHandlers } =
   await import('./ipc');
 
@@ -58,7 +60,7 @@ describe('invokeHandler', () => {
     );
   });
 
-  it.each([
+  it.each<[IpcChannel, unknown[]]>([
     ['ssm:describeParameters', [42]],
     ['ssm:getParameters', [[]]],
     ['ssm:getParameters', [Array.from({ length: 11 }, (_, i) => `/p${i}`)]],
@@ -68,9 +70,10 @@ describe('invokeHandler', () => {
     ['ssm:putParameter', [{ name: '/a', type: 'String', value: 1 }]],
     ['ssm:deleteParameter', [undefined]]
   ])('rejects invalid input for %s', async (channel, args) => {
-    const response = await invokeHandler(channel, args);
-    expect(response.ok).toBe(false);
-    expect(response.error.name).toBe('InvalidRequest');
+    await expect(invokeHandler(channel, args)).resolves.toMatchObject({
+      ok: false,
+      error: { name: 'InvalidRequest' }
+    });
   });
 
   it('lists the AWS profiles', async () => {
@@ -136,13 +139,21 @@ describe('isTrustedSender', () => {
 
 describe('registerIpcHandlers', () => {
   it('refuses calls from untrusted frames', async () => {
-    const registered = {};
-    registerIpcHandlers({ handle: (ch, fn) => (registered[ch] = fn) });
+    type Listener = (event: IpcMainInvokeEvent, ...args: unknown[]) => unknown;
+    const registered: Record<string, Listener> = {};
+    registerIpcHandlers({
+      handle: (channel: string, listener: Listener) => {
+        registered[channel] = listener;
+      }
+    });
 
-    const response = await registered['ssm:deleteParameter'](
-      { senderFrame: { url: 'https://evil.example' } },
+    const event = {
+      senderFrame: { url: 'https://evil.example' }
+    } as IpcMainInvokeEvent;
+    const response = (await registered['ssm:deleteParameter']!(
+      event,
       '/a'
-    );
+    )) as { ok: boolean };
     expect(response.ok).toBe(false);
     expect(aws.deleteParameter).not.toHaveBeenCalled();
   });

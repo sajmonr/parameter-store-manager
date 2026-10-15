@@ -1,11 +1,12 @@
 import { app, Menu } from 'electron';
+import type { BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import { checkInteractively } from './updates';
 
 export default class MenuBuilder {
-  constructor(mainWindow, isDebug) {
-    this.mainWindow = mainWindow;
-    this.isDebug = isDebug;
-  }
+  constructor(
+    private readonly mainWindow: BrowserWindow,
+    private readonly isDebug: boolean
+  ) {}
 
   buildMenu() {
     if (this.isDebug) {
@@ -26,7 +27,7 @@ export default class MenuBuilder {
   // DevTools stay closed until toggled from the View menu, matching the
   // `showDevTools: false` passed to electron-debug in index.js.
   setupDevelopmentEnvironment() {
-    this.mainWindow.webContents.on('context-menu', (e, props) => {
+    this.mainWindow.webContents.on('context-menu', (_event, props) => {
       const { x, y } = props;
 
       Menu.buildFromTemplate([
@@ -36,17 +37,17 @@ export default class MenuBuilder {
             this.mainWindow.webContents.inspectElement(x, y);
           }
         }
-      ]).popup(this.mainWindow);
+      ]).popup({ window: this.mainWindow });
     });
   }
 
-  buildDarwinTemplate() {
-    const subMenuAbout = {
+  buildDarwinTemplate(): MenuItemConstructorOptions[] {
+    const subMenuAbout: MenuItemConstructorOptions = {
       label: 'Parameter Store Manager',
       submenu: [
         {
           label: 'About Parameter Store Manager',
-          selector: 'orderFrontStandardAboutPanel:'
+          role: 'about'
         },
         { type: 'separator' },
         {
@@ -61,14 +62,14 @@ export default class MenuBuilder {
         {
           label: 'Hide Parameter Store Manager',
           accelerator: 'Command+H',
-          selector: 'hide:'
+          role: 'hide'
         },
         {
           label: 'Hide Others',
           accelerator: 'Command+Shift+H',
-          selector: 'hideOtherApplications:'
+          role: 'hideOthers'
         },
-        { label: 'Show All', selector: 'unhideAllApplications:' },
+        { label: 'Show All', role: 'unhide' },
         { type: 'separator' },
         {
           label: 'Quit',
@@ -79,23 +80,23 @@ export default class MenuBuilder {
         }
       ]
     };
-    const subMenuEdit = {
+    const subMenuEdit: MenuItemConstructorOptions = {
       label: 'Edit',
       submenu: [
-        { label: 'Undo', accelerator: 'Command+Z', selector: 'undo:' },
-        { label: 'Redo', accelerator: 'Shift+Command+Z', selector: 'redo:' },
+        { label: 'Undo', accelerator: 'Command+Z', role: 'undo' },
+        { label: 'Redo', accelerator: 'Shift+Command+Z', role: 'redo' },
         { type: 'separator' },
-        { label: 'Cut', accelerator: 'Command+X', selector: 'cut:' },
-        { label: 'Copy', accelerator: 'Command+C', selector: 'copy:' },
-        { label: 'Paste', accelerator: 'Command+V', selector: 'paste:' },
+        { label: 'Cut', accelerator: 'Command+X', role: 'cut' },
+        { label: 'Copy', accelerator: 'Command+C', role: 'copy' },
+        { label: 'Paste', accelerator: 'Command+V', role: 'paste' },
         {
           label: 'Select All',
           accelerator: 'Command+A',
-          selector: 'selectAll:'
+          role: 'selectAll'
         }
       ]
     };
-    const subMenuViewDev = {
+    const subMenuViewDev: MenuItemConstructorOptions = {
       label: 'View',
       submenu: [
         {
@@ -121,7 +122,7 @@ export default class MenuBuilder {
         }
       ]
     };
-    const subMenuViewProd = {
+    const subMenuViewProd: MenuItemConstructorOptions = {
       label: 'View',
       submenu: [
         {
@@ -133,17 +134,17 @@ export default class MenuBuilder {
         }
       ]
     };
-    const subMenuWindow = {
+    const subMenuWindow: MenuItemConstructorOptions = {
       label: 'Window',
       submenu: [
         {
           label: 'Minimize',
           accelerator: 'Command+M',
-          selector: 'performMiniaturize:'
+          role: 'minimize'
         },
-        { label: 'Close', accelerator: 'Command+W', selector: 'performClose:' },
+        { label: 'Close', accelerator: 'Command+W', role: 'close' },
         { type: 'separator' },
-        { label: 'Bring All to Front', selector: 'arrangeInFront:' }
+        { label: 'Bring All to Front', role: 'front' }
       ]
     };
 
@@ -152,8 +153,8 @@ export default class MenuBuilder {
     return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow];
   }
 
-  buildDefaultTemplate() {
-    const templateDefault = [
+  buildDefaultTemplate(): MenuItemConstructorOptions[] {
+    const templateDefault: MenuItemConstructorOptions[] = [
       {
         label: '&File',
         submenu: [

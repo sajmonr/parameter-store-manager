@@ -5,6 +5,7 @@ import {
   PutParameterCommand,
   SSMClient
 } from '@aws-sdk/client-ssm';
+import type { Parameter, ParameterMetadata } from '@aws-sdk/client-ssm';
 import { KMSClient, paginateListAliases } from '@aws-sdk/client-kms';
 import {
   createCredentialChain,
@@ -12,11 +13,19 @@ import {
   fromIni,
   fromProcess
 } from '@aws-sdk/credential-providers';
+import type {
+  DeleteParameterResult,
+  DescribeParametersResult,
+  GetParametersResult,
+  KmsAlias,
+  PutParameterRequest,
+  PutParameterResult
+} from '../shared/ipc';
 import { availableSettings, getSetting } from './settings';
 
 // Order: env AWS_* -> shared ini profile (which also covers SSO, assumed
 // roles and credential_process) -> credential_process.
-export const createCredentialProvider = profile => {
+export const createCredentialProvider = (profile: string) => {
   const options = { profile: profile || undefined, ignoreCache: true };
   return createCredentialChain(
     fromEnv(),
@@ -25,27 +34,37 @@ export const createCredentialProvider = profile => {
   );
 };
 
-const clients = new Map();
+interface ClientConfig {
+  region: string;
+  credentials: ReturnType<typeof createCredentialProvider>;
+  retryMode: string;
+  maxAttempts: number;
+}
+
+const clients = new Map<string, SSMClient | KMSClient>();
 
 // One client per region and profile, so changing either in settings takes
 // effect on the next request without restarting the app.
-const getClient = (service, Client, region) => {
+const getClient = <T extends SSMClient | KMSClient>(
+  service: string,
+  Client: new (config: ClientConfig) => T,
+  region: string
+): T => {
   const profile = getSetting(availableSettings.profile);
   const key = `${service}|${region}|${profile}`;
-  if (!clients.has(key)) {
-    clients.set(
-      key,
-      new Client({
-        region,
-        credentials: createCredentialProvider(profile),
-        // Loading all parameters makes many SSM calls in a row; adaptive mode
-        // slows down client-side when AWS starts throttling instead of failing.
-        retryMode: 'adaptive',
-        maxAttempts: 8
-      })
-    );
+  let client = clients.get(key) as T | undefined;
+  if (!client) {
+    client = new Client({
+      region,
+      credentials: createCredentialProvider(profile),
+      // Loading all parameters makes many SSM calls in a row; adaptive mode
+      // slows down client-side when AWS starts throttling instead of failing.
+      retryMode: 'adaptive',
+      maxAttempts: 8
+    });
+    clients.set(key, client);
   }
-  return clients.get(key);
+  return client;
 };
 
 const ssm = () =>
@@ -54,14 +73,19 @@ const kms = () =>
   getClient('kms', KMSClient, getSetting(availableSettings.kmsRegion));
 
 // Dates are sent to the renderer as ISO strings.
-const toPlainParameter = ({ LastModifiedDate, ...rest }) => ({
+const toPlainParameter = <T extends Parameter | ParameterMetadata>({
+  LastModifiedDate,
+  ...rest
+}: T) => ({
   ...rest,
   LastModifiedDate: LastModifiedDate
     ? LastModifiedDate.toISOString()
     : undefined
 });
 
-export const describeParameters = async nextToken => {
+export const describeParameters = async (
+  nextToken?: string
+): Promise<DescribeParametersResult> => {
   const res = await ssm().send(
     new DescribeParametersCommand({ NextToken: nextToken, MaxResults: 50 })
   );
@@ -71,7 +95,9 @@ export const describeParameters = async nextToken => {
   };
 };
 
-export const getParameters = async names => {
+export const getParameters = async (
+  names: string[]
+): Promise<GetParametersResult> => {
   const res = await ssm().send(
     new GetParametersCommand({ Names: names, WithDecryption: true })
   );
@@ -88,7 +114,7 @@ export const putParameter = async ({
   description,
   kmsKey,
   overwrite
-}) => {
+}: PutParameterRequest): Promise<PutParameterResult> => {
   const res = await ssm().send(
     new PutParameterCommand({
       Name: name,
@@ -106,14 +132,16 @@ export const putParameter = async ({
   return { version: res.Version, tier: res.Tier };
 };
 
-export const deleteParameter = async name => {
+export const deleteParameter = async (
+  name: string
+): Promise<DeleteParameterResult> => {
   await ssm().send(new DeleteParameterCommand({ Name: name }));
   return { name };
 };
 
 // Only aliases that point at a key can be used to encrypt a SecureString.
-export const listKmsAliases = async () => {
-  const aliases = [];
+export const listKmsAliases = async (): Promise<KmsAlias[]> => {
+  const aliases: KmsAlias[] = [];
 
   for await (const page of paginateListAliases(
     { client: kms() },

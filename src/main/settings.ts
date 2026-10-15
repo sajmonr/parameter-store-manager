@@ -1,9 +1,11 @@
 import Store from 'electron-store';
+import type { Schema } from 'electron-store';
 import availableSettings from '../shared/availableSettings';
+import type { SettingKey, Settings } from '../shared/availableSettings';
 
 export { availableSettings };
 
-const schema = {
+const schema: Schema<Settings> = {
   [availableSettings.pathDelimiter]: {
     type: 'string',
     default: '/'
@@ -28,24 +30,29 @@ const schema = {
   }
 };
 
-const store = new Store({ schema });
+const store = new Store<Settings>({ schema });
 
-export const getSetting = key => store.get(key);
+const settingKeys: SettingKey[] = Object.values(availableSettings);
 
-export const getAllSettings = () =>
+const isSettingKey = (key: string): key is SettingKey =>
+  (settingKeys as string[]).includes(key);
+
+export const getSetting = <K extends SettingKey>(key: K): Settings[K] =>
+  store.get(key);
+
+export const getAllSettings = (): Settings =>
   Object.fromEntries(
-    Object.values(availableSettings).map(key => [key, store.get(key)])
-  );
+    settingKeys.map(key => [key, store.get(key)])
+  ) as unknown as Settings;
 
 // Only known keys with string values are accepted; the schema validates the rest.
-export const setSettings = values => {
+export const setSettings = (values: unknown): Settings => {
   if (!values || typeof values !== 'object') {
     throw new TypeError('Settings must be an object.');
   }
-  const known = Object.values(availableSettings);
-  const updates = {};
+  const updates: Partial<Record<SettingKey, string>> = {};
   Object.entries(values).forEach(([key, value]) => {
-    if (!known.includes(key)) {
+    if (!isSettingKey(key)) {
       throw new TypeError(`Unknown setting: ${key}`);
     }
     if (typeof value !== 'string') {
@@ -53,9 +60,11 @@ export const setSettings = values => {
     }
     updates[key] = value;
   });
-  store.set(updates);
+  // set(object) writes only the given keys; the schema rejects a theme
+  // outside the enum.
+  store.set(updates as Settings);
   return getAllSettings();
 };
 
-export const onSettingsChange = callback =>
+export const onSettingsChange = (callback: (settings: Settings) => void) =>
   store.onDidAnyChange(() => callback(getAllSettings()));

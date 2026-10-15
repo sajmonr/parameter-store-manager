@@ -39,7 +39,7 @@ describe('parseProfileNames', () => {
 });
 
 describe('listProfiles', () => {
-  let dir;
+  let dir: string;
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), 'aws-profiles-'));
   });

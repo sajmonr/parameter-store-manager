@@ -15,7 +15,7 @@ const ENV_KEYS = [
 
 afterEach(() => vi.unstubAllEnvs());
 
-const stubEnv = values =>
+const stubEnv = (values: Partial<Record<string, string>>) =>
   ENV_KEYS.forEach(key => vi.stubEnv(key, values[key] ?? ''));
 
 describe('createCredentialProvider', () => {

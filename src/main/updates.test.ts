@@ -36,8 +36,15 @@ path: ParameterStoreManager-0.6.1-arm64-mac.zip
 releaseDate: '2026-10-02T14:49:48.690Z'
 `;
 
-const okResponse = body => ({ ok: true, status: 200, text: async () => body });
-const fetchReturning = body => vi.fn(async () => okResponse(body));
+const okResponse = (body: string) =>
+  ({ ok: true, status: 200, text: async () => body }) as Response;
+const fetchReturning = (body: string) => vi.fn(async () => okResponse(body));
+const netFetch = vi.mocked(electron.net.fetch);
+const showMessageBox = vi.mocked(electron.dialog.showMessageBox);
+const dialogResponse = (response: number) => ({
+  response,
+  checkboxChecked: false
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -105,7 +112,7 @@ describe('parseManifestVersion', () => {
 });
 
 describe('latestManifestUrl', () => {
-  it.each([
+  it.each<[NodeJS.Platform, string, string]>([
     ['darwin', 'arm64', 'latest-mac.yml'],
     ['win32', 'x64', 'latest.yml'],
     ['linux', 'x64', 'latest-linux.yml'],
@@ -119,7 +126,7 @@ describe('latestManifestUrl', () => {
 });
 
 describe('updateInstructions', () => {
-  it.each([
+  it.each<[NodeJS.Platform, string]>([
     ['darwin', '/Applications'],
     ['win32', 'Setup .exe'],
     ['linux', '.AppImage']
@@ -129,7 +136,7 @@ describe('updateInstructions', () => {
 });
 
 describe('checkForUpdates', () => {
-  it.each([
+  it.each<[NodeJS.Platform, string]>([
     ['darwin', 'arm64'],
     ['win32', 'x64'],
     ['linux', 'x64'],
@@ -175,7 +182,10 @@ describe('checkForUpdates', () => {
   it.each([
     [
       'HTTP error',
-      vi.fn(async () => ({ ok: false, status: 404, text: async () => '' }))
+      vi.fn(
+        async () =>
+          ({ ok: false, status: 404, text: async () => '' }) as Response
+      )
     ],
     ['body without a version', fetchReturning('files: []\n')],
     ['unparseable version', fetchReturning('version: latest\n')],
@@ -193,16 +203,18 @@ describe('checkForUpdates', () => {
     ],
     [
       'unreadable body',
-      vi.fn(async () => ({
-        ok: true,
-        status: 200,
-        text: async () => Promise.reject(new Error('stream closed'))
-      }))
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            text: async () => Promise.reject(new Error('stream closed'))
+          }) as Response
+      )
     ]
   ])('resolves to an error result on %s', async (_label, fetch) => {
     const result = await checkForUpdates({ currentVersion: '0.6.1', fetch });
-    expect(result.status).toBe('error');
-    expect(typeof result.message).toBe('string');
+    expect(result).toEqual({ status: 'error', message: expect.any(String) });
     expect(log.warn).toHaveBeenCalledTimes(1);
   });
 });
@@ -215,7 +227,7 @@ describe('checkOnStartup', () => {
 
   it('fetches once and remembers the result for openReleasePage', async () => {
     process.env.CHECK_UPDATES = 'true';
-    electron.net.fetch.mockResolvedValue(okResponse('version: 9.9.9\n'));
+    netFetch.mockResolvedValue(okResponse('version: 9.9.9\n'));
 
     const first = await checkOnStartup();
     const second = await checkOnStartup();
@@ -239,7 +251,7 @@ describe('checkOnStartup', () => {
 describe('checkForRenderer', () => {
   it('hands out an available result only once per process', async () => {
     process.env.CHECK_UPDATES = 'true';
-    electron.net.fetch.mockResolvedValue(okResponse('version: 9.9.9\n'));
+    netFetch.mockResolvedValue(okResponse('version: 9.9.9\n'));
 
     // The startup check is memoised for the process, so this sees the 9.9.9
     // result fetched in the test above without another request. The first
@@ -260,8 +272,8 @@ describe('checkForRenderer', () => {
 
 describe('checkInteractively', () => {
   it('offers to open the release page when an update exists', async () => {
-    electron.net.fetch.mockResolvedValue(okResponse('version: 9.9.10\n'));
-    electron.dialog.showMessageBox.mockResolvedValue({ response: 0 });
+    netFetch.mockResolvedValue(okResponse('version: 9.9.10\n'));
+    showMessageBox.mockResolvedValue(dialogResponse(0));
 
     await checkInteractively();
 
@@ -274,8 +286,8 @@ describe('checkInteractively', () => {
   });
 
   it('does not open anything when the user picks Later', async () => {
-    electron.net.fetch.mockResolvedValue(okResponse('version: 9.9.11\n'));
-    electron.dialog.showMessageBox.mockResolvedValue({ response: 1 });
+    netFetch.mockResolvedValue(okResponse('version: 9.9.11\n'));
+    showMessageBox.mockResolvedValue(dialogResponse(1));
 
     await checkInteractively();
 
@@ -283,7 +295,7 @@ describe('checkInteractively', () => {
   });
 
   it('says so when already up to date', async () => {
-    electron.net.fetch.mockResolvedValue(okResponse('version: 0.6.1\n'));
+    netFetch.mockResolvedValue(okResponse('version: 0.6.1\n'));
 
     await checkInteractively();
 
@@ -294,7 +306,7 @@ describe('checkInteractively', () => {
   });
 
   it('explains a failed check and points at the releases page', async () => {
-    electron.net.fetch.mockRejectedValue(new Error('offline'));
+    netFetch.mockRejectedValue(new Error('offline'));
 
     await checkInteractively();
 

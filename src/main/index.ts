@@ -13,7 +13,7 @@ const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
 const devServerUrl = process.env.ELECTRON_RENDERER_URL;
 
-let mainWindow = null;
+let mainWindow: BrowserWindow | null = null;
 
 const installExtensions = async () => {
   const {
@@ -32,7 +32,7 @@ const windowBackground = () =>
   nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5';
 
 const createWindow = () => {
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     show: false,
     width: 1280,
     height: 800,
@@ -49,29 +49,31 @@ const createWindow = () => {
     }
   });
 
+  mainWindow = win;
+
   // The app never opens other windows.
-  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   if (devServerUrl) {
-    mainWindow.loadURL(devServerUrl);
+    win.loadURL(devServerUrl);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    win.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
-  mainWindow.once('ready-to-show', () => {
+  win.once('ready-to-show', () => {
     if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
+      win.minimize();
     } else {
-      mainWindow.show();
-      mainWindow.focus();
+      win.show();
+      win.focus();
     }
   });
 
-  mainWindow.on('closed', () => {
+  win.on('closed', () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow, isDebug);
+  const menuBuilder = new MenuBuilder(win, isDebug);
   menuBuilder.buildMenu();
 };
 
