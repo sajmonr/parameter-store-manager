@@ -4,7 +4,8 @@
  */
 import './userData';
 import path from 'path';
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme, session } from 'electron';
+import type { LoadExtensionOptions, Session } from 'electron';
 import MenuBuilder from './menu';
 import { registerIpcHandlers } from './ipc';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
@@ -15,10 +16,24 @@ const devServerUrl = process.env.ELECTRON_RENDERER_URL;
 
 let mainWindow: BrowserWindow | null = null;
 
+// electron-devtools-installer 4.0.0 (the latest) still calls the Session
+// extension methods Electron deprecated for session.extensions. Without
+// forceDownload these two are all it uses.
+const extensionsSession = () => {
+  const { extensions } = session.defaultSession;
+  return {
+    getAllExtensions: () => extensions.getAllExtensions(),
+    loadExtension: (path: string, options?: LoadExtensionOptions) =>
+      extensions.loadExtension(path, options)
+  } as unknown as Session;
+};
+
 const installExtensions = async () => {
   const { default: installExtension, REACT_DEVELOPER_TOOLS } =
     await import('electron-devtools-installer');
-  return installExtension(REACT_DEVELOPER_TOOLS).catch(console.log);
+  return installExtension(REACT_DEVELOPER_TOOLS, {
+    session: extensionsSession()
+  }).catch(console.log);
 };
 
 // Matches antd's layout background, so the window doesn't flash the wrong
