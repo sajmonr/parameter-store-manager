@@ -32,6 +32,9 @@ export interface GetParametersResult {
 export const PARAMETER_TYPES = ['String', 'SecureString'] as const;
 export type EditableParameterType = (typeof PARAMETER_TYPES)[number];
 
+export const isEditableType = (type: unknown): type is EditableParameterType =>
+  (PARAMETER_TYPES as readonly unknown[]).includes(type);
+
 export interface PutParameterRequest {
   name: string;
   type: EditableParameterType;

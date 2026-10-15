@@ -4,6 +4,6 @@ import { defineConfig } from 'vitest/config';
 // with a `// @vitest-environment jsdom` comment.
 export default defineConfig({
   test: {
-    setupFiles: ['./src/renderer/test/setup.js']
+    setupFiles: ['./src/renderer/test/setup.ts']
   }
 });

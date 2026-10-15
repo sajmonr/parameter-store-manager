@@ -1,8 +1,7 @@
 import log from 'electron-log/main';
 import type { IpcMain } from 'electron';
-import { PARAMETER_TYPES } from '../shared/ipc';
+import { isEditableType } from '../shared/ipc';
 import type {
-  EditableParameterType,
   IpcChannel,
   IpcErrorData,
   IpcResponse,
@@ -19,8 +18,6 @@ const MAX_NAMES_PER_REQUEST = 10;
 const isString = (value: unknown): value is string => typeof value === 'string';
 const isOptionalString = (value: unknown): value is string | undefined =>
   value === undefined || isString(value);
-const isParameterType = (value: unknown): value is EditableParameterType =>
-  (PARAMETER_TYPES as readonly unknown[]).includes(value);
 
 const invalid = (message: string) => {
   const error = new TypeError(message);
@@ -60,7 +57,7 @@ export const handlers: Handlers = {
     const { name, type, value, description, kmsKey, overwrite } = (params ||
       {}) as Record<string, unknown>;
     if (!isString(name) || !name) throw invalid('name is required.');
-    if (!isParameterType(type)) throw invalid('Unsupported type.');
+    if (!isEditableType(type)) throw invalid('Unsupported type.');
     if (!isString(value)) throw invalid('value must be a string.');
     if (!isOptionalString(description) || !isOptionalString(kmsKey)) {
       throw invalid('description and kmsKey must be strings.');
