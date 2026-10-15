@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-const subscribe = onChange => {
+const subscribe = (onChange: () => void) => {
   window.addEventListener('resize', onChange);
   return () => window.removeEventListener('resize', onChange);
 };

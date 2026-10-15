@@ -5,7 +5,7 @@ import { App } from 'antd';
 const useCopy = () => {
   const { message } = App.useApp();
   return useCallback(
-    text =>
+    (text: string) =>
       navigator.clipboard.writeText(text).then(
         () =>
           message.success({ content: 'Copied to clipboard', duration: 1.6 }),

@@ -23,9 +23,20 @@ const EXPIRED_MESSAGE =
 export const FETCH_ERROR_KINDS = {
   expired: 'expired',
   denied: 'denied'
-};
+} as const;
 
-export const classifyFetchError = error => {
+export type FetchErrorKind =
+  (typeof FETCH_ERROR_KINDS)[keyof typeof FETCH_ERROR_KINDS];
+
+interface ErrorLike {
+  name?: string;
+  code?: string;
+  message?: string;
+}
+
+export const classifyFetchError = (
+  error: ErrorLike | null | undefined
+): FetchErrorKind | null => {
   if (!error) return null;
   const { name = '', code = '', message = '' } = error;
   if (EXPIRED_NAMES.has(name) || EXPIRED_NAMES.has(code))
@@ -36,5 +47,5 @@ export const classifyFetchError = error => {
   return null;
 };
 
-export const describeError = error =>
+export const describeError = (error: ErrorLike) =>
   [error.code, error.message].filter(Boolean).join(': ');

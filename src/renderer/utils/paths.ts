@@ -2,20 +2,28 @@
 // name prefix that ends with the delimiter, such as '/app/db/'. The empty
 // string stands for "all parameters".
 
-export const leafOf = (name, delimiter) => {
+export interface FolderNode {
+  key: string;
+  label: string;
+  // The number of names anywhere beneath the folder.
+  count: number;
+  children: FolderNode[];
+}
+
+export const leafOf = (name: string, delimiter: string) => {
   const index = name.lastIndexOf(delimiter);
   return index < 0 ? name : name.slice(index + delimiter.length);
 };
 
-export const folderOf = (name, delimiter) => {
+export const folderOf = (name: string, delimiter: string) => {
   const index = name.lastIndexOf(delimiter);
   return index < 0 ? '' : name.slice(0, index + delimiter.length);
 };
 
 // Every folder that contains `name`, outermost first. A leading delimiter is
 // the root and not a folder of its own: '/a/b/c' → ['/a/', '/a/b/'].
-export const foldersOf = (name, delimiter) => {
-  const folders = [];
+export const foldersOf = (name: string, delimiter: string) => {
+  const folders: string[] = [];
   if (!delimiter) return folders;
   let index = name.indexOf(delimiter, 1);
   while (index > 0) {
@@ -26,18 +34,18 @@ export const foldersOf = (name, delimiter) => {
 };
 
 // The folder's last segment without the trailing delimiter.
-export const folderLabel = (folder, delimiter) =>
+export const folderLabel = (folder: string, delimiter: string) =>
   leafOf(folder.slice(0, -delimiter.length), delimiter);
 
 // The folder and its ancestors as { key, label }, outermost first.
-export const folderChain = (folder, delimiter) =>
+export const folderChain = (folder: string, delimiter: string) =>
   foldersOf(folder, delimiter).map(key => ({
     key,
     label: folderLabel(key, delimiter)
   }));
 
 // The last two segments of a folder for compact display: '…/AppServer/Dashboard'.
-export const shortFolder = (folder, delimiter) => {
+export const shortFolder = (folder: string, delimiter: string) => {
   const chain = folderChain(folder, delimiter);
   const tail = chain
     .slice(-2)
@@ -49,17 +57,15 @@ export const shortFolder = (folder, delimiter) => {
 
 // Where new parameters go when no folder is picked. SSM paths start with '/',
 // so that delimiter gets a root folder; other delimiters have no root prefix.
-export const rootFolder = delimiter => (delimiter === '/' ? '/' : '');
+export const rootFolder = (delimiter: string) => (delimiter === '/' ? '/' : '');
 
-// Builds the folder hierarchy of `names`. Each node is
-// { key, label, count, children } where `count` is the number of names
-// anywhere beneath the folder. Nodes are sorted by label.
-export const buildFolderTree = (names, delimiter) => {
-  const nodes = new Map();
-  const roots = [];
+// Builds the folder hierarchy of `names`. Nodes are sorted by label.
+export const buildFolderTree = (names: string[], delimiter: string) => {
+  const nodes = new Map<string, FolderNode>();
+  const roots: FolderNode[] = [];
 
   names.forEach(name => {
-    let parent = null;
+    let parent: FolderNode | null = null;
     foldersOf(name, delimiter).forEach(key => {
       let node = nodes.get(key);
       if (!node) {
@@ -77,7 +83,7 @@ export const buildFolderTree = (names, delimiter) => {
     });
   });
 
-  const sort = list => {
+  const sort = (list: FolderNode[]): FolderNode[] => {
     list.sort((a, b) => a.label.localeCompare(b.label));
     list.forEach(node => sort(node.children));
     return list;

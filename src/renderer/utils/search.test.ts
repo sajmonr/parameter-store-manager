@@ -7,7 +7,7 @@ const names = [
   '/production/compass/ConnectionStrings/AppServer',
   '/staging/other/Password'
 ];
-const filter = (query, delimiter = '/') => {
+const filter = (query: string, delimiter = '/') => {
   const matcher = createMatcher(query, delimiter);
   return names.filter(matcher.test);
 };
@@ -47,7 +47,8 @@ describe('createMatcher', () => {
 
   it('lets ** match zero or more folders', () => {
     const nested = ['/dev/Password', '/dev/a/Password', '/dev/a/b/Password'];
-    const test = query => nested.filter(createMatcher(query, '/').test);
+    const test = (query: string) =>
+      nested.filter(createMatcher(query, '/').test);
     expect(test('/dev/**/Password')).toEqual(nested);
     expect(test('**/Password')).toEqual(nested);
     expect(test('/dev/**')).toEqual(nested);

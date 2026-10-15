@@ -1,22 +1,25 @@
 import { useEffect, useRef } from 'react';
+import type { MutableRefObject } from 'react';
+
+type Handler = (event: KeyboardEvent) => void;
 
 // Esc closes one thing at a time, innermost first: a popup, then edit mode,
 // then the pane. Each open thing registers a handler; Esc runs only the most
 // recently registered one.
-const handlers = [];
+const handlers: MutableRefObject<Handler>[] = [];
 
 // An open select or tree-select closes its own dropdown on Esc.
-const isOpenDropdown = target =>
+const isOpenDropdown = (target: EventTarget | null) =>
   target instanceof Element && target.getAttribute('aria-expanded') === 'true';
 
-const onKeyDown = event => {
+const onKeyDown = (event: KeyboardEvent) => {
   if (event.key !== 'Escape' || !handlers.length) return;
   if (isOpenDropdown(event.target)) return;
   event.preventDefault();
-  handlers[handlers.length - 1].current(event);
+  handlers.at(-1)?.current(event);
 };
 
-const useEscape = (handler, enabled = true) => {
+const useEscape = (handler: Handler, enabled = true) => {
   const ref = useRef(handler);
   useEffect(() => {
     ref.current = handler;

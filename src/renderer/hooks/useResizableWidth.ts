@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-const read = key => {
+const read = (key: string) => {
   try {
     const value = Number(window.localStorage.getItem(key));
     return Number.isFinite(value) && value > 0 ? value : null;
@@ -9,7 +9,7 @@ const read = key => {
   }
 };
 
-const write = (key, value) => {
+const write = (key: string, value: number | null) => {
   try {
     if (value === null) window.localStorage.removeItem(key);
     else window.localStorage.setItem(key, String(value));
@@ -20,17 +20,26 @@ const write = (key, value) => {
 
 // A width the user can change, remembered in localStorage under
 // `storageKey`. Until the user changes it, `defaultWidth` applies, so the
-// default can still follow the window size. Returns
-// { width, setWidth(px), reset() }; setWidth clamps to [min, max].
-const useResizableWidth = ({ storageKey, defaultWidth, min, max }) => {
+// default can still follow the window size. setWidth clamps to [min, max].
+const useResizableWidth = ({
+  storageKey,
+  defaultWidth,
+  min,
+  max
+}: {
+  storageKey: string;
+  defaultWidth: number;
+  min: number;
+  max: number;
+}) => {
   const [stored, setStored] = useState(() => read(storageKey));
   const clamp = useCallback(
-    value => Math.round(Math.min(max, Math.max(min, value))),
+    (value: number) => Math.round(Math.min(max, Math.max(min, value))),
     [min, max]
   );
 
   const setWidth = useCallback(
-    value => {
+    (value: number) => {
       const next = clamp(value);
       setStored(next);
       write(storageKey, next);

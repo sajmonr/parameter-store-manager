@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { classifyFetchError } from './awsErrors';
 
-const error = (name, message = '') =>
+const error = (name: string, message = '') =>
   Object.assign(new Error(message), { name });
 
 describe('classifyFetchError', () => {
