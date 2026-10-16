@@ -114,6 +114,7 @@ $ npm run build      # builds main, preload and renderer into out/
 $ npm start          # runs the built app from out/
 $ npm test           # unit tests (Vitest)
 $ npm run lint       # ESLint
+$ npm run typecheck  # TypeScript (main/preload and renderer)
 $ npm run format     # Prettier (writes)
 $ npm run format:check  # Prettier (CI check, no writes)
 ```
@@ -122,9 +123,12 @@ Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
 
 ### Project layout
 
-- `src/main` – Electron main process. It owns the AWS SDK clients (`aws.js`), the settings store (`settings.js`) and the IPC handlers (`ipc.js`).
+The app is written in TypeScript.
+
+- `src/main` – Electron main process. It owns the AWS SDK clients (`aws.ts`), the settings store (`settings.ts`) and the IPC handlers (`ipc.ts`).
 - `src/preload` – exposes a small `window.api` to the renderer through `contextBridge`.
-- `src/renderer` – the React UI. It has no Node.js access (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`) and talks to AWS only through `window.api`.
+- `src/shared` – code and types used by both sides, including the IPC contract (`ipc.ts`): every channel's arguments and result.
+- `src/renderer` – the React UI. It has no Node.js access (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`) and talks to AWS only through `window.api`. Parameters and KMS keys are loaded with TanStack Query; settings and UI state live in small Zustand stores (`src/renderer/state`).
 
 ### AWS credentials
 
