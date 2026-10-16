@@ -2,13 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../../test/mockApi';
+import * as api from '../../test/mockServices';
 import { uiActions, useUiStore } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import DetailHost from './DetailHost';
 
-vi.mock('../../clients/api', () => import('../../test/mockApi'));
+vi.mock('../../services', () => import('../../test/mockServices'));
 
 const secret = makeParameter('/dev/app/Password', {
   Type: 'SecureString',
@@ -40,7 +40,7 @@ describe('ParameterDetail', () => {
 
   it('saves an edit as a new version', async () => {
     const user = userEvent.setup();
-    api.putParameter.mockResolvedValue({ version: 4 });
+    api.parametersService.put.mockResolvedValue({ version: 4 });
     setup();
 
     await user.click(screen.getByRole('button', { name: /Edit/ }));
@@ -50,7 +50,7 @@ describe('ParameterDetail', () => {
     await user.type(value, 'new secret');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(api.putParameter).toHaveBeenCalledWith({
+    expect(api.parametersService.put).toHaveBeenCalledWith({
       name: '/dev/app/Password',
       type: 'SecureString',
       kmsKey: 'alias/aws/ssm',
@@ -81,7 +81,7 @@ describe('ParameterDetail', () => {
 
   it('deletes after confirmation and closes the pane', async () => {
     const user = userEvent.setup();
-    api.deleteParameter.mockResolvedValue({ name: secret.Name });
+    api.parametersService.delete.mockResolvedValue({ name: secret.Name });
     setup();
 
     await user.click(screen.getByRole('button', { name: /Delete/ }));
@@ -92,7 +92,9 @@ describe('ParameterDetail', () => {
     await user.click(confirm);
 
     await waitFor(() => expect(useUiStore.getState().paneMode).toBe(null));
-    expect(api.deleteParameter).toHaveBeenCalledWith('/dev/app/Password');
+    expect(api.parametersService.delete).toHaveBeenCalledWith(
+      '/dev/app/Password'
+    );
     expect(await screen.findByText('Parameter deleted')).toBeInTheDocument();
   });
 

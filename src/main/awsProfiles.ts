@@ -1,7 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import type { AwsProfile, AwsProfilesResult } from '../shared/ipc';
+import type {
+  AwsProfile,
+  ListProfilesResponse
+} from './endpoints/aws/listProfiles/listProfiles.contract';
 
 // Profile names from the section headers of an AWS shared config file:
 // [default] and [profile name] in ~/.aws/config, [name] in ~/.aws/credentials.
@@ -29,7 +32,7 @@ const readOrEmpty = (path: string) => readFile(path, 'utf8').catch(() => '');
 // AWS SDK.
 export const listProfiles = async (
   env: NodeJS.ProcessEnv = process.env
-): Promise<AwsProfilesResult> => {
+): Promise<ListProfilesResponse> => {
   const awsDir = join(homedir(), '.aws');
   const [config, credentials] = await Promise.all([
     readOrEmpty(env.AWS_CONFIG_FILE || join(awsDir, 'config')),

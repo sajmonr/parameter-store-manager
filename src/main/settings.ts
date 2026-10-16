@@ -35,9 +35,6 @@ const store = new Store<Settings>({ schema });
 
 const settingKeys: SettingKey[] = Object.values(availableSettings);
 
-const isSettingKey = (key: string): key is SettingKey =>
-  (settingKeys as string[]).includes(key);
-
 export const getSetting = <K extends SettingKey>(key: K): Settings[K] =>
   store.get(key);
 
@@ -46,23 +43,12 @@ export const getAllSettings = (): Settings =>
     settingKeys.map(key => [key, store.get(key)])
   ) as unknown as Settings;
 
-// Only known keys with string values are accepted; the schema validates the rest.
-export const setSettings = (values: unknown): Settings => {
-  if (!values || typeof values !== 'object') {
-    throw new TypeError('Settings must be an object.');
-  }
-  const updates: Partial<Record<SettingKey, string>> = {};
-  Object.entries(values).forEach(([key, value]) => {
-    if (!isSettingKey(key)) {
-      throw new TypeError(`Unknown setting: ${key}`);
-    }
-    if (typeof value !== 'string') {
-      throw new TypeError(`Setting ${key} must be a string.`);
-    }
-    updates[key] = value;
-  });
-  // set(object) writes only the given keys; the schema rejects a theme
-  // outside the enum.
+// The settings.set endpoint validates the values.
+export const setSettings = (values: Partial<Settings>): Settings => {
+  const updates = Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== undefined)
+  ) as Partial<Settings>;
+  // set(object) writes only the given keys.
   store.set(updates as Settings);
   return getAllSettings();
 };

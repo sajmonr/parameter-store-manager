@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
-import * as mockApi from '../test/mockApi';
+import * as api from '../test/mockServices';
 import { feedback } from '../feedback';
 import { createWrapper } from '../test/render';
 import { createTestState, makeParameter } from '../test/testState';
@@ -15,11 +15,9 @@ import { useSettingsStore } from './settings';
 import { uiActions } from './ui';
 import { useSelectedParameter } from './views';
 
-vi.mock('../clients/api', () => import('../test/mockApi'));
+vi.mock('../services', () => import('../test/mockServices'));
 
-const api = vi.mocked(mockApi);
-
-type Page = Awaited<ReturnType<typeof mockApi.describeParameters>>;
+type Page = Awaited<ReturnType<typeof api.parametersService.describe>>;
 
 const awsError = (name: string, message = 'failed') =>
   Object.assign(new Error(message), { name });
@@ -34,7 +32,7 @@ const pending = <T = Page,>() => {
   return { promise, resolve, reject };
 };
 
-type Values = Awaited<ReturnType<typeof mockApi.getParameters>>;
+type Values = Awaited<ReturnType<typeof api.parametersService.getValues>>;
 
 const renderParameters = (queryClient: QueryClient) =>
   renderHook(
@@ -54,7 +52,7 @@ const notifyError = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  api.getParameters.mockResolvedValue({
+  api.parametersService.getValues.mockResolvedValue({
     parameters: [],
     invalidParameters: []
   });
@@ -70,7 +68,7 @@ const watchNotifications = () => {
 
 describe('useParameters', () => {
   it('starts in the loading state and ends empty for an empty account', async () => {
-    api.describeParameters.mockResolvedValue({ parameters: [] });
+    api.parametersService.describe.mockResolvedValue({ parameters: [] });
     const { result } = renderParameters(createTestState());
     expect(result.current.loadState).toBe('loading');
 
@@ -78,13 +76,13 @@ describe('useParameters', () => {
   });
 
   it('loads every page and the values', async () => {
-    api.describeParameters
+    api.parametersService.describe
       .mockResolvedValueOnce({
         parameters: [{ Name: '/b', Type: 'String' }],
         nextToken: 'next'
       })
       .mockResolvedValueOnce({ parameters: [{ Name: '/a', Type: 'String' }] });
-    api.getParameters.mockImplementation(async batch => ({
+    api.parametersService.getValues.mockImplementation(async batch => ({
       parameters: batch.map(name => makeParameter(name)),
       invalidParameters: []
     }));
@@ -103,7 +101,7 @@ describe('useParameters', () => {
       })
     );
     const page = pending();
-    api.describeParameters.mockReturnValue(page.promise);
+    api.parametersService.describe.mockReturnValue(page.promise);
 
     act(() => {
       void result.current.refresh();
@@ -117,7 +115,7 @@ describe('useParameters', () => {
   });
 
   it('starts over when the profile changes', () => {
-    api.describeParameters.mockReturnValue(new Promise(() => {}));
+    api.parametersService.describe.mockReturnValue(new Promise(() => {}));
     const { result } = renderParameters(
       createTestState({ parameters: [makeParameter('/a')] })
     );
@@ -133,11 +131,15 @@ describe('useParameters', () => {
     );
     watchNotifications();
 
-    api.describeParameters.mockRejectedValue(awsError('ExpiredTokenException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('ExpiredTokenException')
+    );
     await act(() => result.current.refresh());
     await waitFor(() => expect(result.current.loadState).toBe('expired'));
 
-    api.describeParameters.mockRejectedValue(awsError('AccessDeniedException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('AccessDeniedException')
+    );
     await act(() => result.current.refresh());
     await waitFor(() => expect(result.current.loadState).toBe('denied'));
 
@@ -150,7 +152,9 @@ describe('useParameters', () => {
     );
     watchNotifications();
 
-    api.describeParameters.mockRejectedValue(awsError('ThrottlingException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('ThrottlingException')
+    );
     await act(() => result.current.refresh());
 
     expect(notifyError).toHaveBeenCalled();
@@ -163,7 +167,9 @@ describe('useParameters', () => {
   });
 
   it('shows a generic error screen when nothing is loaded', async () => {
-    api.describeParameters.mockRejectedValue(awsError('ThrottlingException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('ThrottlingException')
+    );
     const { result } = renderParameters(createTestState());
     await waitFor(() => expect(result.current.loadState).toBe('error'));
   });
@@ -173,10 +179,10 @@ describe('useParameters', () => {
       createTestState({ parameters: [makeParameter('/a')] })
     );
     const oldPage = pending();
-    api.describeParameters
+    api.parametersService.describe
       .mockReturnValueOnce(oldPage.promise)
       .mockResolvedValueOnce({ parameters: [makeParameter('/new')] });
-    api.getParameters.mockImplementation(async batch => ({
+    api.parametersService.getValues.mockImplementation(async batch => ({
       parameters: batch.map(name => makeParameter(name)),
       invalidParameters: []
     }));
@@ -192,7 +198,7 @@ describe('useParameters', () => {
       oldPage.resolve({ parameters: [makeParameter('/old')] })
     );
     expect(names(result)).toEqual(['/new']);
-    expect(api.getParameters).not.toHaveBeenCalledWith(['/old']);
+    expect(api.parametersService.getValues).not.toHaveBeenCalledWith(['/old']);
   });
 
   it('keeps deletions and creations made while a refresh runs', async () => {
@@ -201,10 +207,10 @@ describe('useParameters', () => {
         parameters: [makeParameter('/a'), makeParameter('/b')]
       })
     );
-    api.deleteParameter.mockResolvedValue({ name: '/a' });
-    api.putParameter.mockResolvedValue({ version: 1 });
+    api.parametersService.delete.mockResolvedValue({ name: '/a' });
+    api.parametersService.put.mockResolvedValue({ version: 1 });
     const page = pending();
-    api.describeParameters.mockReturnValue(page.promise);
+    api.parametersService.describe.mockReturnValue(page.promise);
 
     act(() => {
       void result.current.refresh();
@@ -233,7 +239,7 @@ describe('useParameters', () => {
     act(() => uiActions.selectParameter('/a'));
     expect(result.current.selected?.Name).toBe('/a');
 
-    api.describeParameters.mockResolvedValue({
+    api.parametersService.describe.mockResolvedValue({
       parameters: [makeParameter('/b')]
     });
     await act(() => result.current.refresh());
@@ -246,7 +252,7 @@ describe('useParameters', () => {
     const { result } = renderParameters(
       createTestState({ parameters: [makeParameter('/a')] })
     );
-    api.putParameter.mockResolvedValue({ version: 2 });
+    api.parametersService.put.mockResolvedValue({ version: 2 });
 
     await act(() =>
       result.current.put.mutateAsync({
@@ -265,7 +271,7 @@ describe('useParameters', () => {
   });
 
   it('keeps a parameter named like an Object property', async () => {
-    api.describeParameters.mockResolvedValue({
+    api.parametersService.describe.mockResolvedValue({
       parameters: ['__proto__', 'constructor', 'toString'].map(name =>
         makeParameter(name)
       )
@@ -285,7 +291,7 @@ describe('useParameters', () => {
     act(() => uiActions.selectParameter('constructor'));
     expect(result.current.selected?.Name).toBe('constructor');
 
-    api.describeParameters.mockResolvedValue({
+    api.parametersService.describe.mockResolvedValue({
       parameters: [makeParameter('/b')]
     });
     await act(() => result.current.refresh());
@@ -301,8 +307,8 @@ describe('useParameters', () => {
       })
     );
     const values = pending<Values>();
-    api.getParameters.mockReturnValue(values.promise);
-    api.describeParameters.mockResolvedValue({
+    api.parametersService.getValues.mockReturnValue(values.promise);
+    api.parametersService.describe.mockResolvedValue({
       parameters: [{ Name: '/a', Type: 'String', Version: 2 }]
     });
 
@@ -326,8 +332,8 @@ describe('useParameters', () => {
 
   it('keeps the error when values of earlier pages arrive after a page fails', async () => {
     const values = pending<Values>();
-    api.getParameters.mockReturnValue(values.promise);
-    api.describeParameters
+    api.parametersService.getValues.mockReturnValue(values.promise);
+    api.parametersService.describe
       .mockResolvedValueOnce({
         parameters: [makeParameter('/a')],
         nextToken: 'next'
@@ -336,7 +342,7 @@ describe('useParameters', () => {
     const { result } = renderParameters(createTestState());
 
     await waitFor(() =>
-      expect(api.describeParameters).toHaveBeenCalledTimes(2)
+      expect(api.parametersService.describe).toHaveBeenCalledTimes(2)
     );
     values.resolve({
       parameters: [makeParameter('/a')],
@@ -354,19 +360,21 @@ describe('useParameters', () => {
     });
     const { result } = renderParameters(queryClient);
     const deletion = pending<{ name: string }>();
-    api.deleteParameter.mockReturnValue(deletion.promise);
+    api.parametersService.delete.mockReturnValue(deletion.promise);
     const otherProfile = pending();
-    api.describeParameters.mockReturnValue(otherProfile.promise);
+    api.parametersService.describe.mockReturnValue(otherProfile.promise);
 
     // Delete in the default profile, then switch before AWS answers.
     let removed!: Promise<unknown>;
     await act(async () => {
       removed = result.current.remove.mutateAsync('/shared');
     });
-    await waitFor(() => expect(api.deleteParameter).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(api.parametersService.delete).toHaveBeenCalled()
+    );
     act(() => useSettingsStore.setState({ profile: 'other' }));
     await waitFor(() =>
-      expect(api.describeParameters).toHaveBeenCalledTimes(1)
+      expect(api.parametersService.describe).toHaveBeenCalledTimes(1)
     );
     await act(async () => {
       deletion.resolve({ name: '/shared' });

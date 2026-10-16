@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../../test/mockApi';
+import * as api from '../../test/mockServices';
 import type { Settings } from '../../../shared/availableSettings';
 import { uiActions } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
@@ -10,7 +10,7 @@ import { createTestState, makeParameter } from '../../test/testState';
 import ParameterBrowser from '../parameters/ParameterBrowser';
 import SettingsModal from './SettingsModal';
 
-vi.mock('../../clients/api', () => import('../../test/mockApi'));
+vi.mock('../../services', () => import('../../test/mockServices'));
 
 // The browser loads the parameters of the current profile and region.
 const setup = (settings: Partial<Settings>) => {
@@ -30,14 +30,14 @@ const setup = (settings: Partial<Settings>) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  api.listProfiles.mockResolvedValue({
+  api.profilesService.list.mockResolvedValue({
     profiles: [
       { name: 'default', source: 'config' },
       { name: 'dev', source: 'credentials' }
     ],
     envProfile: null
   });
-  api.describeParameters.mockReturnValue(new Promise(() => {}));
+  api.parametersService.describe.mockReturnValue(new Promise(() => {}));
 });
 
 describe('SettingsForm', () => {
@@ -50,8 +50,8 @@ describe('SettingsForm', () => {
     ).toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(api.setSettings).toHaveBeenCalled());
-    expect(api.setSettings).toHaveBeenCalledWith({
+    await waitFor(() => expect(api.settingsService.set).toHaveBeenCalled());
+    expect(api.settingsService.set).toHaveBeenCalledWith({
       profile: '',
       ssmRegion: 'us-east-1',
       kmsRegion: 'us-east-1',
@@ -60,7 +60,7 @@ describe('SettingsForm', () => {
     });
     expect(await screen.findByText('Settings saved')).toBeInTheDocument();
     // Nothing that affects loading changed, so nothing reloads.
-    expect(api.describeParameters).not.toHaveBeenCalled();
+    expect(api.parametersService.describe).not.toHaveBeenCalled();
   });
 
   it('keeps a different KMS region when the box is unchecked', async () => {
@@ -72,7 +72,7 @@ describe('SettingsForm', () => {
     ).not.toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
-      expect(api.setSettings).toHaveBeenCalledWith(
+      expect(api.settingsService.set).toHaveBeenCalledWith(
         expect.objectContaining({ kmsRegion: 'eu-west-1' })
       )
     );
@@ -92,16 +92,18 @@ describe('SettingsForm', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
-      expect(api.setSettings).toHaveBeenCalledWith(
+      expect(api.settingsService.set).toHaveBeenCalledWith(
         expect.objectContaining({ profile: 'dev' })
       )
     );
-    await waitFor(() => expect(api.describeParameters).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(api.parametersService.describe).toHaveBeenCalled()
+    );
   });
 
   it('lists the named default profile apart from AWS_PROFILE', async () => {
     const user = userEvent.setup();
-    api.listProfiles.mockResolvedValue({
+    api.profilesService.list.mockResolvedValue({
       profiles: [
         { name: 'default', source: 'config' },
         { name: 'dev', source: 'credentials' }
@@ -119,7 +121,7 @@ describe('SettingsForm', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
-      expect(api.setSettings).toHaveBeenCalledWith(
+      expect(api.settingsService.set).toHaveBeenCalledWith(
         expect.objectContaining({ profile: 'default' })
       )
     );

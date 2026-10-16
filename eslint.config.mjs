@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import { createNodeResolver, importX } from 'eslint-plugin-import-x';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import prettier from 'eslint-config-prettier';
@@ -43,6 +44,56 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       // TypeScript checks props.
       'react/prop-types': 'off'
+    }
+  },
+  // Contracts in src/main are bundled into the renderer too, so the renderer
+  // may import only those from main, and contracts may import only what is
+  // safe in the renderer: zod, src/shared and other contracts. Type imports
+  // are erased, so they're allowed.
+  // Checked on the resolved file, so any spelling of a path into src/main
+  // (such as a folder import of '../main') is caught.
+  {
+    files: ['src/renderer/**'],
+    plugins: { 'import-x': importX },
+    settings: {
+      'import-x/resolver-next': [
+        createNodeResolver({ extensions: ['.ts', '.tsx', '.js', '.json'] })
+      ]
+    },
+    rules: {
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './src/renderer',
+              // A glob, so that `except` can be one too.
+              from: './src/main/**/*',
+              except: ['**/*.contract.ts'],
+              message:
+                'The renderer may import only *.contract files from src/main.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    files: ['src/main/**/*.contract.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!zod$|.*\\.contract$|(\\.\\./)+shared/)',
+              allowTypeImports: true,
+              message:
+                'Contracts are bundled into the renderer: import only zod, src/shared and other contracts.'
+            }
+          ]
+        }
+      ]
     }
   },
   {

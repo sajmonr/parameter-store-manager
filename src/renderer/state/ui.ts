@@ -1,6 +1,6 @@
 // UI state shared by the header, folder tree, table and detail pane.
 import { create } from 'zustand';
-import type { EditableParameterType } from '../../shared/ipc';
+import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { folderOf, foldersOf } from '../utils/paths';
 import { getPathDelimiter } from './settings';
 

@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { App, Button, Flex, Form, Input, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { isEditableType } from '../../../shared/ipc';
+import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { usePutParameter } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';

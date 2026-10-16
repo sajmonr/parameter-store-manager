@@ -5,7 +5,7 @@ import availableSettings, {
   DEFAULT_SETTINGS
 } from '../../shared/availableSettings';
 import type { Settings } from '../../shared/availableSettings';
-import * as api from '../clients/api';
+import { settingsService } from '../services';
 
 export { availableSettings };
 
@@ -15,12 +15,12 @@ const replace = (settings: Settings) =>
   useSettingsStore.setState(settings, true);
 
 export const loadSettings = async () => {
-  replace(await api.getAllSettings());
-  api.onSettingsChange(replace);
+  replace(await settingsService.getAll());
+  settingsService.onChange(replace);
 };
 
 export const saveSettings = async (values: Partial<Settings>) =>
-  replace(await api.setSettings(values));
+  replace(await settingsService.set(values));
 
 export const getSettings = () => useSettingsStore.getState();
 
