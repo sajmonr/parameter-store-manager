@@ -24,13 +24,17 @@ type Page = Awaited<ReturnType<typeof mockApi.describeParameters>>;
 const awsError = (name: string, message = 'failed') =>
   Object.assign(new Error(message), { name });
 
-const pending = () => {
-  let resolve!: (page: Page) => void;
-  const promise = new Promise<Page>(r => {
-    resolve = r;
+const pending = <T = Page,>() => {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 };
+
+type Values = Awaited<ReturnType<typeof mockApi.getParameters>>;
 
 const renderParameters = (queryClient: QueryClient) =>
   renderHook(
@@ -88,7 +92,7 @@ describe('useParameters', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(names(result)).toEqual(['/a', '/b']);
-    expect(result.current.byName['/a']?.Value).toBe('value of /a');
+    expect(result.current.byName.get('/a')?.Value).toBe('value of /a');
     expect(result.current.syncedAt).toBeInstanceOf(Date);
   });
 
@@ -235,7 +239,7 @@ describe('useParameters', () => {
     await act(() => result.current.refresh());
 
     await waitFor(() => expect(result.current.selected).toBe(null));
-    expect(result.current.byName).not.toHaveProperty('/a');
+    expect(result.current.byName.has('/a')).toBe(false);
   });
 
   it('shows a saved parameter with its new version', async () => {
@@ -253,10 +257,125 @@ describe('useParameters', () => {
       })
     );
     await waitFor(() =>
-      expect(result.current.byName['/a']).toMatchObject({
+      expect(result.current.byName.get('/a')).toMatchObject({
         Value: 'new',
         Version: 2
       })
     );
+  });
+
+  it('keeps a parameter named like an Object property', async () => {
+    api.describeParameters.mockResolvedValue({
+      parameters: ['__proto__', 'constructor', 'toString'].map(name =>
+        makeParameter(name)
+      )
+    });
+    const { result } = renderParameters(createTestState());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(names(result)).toEqual(['__proto__', 'constructor', 'toString']);
+  });
+
+  it('forgets an open parameter named like an Object property', async () => {
+    const { result } = renderParameters(
+      createTestState({
+        parameters: [makeParameter('constructor'), makeParameter('/b')]
+      })
+    );
+    act(() => uiActions.selectParameter('constructor'));
+    expect(result.current.selected?.Name).toBe('constructor');
+
+    api.describeParameters.mockResolvedValue({
+      parameters: [makeParameter('/b')]
+    });
+    await act(() => result.current.refresh());
+
+    await waitFor(() => expect(names(result)).toEqual(['/b']));
+    expect(result.current.selected).toBe(null);
+  });
+
+  it('drops metadata that AWS no longer returns, keeping the value until the new one loads', async () => {
+    const { result } = renderParameters(
+      createTestState({
+        parameters: [makeParameter('/a', { Description: 'old' })]
+      })
+    );
+    const values = pending<Values>();
+    api.getParameters.mockReturnValue(values.promise);
+    api.describeParameters.mockResolvedValue({
+      parameters: [{ Name: '/a', Type: 'String', Version: 2 }]
+    });
+
+    act(() => {
+      void result.current.refresh();
+    });
+    await waitFor(() =>
+      expect(result.current.byName.get('/a')?.Version).toBe(2)
+    );
+    expect(result.current.byName.get('/a')?.Description).toBeUndefined();
+    expect(result.current.byName.get('/a')?.Value).toBe('value of /a');
+
+    values.resolve({
+      parameters: [makeParameter('/a', { Value: 'new', Version: 2 })],
+      invalidParameters: []
+    });
+    await waitFor(() =>
+      expect(result.current.byName.get('/a')?.Value).toBe('new')
+    );
+  });
+
+  it('keeps the error when values of earlier pages arrive after a page fails', async () => {
+    const values = pending<Values>();
+    api.getParameters.mockReturnValue(values.promise);
+    api.describeParameters
+      .mockResolvedValueOnce({
+        parameters: [makeParameter('/a')],
+        nextToken: 'next'
+      })
+      .mockRejectedValueOnce(awsError('ExpiredTokenException'));
+    const { result } = renderParameters(createTestState());
+
+    await waitFor(() =>
+      expect(api.describeParameters).toHaveBeenCalledTimes(2)
+    );
+    values.resolve({
+      parameters: [makeParameter('/a')],
+      invalidParameters: []
+    });
+
+    await waitFor(() => expect(result.current.loadState).toBe('expired'));
+    await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+    expect(result.current.loadState).toBe('expired');
+  });
+
+  it('applies a deletion only to the profile it was made in', async () => {
+    const queryClient = createTestState({
+      parameters: [makeParameter('/shared')]
+    });
+    const { result } = renderParameters(queryClient);
+    const deletion = pending<{ name: string }>();
+    api.deleteParameter.mockReturnValue(deletion.promise);
+    const otherProfile = pending();
+    api.describeParameters.mockReturnValue(otherProfile.promise);
+
+    // Delete in the default profile, then switch before AWS answers.
+    let removed!: Promise<unknown>;
+    await act(async () => {
+      removed = result.current.remove.mutateAsync('/shared');
+    });
+    await waitFor(() => expect(api.deleteParameter).toHaveBeenCalled());
+    act(() => useSettingsStore.setState({ profile: 'other' }));
+    await waitFor(() =>
+      expect(api.describeParameters).toHaveBeenCalledTimes(1)
+    );
+    await act(async () => {
+      deletion.resolve({ name: '/shared' });
+      await removed;
+    });
+
+    // The other profile has its own /shared.
+    otherProfile.resolve({ parameters: [makeParameter('/shared')] });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(names(result)).toEqual(['/shared']);
   });
 });

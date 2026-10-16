@@ -20,17 +20,20 @@ export type ParameterEntry = Omit<
 > & { Name: string };
 
 export interface ParameterList {
-  byName: Record<string, ParameterEntry>;
+  // A Map, not an object: a parameter may be named `__proto__` or `toString`.
+  byName: ReadonlyMap<string, ParameterEntry>;
   // When the last load finished; null until the first one does.
   syncedAt: Date | null;
 }
 
-const EMPTY_LIST: ParameterList = { byName: {}, syncedAt: null };
+const EMPTY_LIST: ParameterList = { byName: new Map(), syncedAt: null };
 
 export const parametersKey = (profile: string, region: string) =>
   ['parameters', profile, region] as const;
 
 type ParametersKey = ReturnType<typeof parametersKey>;
+
+const keyId = (key: ParametersKey) => JSON.stringify(key);
 
 const currentKey = () => {
   const { profile, ssmRegion } = getSettings();
@@ -52,22 +55,45 @@ const chunk = <T>(items: T[], size: number) => {
 // load for an old profile or region can't overwrite a newer one.
 let latestLoad = 0;
 
-// Names created or deleted in the app while a load runs. The loaded list is
-// older than these changes, so they are applied on top of it.
-let changesDuringLoad = {
-  created: new Set<string>(),
-  deleted: new Set<string>()
+// Names created or deleted in the app while a load runs, per profile and
+// region. The loaded list is older than these changes, so they are applied on
+// top of it.
+interface Changes {
+  created: Set<string>;
+  deleted: Set<string>;
+}
+const changesDuringLoad = new Map<string, Changes>();
+
+const recordChange = (
+  key: ParametersKey,
+  name: string,
+  change: 'created' | 'deleted'
+) => {
+  const changes = changesDuringLoad.get(keyId(key));
+  if (!changes) return;
+  changes[change].add(name);
+  changes[change === 'created' ? 'deleted' : 'created'].delete(name);
 };
+
+// What GetParameters adds to the metadata.
+const valueFields = ({ Value, Selector, SourceResult }: ParameterEntry) => ({
+  Value,
+  Selector,
+  SourceResult
+});
 
 const withMetadata = (
   list: ParameterList,
-  parameters: ParameterMetadata[]
+  parameters: ParameterMetadata[],
+  deleted: Set<string>
 ): ParameterList => {
-  const byName = { ...list.byName };
+  const byName = new Map(list.byName);
   parameters.forEach(({ Name, ...rest }) => {
-    if (!Name || changesDuringLoad.deleted.has(Name)) return;
-    // A refresh keeps the loaded value until the new one arrives.
-    byName[Name] = { ...byName[Name], ...rest, Name };
+    if (!Name || deleted.has(Name)) return;
+    // The new metadata replaces the old, so fields AWS no longer returns go
+    // away. A refresh keeps the loaded value until the new one arrives.
+    const previous = byName.get(Name);
+    byName.set(Name, { ...(previous && valueFields(previous)), ...rest, Name });
   });
   return { ...list, byName };
 };
@@ -76,10 +102,10 @@ const withValues = (
   list: ParameterList,
   parameters: Parameter[]
 ): ParameterList => {
-  const byName = { ...list.byName };
+  const byName = new Map(list.byName);
   parameters.forEach(({ Name, ...rest }) => {
-    const entry = Name && byName[Name];
-    if (entry) byName[entry.Name] = { ...entry, ...rest };
+    const entry = Name ? byName.get(Name) : undefined;
+    if (entry) byName.set(entry.Name, { ...entry, ...rest });
   });
   return { ...list, byName };
 };
@@ -116,7 +142,8 @@ const loadParameters = async ({
 }: QueryFunctionContext<ParametersKey>): Promise<ParameterList> => {
   latestLoad += 1;
   const load = latestLoad;
-  changesDuringLoad = { created: new Set(), deleted: new Set() };
+  const changes: Changes = { created: new Set(), deleted: new Set() };
+  changesDuringLoad.set(keyId(queryKey), changes);
   const isCurrent = () => load === latestLoad && !signal.aborted;
   const cached = () =>
     client.getQueryData<ParameterList>(queryKey) ?? EMPTY_LIST;
@@ -140,12 +167,16 @@ const loadParameters = async ({
 
       const names = page.parameters.flatMap(p => (p.Name ? [p.Name] : []));
       names.forEach(name => seen.add(name));
-      update(list => withMetadata(list, page.parameters));
+      update(list => withMetadata(list, page.parameters, changes.deleted));
       valueLoads.push(loadValues(names, update));
 
       ({ nextToken } = page);
     } while (nextToken);
   } catch (error) {
+    // Value batches of earlier pages may still be running. Writing to the
+    // cache marks the query successful and would clear this error, so they
+    // finish first.
+    await Promise.all(valueLoads);
     if (isCurrent()) notifyLoadError(error);
     throw error;
   }
@@ -155,9 +186,9 @@ const loadParameters = async ({
 
   // Drops parameters deleted outside the app since the last load, but keeps
   // the ones created in the app while this load ran.
-  const { created, deleted } = changesDuringLoad;
-  const byName = Object.fromEntries(
-    Object.entries(cached().byName).filter(
+  const { created, deleted } = changes;
+  const byName = new Map(
+    [...cached().byName].filter(
       ([name]) => (seen.has(name) || created.has(name)) && !deleted.has(name)
     )
   );
@@ -169,9 +200,7 @@ const sortedCache = new WeakMap<ParameterList['byName'], ParameterEntry[]>();
 const sortedParameters = (byName: ParameterList['byName']) => {
   let sorted = sortedCache.get(byName);
   if (!sorted) {
-    sorted = Object.keys(byName)
-      .sort()
-      .map(name => byName[name]!);
+    sorted = [...byName.keys()].sort().map(name => byName.get(name)!);
     sortedCache.set(byName, sorted);
   }
   return sorted;
@@ -238,27 +267,25 @@ const withPut = (
   list: ParameterList,
   { name, type, value, description, kmsKey }: PutParameterRequest,
   version: number | undefined
-): ParameterList => ({
-  ...list,
-  byName: {
-    ...list.byName,
-    [name]: {
-      ...list.byName[name],
-      Name: name,
-      Type: type,
-      Value: value,
-      Description: description,
-      KeyId: type === 'SecureString' ? kmsKey : undefined,
-      LastModifiedDate: new Date(),
-      LastModifiedUser: 'Parameter Store Manager',
-      Version: version || 1
-    }
-  }
-});
+): ParameterList => {
+  const byName = new Map(list.byName);
+  byName.set(name, {
+    ...byName.get(name),
+    Name: name,
+    Type: type,
+    Value: value,
+    Description: description,
+    KeyId: type === 'SecureString' ? kmsKey : undefined,
+    LastModifiedDate: new Date(),
+    LastModifiedUser: 'Parameter Store Manager',
+    Version: version || 1
+  });
+  return { ...list, byName };
+};
 
 const without = (list: ParameterList, name: string): ParameterList => {
-  const byName = { ...list.byName };
-  delete byName[name];
+  const byName = new Map(list.byName);
+  byName.delete(name);
   return { ...list, byName };
 };
 
@@ -269,8 +296,7 @@ export const usePutParameter = () => {
     mutationFn: async (request: PutParameterRequest) => {
       const key = currentKey();
       const result = await api.putParameter(request);
-      changesDuringLoad.created.add(request.name);
-      changesDuringLoad.deleted.delete(request.name);
+      recordChange(key, request.name, 'created');
       client.setQueryData<ParameterList>(
         key,
         list => list && withPut(list, request, result.version)
@@ -286,8 +312,7 @@ export const useDeleteParameter = () => {
     mutationFn: async (name: string) => {
       const key = currentKey();
       const result = await api.deleteParameter(name);
-      changesDuringLoad.deleted.add(name);
-      changesDuringLoad.created.delete(name);
+      recordChange(key, name, 'deleted');
       client.setQueryData<ParameterList>(
         key,
         list => list && without(list, name)

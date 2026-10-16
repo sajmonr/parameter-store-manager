@@ -63,12 +63,12 @@ export const useAllFolderTree = () => {
 
 export const useNameSet = () => {
   const { byName } = useParameters();
-  return useMemo(() => new Set(Object.keys(byName)), [byName]);
+  return useMemo(() => new Set(byName.keys()), [byName]);
 };
 
 // The selected parameter with its value, or null if it no longer exists.
 export const useSelectedParameter = () => {
   const name = useUiStore(state => state.selectedName);
   const { byName } = useParameters();
-  return (name && byName[name]) || null;
+  return (name && byName.get(name)) || null;
 };

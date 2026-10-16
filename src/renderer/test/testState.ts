@@ -43,7 +43,7 @@ export const createTestState = ({
     queryClient.setQueryData<ParameterList>(
       parametersKey(fullSettings.profile, fullSettings.ssmRegion),
       {
-        byName: Object.fromEntries(parameters.map(p => [p.Name, p])),
+        byName: new Map(parameters.map(p => [p.Name, p])),
         syncedAt: new Date()
       }
     );
