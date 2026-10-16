@@ -45,6 +45,45 @@ export default tseslint.config(
       'react/prop-types': 'off'
     }
   },
+  // Contracts in src/main are bundled into the renderer too, so the renderer
+  // may import only those from main, and contracts may import only what is
+  // safe in the renderer: zod, src/shared and other contracts. Type imports
+  // are erased, so they're allowed.
+  {
+    files: ['src/renderer/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '/main/(?!.*\\.contract$)',
+              message:
+                'The renderer may import only *.contract files from src/main.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    files: ['src/main/**/*.contract.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!zod$|.*\\.contract$|(\\.\\./)+shared/)',
+              allowTypeImports: true,
+              message:
+                'Contracts are bundled into the renderer: import only zod, src/shared and other contracts.'
+            }
+          ]
+        }
+      ]
+    }
+  },
   {
     files: ['**/*.test.{js,jsx,ts,tsx}'],
     languageOptions: { globals: globals.node }

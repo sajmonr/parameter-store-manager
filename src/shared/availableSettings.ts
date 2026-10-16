@@ -10,7 +10,8 @@ const availableSettings = {
 export default availableSettings;
 
 // Passed to Electron's nativeTheme.themeSource.
-export type Theme = 'system' | 'light' | 'dark';
+export const THEMES = ['system', 'light', 'dark'] as const;
+export type Theme = (typeof THEMES)[number];
 
 export interface Settings {
   pathDelimiter: string;

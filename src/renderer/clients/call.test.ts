@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { unwrap } from './api';
+import { unwrap } from './call';
 
 describe('unwrap', () => {
   it('returns the result of a successful call', () => {

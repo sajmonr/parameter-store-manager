@@ -7,7 +7,7 @@ import path from 'path';
 import { app, BrowserWindow, ipcMain, nativeTheme, session } from 'electron';
 import type { LoadExtensionOptions, Session } from 'electron';
 import MenuBuilder from './menu';
-import { registerIpcHandlers } from './ipc';
+import { registerEndpoints } from './endpoints';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
@@ -102,12 +102,12 @@ app.whenReady().then(async () => {
     await installExtensions();
   }
 
-  registerIpcHandlers(ipcMain, devServerUrl);
+  registerEndpoints(ipcMain, devServerUrl);
   // Also drives prefers-color-scheme in the renderer, which picks the antd theme.
   nativeTheme.themeSource = getSetting(availableSettings.theme);
   onSettingsChange(settings => {
     nativeTheme.themeSource = settings[availableSettings.theme];
-    if (mainWindow) mainWindow.webContents.send('settings:changed', settings);
+    if (mainWindow) mainWindow.webContents.send('settings.changed', settings);
   });
   // Fires for both a theme setting change and an OS appearance change.
   nativeTheme.on('updated', () => {

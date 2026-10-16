@@ -125,10 +125,21 @@ Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
 
 The app is written in TypeScript.
 
-- `src/main` – Electron main process. It owns the AWS SDK clients (`aws.ts`), the settings store (`settings.ts`) and the IPC handlers (`ipc.ts`).
-- `src/preload` – exposes a small `window.api` to the renderer through `contextBridge`.
-- `src/shared` – code and types used by both sides, including the IPC contract (`ipc.ts`): every channel's arguments and result.
-- `src/renderer` – the React UI. It has no Node.js access (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`) and talks to AWS only through `window.api`. Parameters and KMS keys are loaded with TanStack Query; settings and UI state live in small Zustand stores (`src/renderer/state`).
+- `src/main` – Electron main process. It owns the AWS SDK clients (`aws.ts`), the settings store (`settings.ts`) and the IPC endpoints (`endpoints/`).
+- `src/preload` – exposes `window.api` to the renderer through `contextBridge`: a generic `invoke` for endpoints and `on` for the events main sends.
+- `src/shared` – code and types used by both sides: settings, the contract helpers and the events.
+- `src/renderer` – the React UI. It has no Node.js access (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`) and talks to AWS only through `window.api`. Parameters and KMS keys are loaded with TanStack Query; settings and UI state live in small Zustand stores (`src/renderer/state`). Endpoints are called through one service per concern (`src/renderer/services`).
+
+### IPC endpoints
+
+Each call from the renderer to the main process is an endpoint with its own folder in `src/main/endpoints`, for example `parameters/putParameter/`:
+
+- `putParameter.contract.ts` – the channel, the request as a Zod schema and the response type, made with `defineContract`. Both processes import it.
+- `handler.ts` – `defineEndpoint(contract, handler)`. The handler gets the request already validated against the schema.
+
+`src/main/endpoints/index.ts` registers every `handler.ts` it finds; the renderer calls an endpoint with `call(contract, request)`. To add one, create the folder with both files and call it from a service.
+
+Contracts are bundled into the renderer, so they may import only `zod`, `src/shared` and other contracts (type-only imports are fine). ESLint enforces this, and the renderer's typecheck includes the contracts, so Node APIs in a contract fail it.
 
 ### AWS credentials
 

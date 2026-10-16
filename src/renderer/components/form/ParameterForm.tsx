@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
-import type { EditableParameterType } from '../../../shared/ipc';
+import type { EditableParameterType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { usePutParameter } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';

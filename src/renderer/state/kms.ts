@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import * as api from '../clients/api';
+import { kmsService } from '../services';
 import { useSettingsStore } from './settings';
 
 const listKmsAliases = () =>
-  api.listKmsAliases().catch(error => {
+  kmsService.listAliases().catch(error => {
     console.error('Something went wrong while fetching KMS Keys.', error);
     throw error;
   });

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { App, Button } from 'antd';
-import * as api from '../clients/api';
+import { updatesService } from '../services';
 
 // Asks the main process whether a newer release exists and, if so, shows a
 // non-blocking notice. The main process hands out an 'available' result only
@@ -12,8 +12,8 @@ const UpdateNotice = () => {
   useEffect(() => {
     let cancelled = false;
 
-    api
-      .checkForUpdates()
+    updatesService
+      .check()
       .then(result => {
         if (cancelled || !result || result.status !== 'available') return;
         notification.info({
@@ -28,7 +28,7 @@ const UpdateNotice = () => {
               size="small"
               onClick={() => {
                 notification.destroy('update-available');
-                api.openReleasePage().catch(console.error);
+                updatesService.openReleasePage().catch(console.error);
               }}
             >
               Open release page

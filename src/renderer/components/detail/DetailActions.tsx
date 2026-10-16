@@ -1,6 +1,6 @@
 import { Button, Flex, Tooltip } from 'antd';
 import { CopyOutlined, EditOutlined } from '@ant-design/icons';
-import { isEditableType } from '../../../shared/ipc';
+import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions } from '../../state/ui';

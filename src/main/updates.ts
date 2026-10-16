@@ -8,7 +8,7 @@
  */
 import { app, dialog, net, shell } from 'electron';
 import log from 'electron-log/main';
-import type { UpdateCheckResult } from '../shared/ipc';
+import type { UpdateCheckResult } from './endpoints/updates/checkForUpdates/checkForUpdates.contract';
 
 const OWNER = 'sajmonr';
 const REPO = 'parameter-store-manager';

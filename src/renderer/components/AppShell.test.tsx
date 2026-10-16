@@ -2,12 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../test/mockApi';
+import * as api from '../test/mockServices';
 import { renderWithProviders } from '../test/render';
 import { makeParameter } from '../test/testState';
 import AppShell, { siderMaxWidth } from './AppShell';
 
-vi.mock('../clients/api', () => import('../test/mockApi'));
+vi.mock('../services', () => import('../test/mockServices'));
 
 const parameters = [
   makeParameter('/dev/app/db/Password', {
@@ -42,7 +42,7 @@ describe('AppShell', () => {
 
   it('shows a spinner instead of the count until all pages are loaded', async () => {
     let lastPage!: (page: { parameters: typeof parameters }) => void;
-    api.describeParameters
+    api.parametersService.describe
       .mockResolvedValueOnce({
         parameters: [parameters[0]!],
         nextToken: 'next'
@@ -139,7 +139,9 @@ describe('AppShell', () => {
   });
 
   it('shows the expired-session screen', async () => {
-    api.describeParameters.mockRejectedValue(awsError('ExpiredTokenException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('ExpiredTokenException')
+    );
     renderApp();
     expect(await screen.findByText('AWS session expired')).toBeInTheDocument();
     expect(screen.getByText('aws sso login')).toBeInTheDocument();
@@ -148,7 +150,9 @@ describe('AppShell', () => {
 
   it('shows the access-denied screen and retries', async () => {
     const user = userEvent.setup();
-    api.describeParameters.mockRejectedValue(awsError('AccessDeniedException'));
+    api.parametersService.describe.mockRejectedValue(
+      awsError('AccessDeniedException')
+    );
     renderApp();
     expect(await screen.findByText('Access denied')).toBeInTheDocument();
 

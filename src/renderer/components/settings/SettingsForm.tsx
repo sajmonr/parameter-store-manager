@@ -13,8 +13,8 @@ import {
 } from 'antd';
 import { DesktopOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
 import type { Settings } from '../../../shared/availableSettings';
-import type { AwsProfilesResult } from '../../../shared/ipc';
-import * as api from '../../clients/api';
+import type { ListProfilesResponse } from '../../../main/endpoints/aws/listProfiles/listProfiles.contract';
+import { profilesService } from '../../services';
 import {
   availableSettings,
   saveSettings,
@@ -46,7 +46,7 @@ const regionOptions = (current: string) =>
 // profile named "default". Without AWS_PROFILE the two are the same, so the
 // empty profile is shown as "default"; with it, both are listed.
 const profileOptions = (
-  { profiles, envProfile }: AwsProfilesResult,
+  { profiles, envProfile }: ListProfilesResponse,
   current: string
 ) => {
   const sourceText = (name: string) => {
@@ -91,7 +91,7 @@ const SettingsForm = ({ onClose }: { onClose: () => void }) => {
   const { notification } = App.useApp();
   const [form] = Form.useForm<SettingsFormValues>();
   const saved = useSettingsStore();
-  const [profiles, setProfiles] = useState<AwsProfilesResult>({
+  const [profiles, setProfiles] = useState<ListProfilesResponse>({
     profiles: [],
     envProfile: null
   });
@@ -104,8 +104,8 @@ const SettingsForm = ({ onClose }: { onClose: () => void }) => {
     Form.useWatch(KMS_SAME_AS_SSM, form) ?? initialValues[KMS_SAME_AS_SSM];
 
   useEffect(() => {
-    api
-      .listProfiles()
+    profilesService
+      .list()
       .then(setProfiles)
       .catch(error => console.warn('Could not list AWS profiles:', error));
   }, []);

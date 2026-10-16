@@ -2,14 +2,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as api from '../../test/mockApi';
+import * as api from '../../test/mockServices';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { NewParameterPrefill } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import ParameterForm from './ParameterForm';
 
-vi.mock('../../clients/api', () => import('../../test/mockApi'));
+vi.mock('../../services', () => import('../../test/mockServices'));
 
 const setup = (prefill: NewParameterPrefill | null = null) => {
   const queryClient = createTestState({
@@ -26,7 +26,7 @@ const createButton = () =>
 
 beforeEach(() => {
   vi.clearAllMocks();
-  api.putParameter.mockResolvedValue({ version: 1 });
+  api.parametersService.put.mockResolvedValue({ version: 1 });
 });
 
 describe('ParameterForm', () => {
@@ -57,7 +57,7 @@ describe('ParameterForm', () => {
     expect(screen.getByText('/dev/app/Cache/Ttl')).toBeInTheDocument();
     await user.click(createButton());
     await waitFor(() =>
-      expect(api.putParameter).toHaveBeenCalledWith(
+      expect(api.parametersService.put).toHaveBeenCalledWith(
         expect.objectContaining({ name: '/dev/app/Cache/Ttl' })
       )
     );
@@ -84,7 +84,7 @@ describe('ParameterForm', () => {
     await waitFor(() =>
       expect(useUiStore.getState().selectedName).toBe('/dev/app/Timeout')
     );
-    expect(api.putParameter).toHaveBeenCalledWith(
+    expect(api.parametersService.put).toHaveBeenCalledWith(
       expect.objectContaining({
         name: '/dev/app/Timeout',
         type: 'String',
@@ -102,7 +102,7 @@ describe('ParameterForm', () => {
     const value = screen.getByRole('textbox', { name: 'Value' });
     await user.type(value, '30');
     fireEvent.keyDown(value, { key: 'Enter', ctrlKey: true });
-    await waitFor(() => expect(api.putParameter).toHaveBeenCalled());
+    await waitFor(() => expect(api.parametersService.put).toHaveBeenCalled());
   });
 
   it('prefills a duplicate, including the KMS key', () => {

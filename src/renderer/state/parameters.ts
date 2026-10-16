@@ -4,9 +4,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
-import type { PutParameterRequest } from '../../shared/ipc';
-import * as api from '../clients/api';
-import type { Parameter, ParameterMetadata } from '../clients/api';
+import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import type { ApiError } from '../clients/call';
+import { parametersService } from '../services';
+import type { Parameter, ParameterMetadata } from '../services';
 import { feedback } from '../feedback';
 import { classifyFetchError, describeError } from '../utils/awsErrors';
 import type { FetchErrorKind } from '../utils/awsErrors';
@@ -116,7 +117,7 @@ const loadValues = (names: string[], update: Update) =>
   pAll(
     chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
       try {
-        const { parameters } = await api.getParameters(batch);
+        const { parameters } = await parametersService.getValues(batch);
         update(list => withValues(list, parameters));
       } catch (error) {
         console.error('Something went wrong while fetching parameters', error);
@@ -127,11 +128,11 @@ const loadValues = (names: string[], update: Update) =>
 
 const notifyLoadError = (error: unknown) => {
   // Expired sessions and denied access get their own screen instead.
-  if (classifyFetchError(error as api.ApiError)) return;
+  if (classifyFetchError(error as ApiError)) return;
   feedback.notification?.error({
     message:
       'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
-    description: describeError(error as api.ApiError)
+    description: describeError(error as ApiError)
   });
 };
 
@@ -162,7 +163,7 @@ const loadParameters = async ({
   try {
     do {
       // Pages are loaded one after another so the table fills in progressively.
-      const page = await api.describeParameters(nextToken);
+      const page = await parametersService.describe(nextToken);
       if (!isCurrent()) return cached();
 
       const names = page.parameters.flatMap(p => (p.Name ? [p.Name] : []));
@@ -295,7 +296,7 @@ export const usePutParameter = () => {
   return useMutation({
     mutationFn: async (request: PutParameterRequest) => {
       const key = currentKey();
-      const result = await api.putParameter(request);
+      const result = await parametersService.put(request);
       recordChange(key, request.name, 'created');
       client.setQueryData<ParameterList>(
         key,
@@ -311,7 +312,7 @@ export const useDeleteParameter = () => {
   return useMutation({
     mutationFn: async (name: string) => {
       const key = currentKey();
-      const result = await api.deleteParameter(name);
+      const result = await parametersService.delete(name);
       recordChange(key, name, 'deleted');
       client.setQueryData<ParameterList>(
         key,
