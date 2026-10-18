@@ -8,9 +8,13 @@ export interface DescribeParametersResponse {
   nextToken?: string;
 }
 
-// One page of parameters, without their values.
+// One page of parameters, without their values. With `beginsWith`, only the
+// names that start with it.
 export const describeParametersContract =
   defineContract<DescribeParametersResponse>()({
     channel: 'parameters.describe',
-    request: z.object({ nextToken: z.string().optional() })
+    request: z.object({
+      nextToken: z.string().optional(),
+      beginsWith: z.string().min(1).max(1024).optional()
+    })
   });
