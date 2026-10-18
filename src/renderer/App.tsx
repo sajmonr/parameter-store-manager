@@ -15,9 +15,7 @@ const App = ({ queryClient }: { queryClient: QueryClient }) => {
   const dark = useMediaQuery('(prefers-color-scheme: dark)');
   const theme = {
     algorithm: dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-    token: { fontFamilyCode },
-    // Exposes the tokens as --ant-* CSS variables for the CSS modules.
-    cssVar: true
+    token: { fontFamilyCode }
   };
 
   return (

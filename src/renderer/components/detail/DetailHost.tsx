@@ -39,7 +39,7 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
         open={!!content}
         onClose={close}
         placement="right"
-        width={420}
+        size={420}
         closable={false}
         keyboard={false}
         styles={{ body: { padding: 0 } }}

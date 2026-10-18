@@ -3,8 +3,13 @@
   min-width: 0;
 }
 
-.picker :global(.ant-select-selection-item) {
+.picker :global(.ant-select-content) {
   direction: rtl;
   text-align: left;
   font-family: var(--ant-font-family-code);
+}
+
+/* The search input sits inside the content and must not be laid out RTL. */
+.picker :global(.ant-select-input) {
+  direction: ltr;
 }

@@ -130,7 +130,7 @@ const notifyLoadError = (error: unknown) => {
   // Expired sessions and denied access get their own screen instead.
   if (classifyFetchError(error as ApiError)) return;
   feedback.notification?.error({
-    message:
+    title:
       'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
     description: describeError(error as ApiError)
   });
