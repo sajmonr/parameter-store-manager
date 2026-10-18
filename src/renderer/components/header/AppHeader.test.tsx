@@ -48,19 +48,14 @@ describe('AppHeader', () => {
     expect(useUiStore.getState().settingsOpen).toBe(true);
   });
 
-  it('refreshes from the More menu and from the sync status', async () => {
+  it('refreshes from the More menu', async () => {
     const user = userEvent.setup();
     setup();
 
     await openMore(user);
     await user.click(await screen.findByText('Refresh'));
     await waitFor(() =>
-      expect(api.parametersService.describe).toHaveBeenCalledTimes(1)
-    );
-
-    await user.click(await screen.findByRole('button', { name: /Synced/ }));
-    await waitFor(() =>
-      expect(api.parametersService.describe).toHaveBeenCalledTimes(2)
+      expect(api.parametersService.describe).toHaveBeenCalled()
     );
   });
 

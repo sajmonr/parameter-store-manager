@@ -13,7 +13,6 @@ import { uiActions } from '../../state/ui';
 import { isSettingsShortcut, settingsShortcutLabel } from '../../utils/keys';
 import ProfileChip from './ProfileChip';
 import SearchInput from './SearchInput';
-import SyncStatus from './SyncStatus';
 import styles from './AppHeader.module.css';
 
 const onSettingsShortcut = (event: KeyboardEvent) => {
@@ -61,7 +60,6 @@ const AppHeader = () => {
         <ProfileChip />
         <SearchInput />
         <Flex align="center" gap={8} className={styles.end}>
-          <SyncStatus />
           <Button
             type="primary"
             icon={<PlusOutlined />}

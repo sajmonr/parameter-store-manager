@@ -9,3 +9,15 @@
   color: var(--ant-color-text-secondary);
   border-top: 1px solid var(--ant-color-border-secondary);
 }
+
+.start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.start > * + *::before {
+  content: '·';
+  margin-right: 6px;
+  color: var(--ant-color-text-secondary);
+}
