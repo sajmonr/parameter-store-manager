@@ -40,8 +40,7 @@ const KmsKeySelect = ({ value, onChange, ...rest }: SelectProps<string>) => {
       onChange={onChange}
       options={options}
       loading={loading}
-      showSearch
-      optionFilterProp="value"
+      showSearch={{ optionFilterProp: 'value' }}
       {...rest}
     />
   );

@@ -58,9 +58,8 @@ const FolderPicker = ({
       onChange={onChange}
       treeData={treeData}
       treeNodeLabelProp="display"
-      treeNodeFilterProp="value"
       treeDefaultExpandedKeys={[root, ...foldersOf(value || '', delimiter)]}
-      showSearch
+      showSearch={{ treeNodeFilterProp: 'value' }}
       prefix={<FolderOutlined />}
       popupMatchSelectWidth={320}
       aria-label="Folder"

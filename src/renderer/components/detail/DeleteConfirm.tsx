@@ -24,13 +24,13 @@ const DeleteConfirm = ({ name }: { name: string }) => {
         setOpen(false);
         uiActions.closePane();
         notification.success({
-          message: 'Parameter deleted',
+          title: 'Parameter deleted',
           description: name
         });
       })
       .catch(err => {
         notification.error({
-          message: 'Something went wrong while deleting the parameter.',
+          title: 'Something went wrong while deleting the parameter.',
           description: err.code || err.message || ''
         });
       });

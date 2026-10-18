@@ -41,14 +41,14 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
       })
       .then(result => {
         notification.success({
-          message: 'Parameter saved',
+          title: 'Parameter saved',
           description: `${leafOf(parameter.Name, delimiter)} · version ${result.version}`
         });
         onDone();
       })
       .catch(err => {
         notification.error({
-          message: 'Parameter was not saved',
+          title: 'Parameter was not saved',
           description: err.message || ''
         });
       });

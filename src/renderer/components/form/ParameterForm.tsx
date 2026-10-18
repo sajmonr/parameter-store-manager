@@ -126,14 +126,14 @@ const ParameterForm = ({
       })
       .then(() => {
         notification.success({
-          message: 'Parameter created',
+          title: 'Parameter created',
           description: check.fullPath
         });
         uiActions.showCreatedParameter(check.fullPath);
       })
       .catch(err => {
         notification.error({
-          message: 'Parameter was not created',
+          title: 'Parameter was not created',
           description: err.message || ''
         });
       });

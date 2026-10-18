@@ -18,11 +18,11 @@ const UpdateNotice = () => {
         if (cancelled || !result || result.status !== 'available') return;
         notification.info({
           key: 'update-available',
-          message: `Version ${result.version} is available`,
+          title: `Version ${result.version} is available`,
           description:
             result.instructions || 'Download it from the release page.',
           duration: 0,
-          btn: (
+          actions: (
             <Button
               type="primary"
               size="small"

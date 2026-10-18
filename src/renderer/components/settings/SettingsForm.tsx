@@ -151,13 +151,13 @@ const SettingsForm = ({ onClose }: { onClose: () => void }) => {
     saveSettings(next)
       .then(() => {
         applyChanges(next);
-        notification.success({ message: 'Settings saved' });
+        notification.success({ title: 'Settings saved' });
         onClose();
       })
       .catch(error => {
         setSaving(false);
         notification.error({
-          message: 'Settings were not saved',
+          title: 'Settings were not saved',
           description: error.message
         });
       });
