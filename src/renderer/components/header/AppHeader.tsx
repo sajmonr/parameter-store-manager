@@ -9,14 +9,15 @@ import {
   SyncOutlined
 } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
-import { uiActions } from '../../state/ui';
+import { uiActions, useUiStore } from '../../state/ui';
 import { isSettingsShortcut, settingsShortcutLabel } from '../../utils/keys';
 import ProfileChip from './ProfileChip';
 import SearchInput from './SearchInput';
 import styles from './AppHeader.module.css';
 
+// Not over the export: changing the profile or region would stop it.
 const onSettingsShortcut = (event: KeyboardEvent) => {
-  if (!isSettingsShortcut(event)) return;
+  if (!isSettingsShortcut(event) || useUiStore.getState().exportOpen) return;
   event.preventDefault();
   uiActions.openSettings();
 };

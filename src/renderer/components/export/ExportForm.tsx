@@ -58,7 +58,13 @@ const progressText = (progress: ExportProgress) => {
 // Exports all parameters, or those under a path, to a CSV file. The count is
 // a preview from the loaded parameters; the export itself reads AWS. Starts
 // with the scoped folder as the path.
-const ExportForm = ({ onClose }: { onClose: () => void }) => {
+const ExportForm = ({
+  onClose,
+  onSavingChange
+}: {
+  onClose: () => void;
+  onSavingChange: (saving: boolean) => void;
+}) => {
   const { message, notification } = App.useApp();
   const { parameters, loading } = useParameters();
   const { keys: folders } = useAllFolderTree();
@@ -74,6 +80,8 @@ const ExportForm = ({ onClose }: { onClose: () => void }) => {
   const byPath = scope === 'path';
   const typing = byPath && path !== debouncedPath;
   const exporting = exportParameters.isPending;
+  const saving = progress?.phase === 'saving';
+  useEffect(() => onSavingChange(saving), [onSavingChange, saving]);
 
   // Closing the modal stops a running export.
   const abortRef = useRef<AbortController | null>(null);
@@ -224,7 +232,9 @@ const ExportForm = ({ onClose }: { onClose: () => void }) => {
         />
       )}
       <Flex justify="flex-end" gap={8}>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel} disabled={saving}>
+          Cancel
+        </Button>
         <Button
           type="primary"
           disabled={!canExport && !exporting}

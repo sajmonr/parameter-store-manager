@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
-import { useUiStore } from '../../state/ui';
+import { uiActions, useUiStore } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import AppHeader from './AppHeader';
@@ -63,5 +63,12 @@ describe('AppHeader', () => {
     setup();
     fireEvent.keyDown(window, { key: ',', ctrlKey: true });
     expect(useUiStore.getState().settingsOpen).toBe(true);
+  });
+
+  it('ignores Cmd/Ctrl+, while the export is open', () => {
+    setup();
+    uiActions.openExport();
+    fireEvent.keyDown(window, { key: ',', metaKey: true });
+    expect(useUiStore.getState().settingsOpen).toBe(false);
   });
 });

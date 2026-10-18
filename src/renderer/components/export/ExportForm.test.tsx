@@ -4,6 +4,8 @@ import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
 import type { ParameterEntry } from '../../state/parameters';
+import { SOURCE_CHANGED } from '../../state/export';
+import { useSettingsStore } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
@@ -53,6 +55,8 @@ const exported = async () => {
 };
 const fetchedNames = () =>
   api.parametersService.getValues.mock.calls.flatMap(([names]) => names);
+const decrypted = () =>
+  api.parametersService.getValues.mock.calls.map(([, decrypt]) => decrypt);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -79,8 +83,9 @@ describe('ExportForm', () => {
       undefined,
       undefined
     );
-    // Nothing is decrypted.
-    expect(fetchedNames().sort()).toEqual(['/app/prod/Title', '/other/Flag']);
+    // Every name is checked, but nothing is decrypted.
+    expect(fetchedNames()).toHaveLength(4);
+    expect(new Set(decrypted())).toEqual(new Set([false]));
     expect(fileName).toMatch(
       /^ssm-parameters_123456789012_eu-west-1_[\d_-]+\.csv$/
     );
@@ -111,6 +116,7 @@ describe('ExportForm', () => {
 
     const [, content] = await exported();
     expect(fetchedNames()).toHaveLength(4);
+    expect(new Set(decrypted())).toEqual(new Set([true]));
     expect(content).toContain(
       '/app/prod/db/Password,hunter2,SecureString,DB password,alias/aws/ssm\r\n'
     );
@@ -161,21 +167,78 @@ describe('ExportForm', () => {
     );
   });
 
-  it('leaves out parameters deleted while the export runs', async () => {
+  it('leaves out parameters deleted while the export runs, SecureStrings too', async () => {
     const user = userEvent.setup();
     setup();
     api.parametersService.getValues.mockResolvedValue({
       parameters: [{ Name: '/app/prod/Title', Value: 'Title', Type: 'String' }],
-      invalidParameters: ['/other/Flag']
+      invalidParameters: ['/other/Flag', '/app/dev/db/Password']
     });
 
     await user.click(exportButton());
 
     const [, content] = await exported();
     expect(content).not.toContain('/other/Flag');
+    expect(content).not.toContain('/app/dev/db/Password');
     expect(
-      await screen.findByText('Exported 3 parameters')
+      await screen.findByText('Exported 2 parameters')
     ).toBeInTheDocument();
+  });
+
+  it('leaves out the value of a String recreated as a SecureString since it was listed', async () => {
+    const user = userEvent.setup();
+    setup({ loaded: [makeParameter('/x')] });
+    api.serveParameters([makeParameter('/x')]);
+    api.parametersService.getValues.mockResolvedValue({
+      parameters: [{ Name: '/x', Value: 'ciphertext', Type: 'SecureString' }],
+      invalidParameters: []
+    });
+
+    await user.click(exportButton());
+
+    const [, content] = await exported();
+    expect(decrypted()).toEqual([false]);
+    expect(content).toBe(
+      'name,value,type,description,kmsKey\r\n/x,,SecureString,,\r\n'
+    );
+  });
+
+  it('stops when the profile or region changes during the export', async () => {
+    const user = userEvent.setup();
+    setup();
+    api.parametersService.getValues.mockImplementation(async () => {
+      useSettingsStore.setState({ ssmRegion: 'us-west-2' });
+      return { parameters: [], invalidParameters: [] };
+    });
+
+    await user.click(exportButton());
+
+    expect(await screen.findByText(SOURCE_CHANGED)).toBeInTheDocument();
+    expect(api.filesService.saveCsv).not.toHaveBeenCalled();
+    expect(useUiStore.getState().exportOpen).toBe(true);
+  });
+
+  it("can't be cancelled or closed while the file is being saved", async () => {
+    const user = userEvent.setup();
+    let finishSave!: (path: string | null) => void;
+    api.filesService.saveCsv.mockReturnValue(
+      new Promise(resolve => {
+        finishSave = resolve;
+      })
+    );
+    setup();
+
+    await user.click(exportButton());
+
+    await exported();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Close' })
+    ).not.toBeInTheDocument();
+    await act(async () => finishSave('/Downloads/export.csv'));
+    expect(useUiStore.getState().exportOpen).toBe(false);
   });
 
   it('names the file after the profile when the account is unknown', async () => {

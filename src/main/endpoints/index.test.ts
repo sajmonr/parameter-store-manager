@@ -79,6 +79,19 @@ describe('invokeEndpoint', () => {
     expect(sentInput().ParameterFilters).toBeUndefined();
   });
 
+  it('decrypts values unless told not to', async () => {
+    send.mockResolvedValue({ Parameters: [], InvalidParameters: [] });
+    await invoke('parameters.getValues', { names: ['/a'] });
+    expect(sentInput()).toMatchObject({ WithDecryption: true });
+
+    send.mockClear();
+    await invoke('parameters.getValues', {
+      names: ['/a'],
+      withDecryption: false
+    });
+    expect(sentInput()).toMatchObject({ WithDecryption: false });
+  });
+
   it('filters parameters by the start of their name', async () => {
     send.mockResolvedValue({ Parameters: [] });
     await invoke('parameters.describe', { beginsWith: '/app/' });

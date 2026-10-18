@@ -40,9 +40,13 @@ export const parametersService = {
     };
   },
 
-  // At most 10 names per call.
-  getValues: async (names: string[]) => {
-    const res = await call(getParameterValuesContract, { names });
+  // At most 10 names per call. Without `withDecryption`, SecureString values
+  // stay encrypted.
+  getValues: async (names: string[], withDecryption = true) => {
+    const res = await call(getParameterValuesContract, {
+      names,
+      withDecryption
+    });
     return {
       ...res,
       parameters: res.parameters.map((p): Parameter => reviveDate(p))

@@ -31,18 +31,39 @@ export interface ExportResult {
   count: number;
 }
 
+export const SOURCE_CHANGED =
+  'The profile or region changed during the export. Export again.';
+
 type Listed = ParameterMetadata & { Name: string };
+
+// Throws when the export was cancelled or the profile or region changed since
+// it started: the rest would come from a different account or region.
+type Check = () => void;
+
+const sourceCheck = (signal: AbortSignal): Check => {
+  const { profile, ssmRegion } = getSettings();
+  return () => {
+    signal.throwIfAborted();
+    const now = getSettings();
+    if (now.profile !== profile || now.ssmRegion !== ssmRegion) {
+      throw new Error(SOURCE_CHANGED);
+    }
+  };
+};
 
 // AWS filters on the part of the path before any wildcard; the glob is
 // applied to what comes back.
-const listParameters = async ({ path, signal, onProgress }: ExportRequest) => {
+const listParameters = async (
+  { path, onProgress }: ExportRequest,
+  check: Check
+) => {
   const matcher = createPrefixMatcher(path, getPathDelimiter());
   const beginsWith = literalPrefix(path) || undefined;
   const listed: Listed[] = [];
   let nextToken: string | undefined;
   do {
     const page = await parametersService.describe(nextToken, beginsWith);
-    signal.throwIfAborted();
+    check();
     page.parameters.forEach(p => {
       if (p.Name && matcher.test(p.Name)) listed.push({ ...p, Name: p.Name });
     });
@@ -52,31 +73,38 @@ const listParameters = async ({ path, signal, onProgress }: ExportRequest) => {
   return listed;
 };
 
-// The values of `names`, and the names deleted since they were listed.
+interface Fetched {
+  Type?: string;
+  Value?: string;
+}
+
+// The type and value of every name, and the names deleted since they were
+// listed. SecureStrings are only decrypted when their values are included.
 const loadValues = async (
   names: string[],
-  { signal, onProgress }: ExportRequest
+  { includeSecureValues, onProgress }: ExportRequest,
+  check: Check
 ) => {
-  const values = new Map<string, string | undefined>();
+  const fetched = new Map<string, Fetched>();
   const deleted = new Set<string>();
   let done = 0;
   onProgress({ phase: 'values', done, total: names.length });
   await pAll(
     chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
-      signal.throwIfAborted();
-      const res = await parametersService.getValues(batch);
-      signal.throwIfAborted();
-      res.parameters.forEach(p => p.Name && values.set(p.Name, p.Value));
+      check();
+      const res = await parametersService.getValues(batch, includeSecureValues);
+      check();
+      res.parameters.forEach(
+        ({ Name, Type, Value }) => Name && fetched.set(Name, { Type, Value })
+      );
       res.invalidParameters.forEach(name => deleted.add(name));
       done += batch.length;
       onProgress({ phase: 'values', done, total: names.length });
     }),
     { concurrency: 2, stopOnError: true }
   );
-  return { values, deleted };
+  return { fetched, deleted };
 };
-
-const isSecure = (p: ParameterMetadata) => p.Type === 'SecureString';
 
 // The account ID, or the profile name when it can't be read.
 const accountLabel = async () => {
@@ -88,33 +116,41 @@ const exportParameters = async (
   request: ExportRequest
 ): Promise<ExportResult> => {
   const { includeSecureValues, signal, onProgress } = request;
+  const check = sourceCheck(signal);
+  const region = getSettings().ssmRegion;
   const account = accountLabel();
-  const listed = await listParameters(request);
-  const withValues = listed.filter(p => includeSecureValues || !isSecure(p));
-  const { values, deleted } = await loadValues(
-    withValues.map(p => p.Name),
-    request
+  const listed = await listParameters(request, check);
+  const { fetched, deleted } = await loadValues(
+    listed.map(p => p.Name),
+    request,
+    check
   );
 
   const rows = listed
     .filter(p => !deleted.has(p.Name))
     .sort((a, b) => (a.Name < b.Name ? -1 : 1))
-    .map((p): CsvParameter => ({
-      Name: p.Name,
-      Value: values.get(p.Name),
-      Type: p.Type,
-      Description: p.Description,
-      KeyId: isSecure(p) ? p.KeyId : undefined
-    }));
+    .map((p): CsvParameter => {
+      // The type as of the value fetch: the parameter may have been
+      // recreated as a SecureString since it was listed.
+      const { Type = p.Type, Value } = fetched.get(p.Name) ?? {};
+      const secure = Type === 'SecureString';
+      return {
+        Name: p.Name,
+        Value: secure && !includeSecureValues ? undefined : Value,
+        Type,
+        Description: p.Description,
+        KeyId: secure ? p.KeyId : undefined
+      };
+    });
 
   onProgress({ phase: 'saving' });
   const fileName = exportFileName({
     account: await account,
-    region: getSettings().ssmRegion,
+    region,
     path: request.path,
     date: new Date()
   });
-  signal.throwIfAborted();
+  check();
   const filePath = await filesService.saveCsv(fileName, parametersToCsv(rows));
   return { filePath, count: rows.length };
 };
