@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createMatcher, globToRegExp, isGlobQuery } from './search';
+import {
+  createMatcher,
+  createPrefixMatcher,
+  globToRegExp,
+  isGlobQuery,
+  literalPrefix
+} from './search';
 
 const names = [
   '/development/compass/AppServer/Dashboard/Password',
@@ -80,5 +86,38 @@ describe('createMatcher', () => {
   it('escapes regular expression characters', () => {
     expect(globToRegExp('a+b(c)*', '/').test('a+b(c)d')).toBe(true);
     expect(globToRegExp('a+b', '/').test('aab')).toBe(false);
+  });
+});
+
+describe('createPrefixMatcher', () => {
+  const byPrefix = (prefix: string, delimiter = '/') =>
+    names.filter(createPrefixMatcher(prefix, delimiter).test);
+
+  it('matches everything when empty', () => {
+    expect(byPrefix('  ')).toEqual(names);
+  });
+
+  it('matches the start of the name only, case-sensitively', () => {
+    expect(byPrefix('/development/compass/AppServer/')).toEqual(
+      names.slice(0, 2)
+    );
+    expect(byPrefix('compass')).toEqual([]);
+    expect(byPrefix('/Development')).toEqual([]);
+  });
+
+  it('takes globs, anchored at the start even without a leading delimiter', () => {
+    expect(byPrefix('/*/compass/AppServer')).toEqual(names.slice(0, 2));
+    expect(byPrefix('/**/Password')).toEqual([names[0], names[3]]);
+    expect(byPrefix('*/compass')).toEqual([]);
+    expect(byPrefix('*', '.')).toEqual(names);
+  });
+});
+
+describe('literalPrefix', () => {
+  it('is the path up to the first wildcard', () => {
+    expect(literalPrefix(' /app/prod/ ')).toBe('/app/prod/');
+    expect(literalPrefix('/app/*/db')).toBe('/app/');
+    expect(literalPrefix('/app/d?/x')).toBe('/app/d');
+    expect(literalPrefix('**/Password')).toBe('');
   });
 });

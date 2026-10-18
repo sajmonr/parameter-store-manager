@@ -5,9 +5,15 @@ import { describeParametersContract } from './describeParameters.contract';
 
 export default defineEndpoint(
   describeParametersContract,
-  async ({ nextToken }) => {
+  async ({ nextToken, beginsWith }) => {
     const res = await ssm().send(
-      new DescribeParametersCommand({ NextToken: nextToken, MaxResults: 50 })
+      new DescribeParametersCommand({
+        NextToken: nextToken,
+        MaxResults: 50,
+        ParameterFilters: beginsWith
+          ? [{ Key: 'Name', Option: 'BeginsWith', Values: [beginsWith] }]
+          : undefined
+      })
     );
     return {
       parameters: (res.Parameters || []).map(toPlainParameter),

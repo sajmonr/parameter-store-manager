@@ -11,11 +11,13 @@ export interface GetParameterValuesResponse {
   invalidParameters: string[];
 }
 
-// Parameters with their decrypted values.
+// Parameters with their values. Without `withDecryption`, SecureString values
+// stay encrypted and no KMS access is needed.
 export const getParameterValuesContract =
   defineContract<GetParameterValuesResponse>()({
     channel: 'parameters.getValues',
     request: z.object({
-      names: z.array(z.string()).min(1).max(MAX_NAMES_PER_REQUEST)
+      names: z.array(z.string()).min(1).max(MAX_NAMES_PER_REQUEST),
+      withDecryption: z.boolean().default(true)
     })
   });

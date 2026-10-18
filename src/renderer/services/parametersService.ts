@@ -27,18 +27,26 @@ const reviveDate = <T extends { LastModifiedDate?: string }>(
 });
 
 export const parametersService = {
-  // One page of parameters, without values.
-  describe: async (nextToken?: string) => {
-    const page = await call(describeParametersContract, { nextToken });
+  // One page of parameters, without values. With `beginsWith`, only the
+  // names that start with it.
+  describe: async (nextToken?: string, beginsWith?: string) => {
+    const page = await call(describeParametersContract, {
+      nextToken,
+      beginsWith
+    });
     return {
       ...page,
       parameters: page.parameters.map((p): ParameterMetadata => reviveDate(p))
     };
   },
 
-  // At most 10 names per call.
-  getValues: async (names: string[]) => {
-    const res = await call(getParameterValuesContract, { names });
+  // At most 10 names per call. Without `withDecryption`, SecureString values
+  // stay encrypted.
+  getValues: async (names: string[], withDecryption = true) => {
+    const res = await call(getParameterValuesContract, {
+      names,
+      withDecryption
+    });
     return {
       ...res,
       parameters: res.parameters.map((p): Parameter => reviveDate(p))

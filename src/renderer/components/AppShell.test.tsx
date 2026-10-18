@@ -35,6 +35,11 @@ describe('AppShell', () => {
 
     expect(await screen.findByText('Password')).toBeInTheDocument();
     expect(screen.getByText('4 of 4 parameters')).toBeInTheDocument();
+    // The footer says when they were loaded; it isn't a button.
+    expect(screen.getByText(/^Synced/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Synced/ })
+    ).not.toBeInTheDocument();
     const tree = screen.getByRole('tree');
     expect(within(tree).getByText('dev')).toBeInTheDocument();
     expect(within(tree).getByText('prd')).toBeInTheDocument();

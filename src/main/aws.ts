@@ -1,6 +1,7 @@
 import { SSMClient } from '@aws-sdk/client-ssm';
 import type { Parameter, ParameterMetadata } from '@aws-sdk/client-ssm';
 import { KMSClient } from '@aws-sdk/client-kms';
+import { STSClient } from '@aws-sdk/client-sts';
 import {
   createCredentialChain,
   fromEnv,
@@ -27,11 +28,13 @@ interface ClientConfig {
   maxAttempts: number;
 }
 
-const clients = new Map<string, SSMClient | KMSClient>();
+type AwsClient = SSMClient | KMSClient | STSClient;
+
+const clients = new Map<string, AwsClient>();
 
 // One client per region and profile, so changing either in settings takes
 // effect on the next request without restarting the app.
-const getClient = <T extends SSMClient | KMSClient>(
+const getClient = <T extends AwsClient>(
   service: string,
   Client: new (config: ClientConfig) => T,
   region: string
@@ -57,6 +60,10 @@ export const ssm = () =>
   getClient('ssm', SSMClient, getSetting(availableSettings.ssmRegion));
 export const kms = () =>
   getClient('kms', KMSClient, getSetting(availableSettings.kmsRegion));
+// The account is the same in every region; the SSM region avoids a second
+// region the user may not have enabled.
+export const sts = () =>
+  getClient('sts', STSClient, getSetting(availableSettings.ssmRegion));
 
 // Dates are sent to the renderer as ISO strings.
 export const toPlainParameter = <T extends Parameter | ParameterMetadata>({

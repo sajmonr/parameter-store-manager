@@ -46,6 +46,18 @@ export const updatesService = {
   )
 };
 
+export const filesService = {
+  saveCsv: vi.fn<Service<'filesService'>['saveCsv']>(() =>
+    Promise.resolve('/Downloads/export.csv')
+  )
+};
+
+export const accountService = {
+  getId: vi.fn<Service<'accountService'>['getId']>(() =>
+    Promise.resolve('123456789012')
+  )
+};
+
 // Makes the parameters service serve `parameters` as AWS would.
 export const serveParameters = (parameters: ParameterEntry[]) => {
   parametersService.describe.mockResolvedValue({

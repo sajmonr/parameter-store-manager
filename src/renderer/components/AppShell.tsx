@@ -8,6 +8,7 @@ import FolderTree from './sidebar/FolderTree';
 import ParameterBrowser from './parameters/ParameterBrowser';
 import DetailHost, { PANE_WIDTH } from './detail/DetailHost';
 import SettingsModal from './settings/SettingsModal';
+import ExportModal from './export/ExportModal';
 import styles from './AppShell.module.css';
 
 // Below this width the detail pane becomes a drawer.
@@ -62,6 +63,7 @@ const AppShell = () => {
         <DetailHost narrow={narrow} />
       </Layout>
       <SettingsModal />
+      <ExportModal />
     </Layout>
   );
 };

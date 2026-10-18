@@ -7,3 +7,5 @@ export { kmsService } from './kmsService';
 export { profilesService } from './profilesService';
 export { settingsService } from './settingsService';
 export { updatesService } from './updatesService';
+export { filesService } from './filesService';
+export { accountService } from './accountService';

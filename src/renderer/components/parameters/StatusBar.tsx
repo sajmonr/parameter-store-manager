@@ -1,6 +1,7 @@
 import { useParameters } from '../../state/parameters';
 import type { LoadState } from '../../state/parameters';
 import { useVisibleParameters } from '../../state/views';
+import SyncStatus from './SyncStatus';
 import styles from './StatusBar.module.css';
 
 const statusText = (loadState: LoadState, visible: number, total: number) => {
@@ -16,7 +17,10 @@ const StatusBar = () => {
 
   return (
     <div className={styles.bar}>
-      <span>{statusText(loadState, visible, total)}</span>
+      <span className={styles.start}>
+        <span>{statusText(loadState, visible, total)}</span>
+        <SyncStatus />
+      </span>
       <span>↑↓ move · Esc close</span>
     </div>
   );

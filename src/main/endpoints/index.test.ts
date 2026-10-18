@@ -24,13 +24,18 @@ vi.mock('../updates', () => ({
   checkForRenderer: vi.fn(async () => ({ status: 'up-to-date', version: '1' })),
   openReleasePage: vi.fn(async () => {})
 }));
+vi.mock('../files', () => ({
+  saveCsvFile: vi.fn(async () => '/Users/me/Downloads/export.csv')
+}));
 vi.mock('../aws', async importActual => ({
   ...(await importActual<typeof Aws>()),
-  ssm: () => ({ send })
+  ssm: () => ({ send }),
+  sts: () => ({ send })
 }));
 
 const updates = vi.mocked(await import('../updates'));
 const settings = vi.mocked(await import('../settings'));
+const files = vi.mocked(await import('../files'));
 const { endpoints, invokeEndpoint, isTrustedSender, registerEndpoints } =
   await import('.');
 
@@ -71,6 +76,30 @@ describe('invokeEndpoint', () => {
       result: { parameters: [], nextToken: 'n' }
     });
     expect(sentInput()).toMatchObject({ NextToken: 'token' });
+    expect(sentInput().ParameterFilters).toBeUndefined();
+  });
+
+  it('decrypts values unless told not to', async () => {
+    send.mockResolvedValue({ Parameters: [], InvalidParameters: [] });
+    await invoke('parameters.getValues', { names: ['/a'] });
+    expect(sentInput()).toMatchObject({ WithDecryption: true });
+
+    send.mockClear();
+    await invoke('parameters.getValues', {
+      names: ['/a'],
+      withDecryption: false
+    });
+    expect(sentInput()).toMatchObject({ WithDecryption: false });
+  });
+
+  it('filters parameters by the start of their name', async () => {
+    send.mockResolvedValue({ Parameters: [] });
+    await invoke('parameters.describe', { beginsWith: '/app/' });
+    expect(sentInput()).toMatchObject({
+      ParameterFilters: [
+        { Key: 'Name', Option: 'BeginsWith', Values: ['/app/'] }
+      ]
+    });
   });
 
   it('returns AWS errors as data, keeping the error name', async () => {
@@ -92,6 +121,7 @@ describe('invokeEndpoint', () => {
 
   it.each<[string, unknown]>([
     ['parameters.describe', { nextToken: 42 }],
+    ['parameters.describe', { beginsWith: '' }],
     ['parameters.getValues', { names: [] }],
     [
       'parameters.getValues',
@@ -109,7 +139,10 @@ describe('invokeEndpoint', () => {
     ['settings.set', { unknown: 'x' }],
     ['settings.set', { theme: 'blue' }],
     // The URL to open is decided in the main process.
-    ['updates.openReleasePage', 'https://evil.example']
+    ['updates.openReleasePage', 'https://evil.example'],
+    // The suggested name can't point outside the folder the user picks.
+    ['files.saveCsv', { fileName: '../../.ssh/config.csv', content: '' }],
+    ['files.saveCsv', { fileName: 'export.sh', content: '' }]
   ])('rejects an invalid request to %s', async (channel, request) => {
     await expect(invoke(channel, request)).resolves.toMatchObject({
       ok: false,
@@ -117,6 +150,17 @@ describe('invokeEndpoint', () => {
     });
     expect(send).not.toHaveBeenCalled();
     expect(updates.openReleasePage).not.toHaveBeenCalled();
+    expect(files.saveCsvFile).not.toHaveBeenCalled();
+  });
+
+  it('saves a CSV where the user picked', async () => {
+    await expect(
+      invoke('files.saveCsv', { fileName: 'export.csv', content: 'a,b\r\n' })
+    ).resolves.toEqual({
+      ok: true,
+      result: { filePath: '/Users/me/Downloads/export.csv' }
+    });
+    expect(files.saveCsvFile).toHaveBeenCalledWith('export.csv', 'a,b\r\n');
   });
 
   it('applies the schema defaults: a new parameter is tagged', async () => {
@@ -139,6 +183,14 @@ describe('invokeEndpoint', () => {
   it('saves only the given settings', async () => {
     await invoke('settings.set', { theme: 'dark' });
     expect(settings.setSettings).toHaveBeenCalledWith({ theme: 'dark' });
+  });
+
+  it('returns the account of the current credentials', async () => {
+    send.mockResolvedValue({ Account: '123456789012' });
+    await expect(invoke('aws.getAccountId')).resolves.toEqual({
+      ok: true,
+      result: { accountId: '123456789012' }
+    });
   });
 
   it('lists the AWS profiles', async () => {
