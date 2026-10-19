@@ -1,4 +1,7 @@
+/* Positioned and clipped for the narrow-window drawer, which renders inline. */
 .page {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--ant-color-bg-container);
 }

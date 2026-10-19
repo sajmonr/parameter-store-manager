@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import * as api from '../test/mockServices';
 import { uiActions, useUiStore } from '../state/ui';
 import { renderWithProviders } from '../test/render';
+import { NARROW_QUERY } from '../utils/layout';
 import { makeParameter } from '../test/testState';
 import AppShell from './AppShell';
 
@@ -236,6 +237,38 @@ describe('pages', () => {
     await user.click(railButton('Import & export'));
     await user.click(railButton('Parameters'));
     expect(screen.getByLabelText('Parameter name')).toHaveValue('Draft');
+  });
+
+  it('keeps the drawer inside the Parameters page in a narrow window', async () => {
+    const matchMedia = window.matchMedia;
+    window.matchMedia = query =>
+      ({
+        ...matchMedia(query),
+        matches: query === NARROW_QUERY
+      }) as MediaQueryList;
+    try {
+      const user = userEvent.setup();
+      renderApp();
+      await screen.findByText('Password');
+
+      await user.click(screen.getByRole('button', { name: /New parameter/ }));
+      const name = await screen.findByLabelText('Parameter name');
+      await user.type(name, 'Draft');
+      // It renders inside the pages, so its mask doesn't cover the rail.
+      const drawer = name.closest('.ant-drawer')!;
+      expect(drawer.closest('main')).not.toBeNull();
+      expect(rail().contains(drawer)).toBe(false);
+
+      await user.click(railButton('Import & export'));
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(useUiStore.getState().paneMode).toBe('new');
+      await user.click(railButton('Parameters'));
+      expect(await screen.findByLabelText('Parameter name')).toHaveValue(
+        'Draft'
+      );
+    } finally {
+      window.matchMedia = matchMedia;
+    }
   });
 
   it('ignores Esc and ↑/↓ for the Parameters page while it is hidden', async () => {

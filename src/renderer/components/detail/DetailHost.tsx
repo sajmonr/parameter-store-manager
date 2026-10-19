@@ -10,8 +10,10 @@ import styles from './DetailHost.module.css';
 
 // Hosts the selected parameter or the new-parameter form: docked on the
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
-// while nothing is open. The drawer is a portal over the whole window, so it
-// closes while its page is hidden and reopens, with its contents, after.
+// while nothing is open. The drawer renders inside the Parameters page, so
+// its mask leaves the rail clickable instead of closing the drawer and
+// dropping a draft. It closes while its page is hidden, so its focus trap
+// doesn't hold focus there, and reopens, with its contents, after.
 const DetailHost = ({ narrow }: { narrow: boolean }) => {
   const pageVisible = usePageVisible();
   const { loadState } = useParameters();
@@ -39,6 +41,7 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
       <Drawer
         open={!!content && pageVisible}
         onClose={close}
+        getContainer={false}
         placement="right"
         size={420}
         closable={false}
