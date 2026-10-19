@@ -1,13 +1,17 @@
 import { App } from 'antd';
 import type { Settings } from '../../../shared/availableSettings';
-import { saveSettingsAndApply } from '../../state/settingsChanges';
+import type { Structure } from '../../../shared/structure';
+import {
+  saveSettingsAndApply,
+  updateStructure
+} from '../../state/settingsChanges';
 
-// For controls that save on change. A failed save leaves the saved value in
-// the store, so the control shows it again. Resolves to whether it saved.
-const useSaveSettings = () => {
+// A failed save leaves the saved value in the store, so the control shows it
+// again. Resolves to whether it saved.
+const useNotifyFailure = () => {
   const { notification } = App.useApp();
-  return (values: Partial<Settings>) =>
-    saveSettingsAndApply(values).then(
+  return (save: Promise<unknown>) =>
+    save.then(
       () => true,
       (error: Error) => {
         notification.error({
@@ -17,6 +21,19 @@ const useSaveSettings = () => {
         return false;
       }
     );
+};
+
+// For controls that save on change.
+const useSaveSettings = () => {
+  const notify = useNotifyFailure();
+  return (values: Partial<Settings>) => notify(saveSettingsAndApply(values));
+};
+
+// For controls that change part of the structure setting.
+export const useUpdateStructure = () => {
+  const notify = useNotifyFailure();
+  return (change: (structure: Structure) => Structure) =>
+    notify(updateStructure(change));
 };
 
 export default useSaveSettings;

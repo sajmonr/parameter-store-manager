@@ -1,6 +1,7 @@
 // Saving settings from the Settings page. A setting can change what the rest
 // of the app shows, so the UI state that doesn't carry over is reset here.
 import type { Settings } from '../../shared/availableSettings';
+import type { Structure } from '../../shared/structure';
 import { getSettings, saveSettings } from './settings';
 import { uiActions } from './ui';
 
@@ -19,4 +20,18 @@ export const saveSettingsAndApply = async (values: Partial<Settings>) => {
     uiActions.setScope('');
   }
   if (delimiterChanged) uiActions.setExpandedFolders([]);
+};
+
+// Saves run one at a time, each changing the structure saved by the one
+// before it, so quick edits (ticking several boxes) don't overwrite each other.
+let structureSaves: Promise<unknown> = Promise.resolve();
+
+export const updateStructure = (
+  change: (structure: Structure) => Structure
+) => {
+  const save = structureSaves.then(() =>
+    saveSettingsAndApply({ structure: change(getSettings().structure) })
+  );
+  structureSaves = save.catch(() => {});
+  return save;
 };

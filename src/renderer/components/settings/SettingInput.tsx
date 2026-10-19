@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Form, Input } from 'antd';
-import useEscape from '../../hooks/useEscape';
+import useDraft from './useDraft';
 
 interface SettingInputProps {
   id: string;
@@ -16,9 +15,8 @@ interface SettingInputProps {
   className?: string;
 }
 
-// A text setting that keeps a draft while typing. Enter or leaving the field
-// saves the draft when it is valid; until then the saved value stays in
-// effect and the error shows under the field. Esc puts the saved value back.
+// A text setting that keeps a draft while typing (see useDraft). The error
+// shows under the field.
 const SettingInput = ({
   id,
   label,
@@ -29,41 +27,11 @@ const SettingInput = ({
   maxLength,
   className
 }: SettingInputProps) => {
-  const [draft, setDraft] = useState(value);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [savedValue, setSavedValue] = useState(value);
-
-  // A newly saved value, from here or elsewhere, replaces the draft.
-  if (value !== savedValue) {
-    setSavedValue(value);
-    setDraft(value);
-    setError(null);
-  }
-
-  const revert = () => {
-    setDraft(value);
-    setError(null);
-  };
-
-  useEscape(revert, draft !== value || !!error);
-
-  const commit = () => {
-    if (saving) return;
-    if (draft === value) {
-      setError(null);
-      return;
-    }
-    const invalid = validate(draft);
-    if (invalid) {
-      setError(invalid);
-      return;
-    }
-    setSaving(true);
-    onSave(draft)
-      .catch((saveError: Error) => setError(saveError.message))
-      .finally(() => setSaving(false));
-  };
+  const { draft, error, saving, change, commit } = useDraft({
+    value,
+    validate,
+    onSave
+  });
 
   return (
     <Form.Item
@@ -80,10 +48,7 @@ const SettingInput = ({
         readOnly={saving}
         maxLength={maxLength}
         className={className}
-        onChange={event => {
-          setDraft(event.target.value);
-          setError(null);
-        }}
+        onChange={event => change(event.target.value)}
         onPressEnter={commit}
         onBlur={commit}
       />

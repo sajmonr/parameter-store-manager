@@ -20,6 +20,8 @@ interface SectionInfo {
   icon: ReactNode;
   description: string;
   Content: ComponentType;
+  // The services grid gets a column per environment, so it is wider.
+  maxWidth?: number;
 }
 
 // The sections are split for the reader, whatever the settings file's
@@ -36,8 +38,10 @@ const sections: SectionInfo[] = [
     key: 'services',
     label: 'Services & environments',
     icon: <AppstoreOutlined />,
-    description: 'How parameter paths name a service and an environment.',
-    Content: ServicesSection
+    description:
+      'Tell the app how your parameter paths are built so it can group them by service and environment. This only changes how the app reads paths. Nothing is renamed in AWS.',
+    Content: ServicesSection,
+    maxWidth: 880
   },
   {
     key: 'display',
@@ -75,7 +79,13 @@ const SettingsPage = () => {
         />
       </nav>
       <div className={`${pageStyles.scroll} ${styles.main}`}>
-        <div className={pageStyles.content} style={{ maxWidth: 680 }}>
+        <div
+          className={pageStyles.content}
+          style={{
+            maxWidth:
+              sections.find(section => section.key === current)?.maxWidth ?? 680
+          }}
+        >
           {/* All sections stay mounted, so each keeps its local state. */}
           {sections.map(({ key, label, description, Content }) => (
             <section key={key} hidden={key !== current}>
