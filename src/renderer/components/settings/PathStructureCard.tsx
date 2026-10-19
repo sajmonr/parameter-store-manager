@@ -59,7 +59,7 @@ const PathStructureCard = () => {
   const structure = useSettingsStore(settings => settings.structure);
   const delimiter = usePathDelimiter();
   const update = useUpdateStructure();
-  const { parameters } = useParameters();
+  const { parameters, syncedAt } = useParameters();
   const { matches } = useStructuredParameters();
   const total = parameters.length;
 
@@ -106,8 +106,10 @@ const PathStructureCard = () => {
           </Radio>
         ))}
       </Radio.Group>
-      {/* Nothing to count before the parameters load. */}
-      {total > 0 &&
+      {/* Counts while the first load streams in would be partial, and an
+          empty account has nothing to count. */}
+      {syncedAt &&
+        total > 0 &&
         (matches.size > 0 ? (
           <Alert
             type="success"

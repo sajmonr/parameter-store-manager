@@ -53,7 +53,8 @@ const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
     updateStructure(current => addService(current, name)).then(
       () => {
         onAdded(name);
-        setName('');
+        // A name typed while the save ran is kept.
+        setName(current => (current === name ? '' : current));
       },
       (saveError: Error) => setError(saveError.message)
     );

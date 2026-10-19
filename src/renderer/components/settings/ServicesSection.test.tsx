@@ -12,6 +12,8 @@ import * as api from '../../test/mockServices';
 import type { Settings } from '../../../shared/availableSettings';
 import { DEFAULT_STRUCTURE } from '../../../shared/structure';
 import type { Structure } from '../../../shared/structure';
+import { parametersKey } from '../../state/parameters';
+import type { ParameterList } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import { useStructuredParameters } from '../../state/views';
@@ -142,6 +144,20 @@ describe('Path structure', () => {
     setup({ structure }, { parameters: [] });
     expect(screen.queryByText(/parameters match/)).toBeNull();
     expect(screen.queryByText(/No parameters match/)).toBeNull();
+  });
+
+  it('shows no stats while the first load is still streaming in', async () => {
+    const { queryClient } = setup();
+    act(() =>
+      queryClient.setQueryData<ParameterList>(
+        parametersKey('', 'us-east-1'),
+        list => list && { ...list, syncedAt: null }
+      )
+    );
+    // The query notifies on a timer.
+    await waitFor(() =>
+      expect(screen.queryByText(/parameters match/)).toBeNull()
+    );
   });
 });
 
@@ -294,6 +310,48 @@ describe('Environments', () => {
       })
     );
   });
+
+  it('drops an empty added row left after picking a colour', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    await user.click(
+      screen.getByRole('button', { name: /^New environment: blue/ })
+    );
+    await user.click(
+      within(
+        await screen.findByRole('group', { name: 'New environment colors' })
+      ).getByRole('button', { name: 'cyan' })
+    );
+    expect(
+      screen.getByRole('textbox', { name: 'New environment' })
+    ).toHaveFocus();
+
+    await user.click(screen.getByText('Path structure'));
+    expect(
+      screen.queryByRole('textbox', { name: 'New environment' })
+    ).toBeNull();
+    expect(api.settingsService.set).not.toHaveBeenCalled();
+  });
+
+  it('discards a typed added row without saving it', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'New environment' }),
+      'qa'
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Discard new environment' })
+    );
+    expect(
+      screen.queryByRole('textbox', { name: 'New environment' })
+    ).toBeNull();
+    expect(api.settingsService.set).not.toHaveBeenCalled();
+  });
 });
 
 describe('Services', () => {
@@ -413,6 +471,29 @@ describe('Services', () => {
     await waitFor(() =>
       expect(saved().services.map(s => s.segment)).toContain('billing')
     );
+  });
+
+  it('keeps a name typed while the previous one saves', async () => {
+    const user = userEvent.setup();
+    let resolveSave: () => void = () => {};
+    api.settingsService.set.mockImplementationOnce(
+      values =>
+        new Promise(resolve => {
+          resolveSave = () =>
+            resolve({ ...useSettingsStore.getState(), ...values });
+        })
+    );
+    setup();
+    const input = screen.getByRole('textbox', { name: 'New service' });
+
+    await user.type(input, 'billing{Enter}');
+    await user.clear(input);
+    await user.type(input, 'search');
+    act(() => resolveSave());
+    await waitFor(() =>
+      expect(saved().services.map(s => s.segment)).toContain('billing')
+    );
+    expect(input).toHaveValue('search');
   });
 
   it('removes a service after confirming', async () => {

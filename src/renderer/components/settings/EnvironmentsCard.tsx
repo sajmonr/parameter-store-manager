@@ -228,6 +228,8 @@ const EnvironmentsCard = () => {
             size="small"
             icon={<DeleteOutlined />}
             aria-label="Discard new environment"
+            // Leaving the input would save its segment first.
+            onMouseDown={event => event.preventDefault()}
             onClick={() => setAddedColor(null)}
           />
         ) : (

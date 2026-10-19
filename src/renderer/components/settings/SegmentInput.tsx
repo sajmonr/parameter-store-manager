@@ -8,8 +8,7 @@ interface SegmentInputProps {
   value: string;
   validate: (value: string) => string | null;
   onSave: (value: string) => Promise<unknown>;
-  // For a row that isn't saved yet: Esc, or leaving the row with it
-  // empty, drops it.
+  // For a row that isn't saved yet: Esc, or leaving it empty, drops it.
   onCancel?: () => void;
   autoFocus?: boolean;
 }
@@ -44,15 +43,7 @@ const SegmentInput = ({
         className={styles.mono}
         onChange={event => change(event.target.value)}
         onPressEnter={commit}
-        onBlur={event => {
-          if (!onCancel || draft) {
-            commit();
-            return;
-          }
-          // Picking the new row's colour keeps it.
-          const row = event.currentTarget.closest('tr');
-          if (!row?.contains(event.relatedTarget)) onCancel();
-        }}
+        onBlur={() => (onCancel && !draft ? onCancel() : commit())}
       />
       {error && (
         <Typography.Text type="danger" className={styles.fieldError}>

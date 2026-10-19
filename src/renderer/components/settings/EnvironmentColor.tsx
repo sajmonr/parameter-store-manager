@@ -34,6 +34,9 @@ const Swatch = ({
     className={styles.swatch}
     style={{ borderColor: useEnvironmentColor(color) }}
     icon={<EnvironmentDot color={color} />}
+    // Focus stays in the segment input, so picking a colour doesn't end
+    // editing a row that isn't saved yet.
+    onMouseDown={event => event.preventDefault()}
     onClick={onClick}
   />
 );
