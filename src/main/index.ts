@@ -87,12 +87,11 @@ const createWindow = () => {
   menuBuilder.buildMenu();
 };
 
+// A single-window app, so it quits with its window on macOS too, like
+// System Settings. Nothing would reopen the window, and the menu would
+// still point at the closed one.
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.whenReady().then(async () => {

@@ -1,0 +1,56 @@
+import { Layout } from 'antd';
+import useMediaQuery from '../../hooks/useMediaQuery';
+import useResizableWidth from '../../hooks/useResizableWidth';
+import useWindowWidth from '../../hooks/useWindowWidth';
+import {
+  NARROW_QUERY,
+  SIDER_MIN_WIDTH,
+  siderMaxWidth
+} from '../../utils/layout';
+import ResizeHandle from '../common/ResizeHandle';
+import AppHeader from '../header/AppHeader';
+import FolderTree from '../sidebar/FolderTree';
+import ParameterBrowser from '../parameters/ParameterBrowser';
+import DetailHost from '../detail/DetailHost';
+import styles from './ParametersPage.module.css';
+
+// The header, folder tree, table and detail pane.
+const ParametersPage = () => {
+  const narrow = useMediaQuery(NARROW_QUERY);
+  const siderMax = siderMaxWidth(useWindowWidth(), narrow);
+  const sider = useResizableWidth({
+    storageKey: 'siderWidth',
+    defaultWidth: narrow ? 220 : 240,
+    min: SIDER_MIN_WIDTH,
+    max: siderMax
+  });
+
+  return (
+    <Layout className={styles.page}>
+      <AppHeader />
+      <Layout className={styles.body}>
+        <Layout.Sider
+          theme="light"
+          width={sider.width}
+          className={styles.sider}
+        >
+          <FolderTree />
+          <ResizeHandle
+            label="Resize folder tree"
+            width={sider.width}
+            min={SIDER_MIN_WIDTH}
+            max={siderMax}
+            onResize={sider.setWidth}
+            onReset={sider.reset}
+          />
+        </Layout.Sider>
+        <Layout.Content className={styles.main}>
+          <ParameterBrowser />
+        </Layout.Content>
+        <DetailHost narrow={narrow} />
+      </Layout>
+    </Layout>
+  );
+};
+
+export default ParametersPage;

@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../test/mockServices';
+import { uiActions, useUiStore } from '../state/ui';
 import { renderWithProviders } from '../test/render';
+import { NARROW_QUERY } from '../utils/layout';
 import { makeParameter } from '../test/testState';
-import AppShell, { siderMaxWidth } from './AppShell';
+import AppShell from './AppShell';
 
 vi.mock('../services', () => import('../test/mockServices'));
 
@@ -178,18 +180,152 @@ describe('AppShell', () => {
   });
 });
 
-describe('siderMaxWidth', () => {
-  it('leaves room for the table next to the pane', () => {
-    expect(siderMaxWidth(1280, false)).toBe(480);
-    expect(siderMaxWidth(1100, false)).toBe(300);
+describe('pages', () => {
+  const rail = () => screen.getByRole('navigation', { name: 'Pages' });
+  const railButton = (name: string) =>
+    within(rail()).getByRole('button', { name });
+  const page = () => useUiStore.getState().page;
+
+  it('shows the three pages in the rail and highlights the current one', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Password');
+
+    expect(
+      within(rail())
+        .getAllByRole('button')
+        .map(button => button.getAttribute('aria-label'))
+    ).toEqual(['Parameters', 'Import & export', 'Settings']);
+    expect(railButton('Parameters')).toHaveAttribute('aria-current', 'page');
+
+    await user.click(railButton('Import & export'));
+    expect(page()).toBe('importExport');
+    expect(railButton('Import & export')).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(railButton('Parameters')).not.toHaveAttribute('aria-current');
+    // The hidden Parameters page is out of the accessibility tree.
+    expect(
+      screen.queryByRole('button', { name: /New parameter/ })
+    ).not.toBeInTheDocument();
   });
 
-  it('ignores the pane when it is a drawer, up to 600px', () => {
-    expect(siderMaxWidth(960, true)).toBe(600);
-    expect(siderMaxWidth(700, true)).toBe(340);
+  it('keeps the selection, search and a New parameter draft across pages', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Password');
+
+    await user.type(screen.getByLabelText('Search parameters'), 'app');
+    await user.click(within(table()).getByText('Host'));
+    expect(
+      await screen.findByRole('complementary', { name: 'Details' })
+    ).toBeInTheDocument();
+
+    await user.click(railButton('Import & export'));
+    await user.click(railButton('Parameters'));
+    expect(screen.getByLabelText('Search parameters')).toHaveValue('app');
+    expect(
+      within(screen.getByRole('complementary', { name: 'Details' })).getByText(
+        '/dev/app/db/Host'
+      )
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /New parameter/ }));
+    const name = await screen.findByLabelText('Parameter name');
+    await user.type(name, 'Draft');
+    await user.click(railButton('Import & export'));
+    await user.click(railButton('Parameters'));
+    expect(screen.getByLabelText('Parameter name')).toHaveValue('Draft');
   });
 
-  it('never goes below the minimum width', () => {
-    expect(siderMaxWidth(900, false)).toBe(180);
+  it('keeps the drawer inside the Parameters page in a narrow window', async () => {
+    const matchMedia = window.matchMedia;
+    window.matchMedia = query =>
+      ({
+        ...matchMedia(query),
+        matches: query === NARROW_QUERY
+      }) as MediaQueryList;
+    try {
+      const user = userEvent.setup();
+      renderApp();
+      await screen.findByText('Password');
+
+      await user.click(screen.getByRole('button', { name: /New parameter/ }));
+      const name = await screen.findByLabelText('Parameter name');
+      await user.type(name, 'Draft');
+      // It renders inside the pages, so its mask doesn't cover the rail.
+      const drawer = name.closest('.ant-drawer')!;
+      expect(drawer.closest('main')).not.toBeNull();
+      expect(rail().contains(drawer)).toBe(false);
+
+      await user.click(railButton('Import & export'));
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(useUiStore.getState().paneMode).toBe('new');
+      await user.click(railButton('Parameters'));
+      expect(await screen.findByLabelText('Parameter name')).toHaveValue(
+        'Draft'
+      );
+    } finally {
+      window.matchMedia = matchMedia;
+    }
+  });
+
+  it('ignores Esc and ↑/↓ for the Parameters page while it is hidden', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Password');
+    await user.click(within(table()).getByText('Host'));
+    await screen.findByRole('complementary', { name: 'Details' });
+
+    await user.click(railButton('Import & export'));
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useUiStore.getState().selectedName).toBe('/dev/app/db/Host');
+
+    await user.click(railButton('Parameters'));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useUiStore.getState().selectedName).toBeNull();
+  });
+
+  it('opens Settings from the rail, Cmd/Ctrl+, and the app menu', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Password');
+
+    await user.click(railButton('Settings'));
+    expect(page()).toBe('settings');
+
+    uiActions.closeSettings();
+    uiActions.showPage('parameters');
+    fireEvent.keyDown(window, { key: ',', ctrlKey: true });
+    expect(page()).toBe('settings');
+    expect(useUiStore.getState().settingsOpen).toBe(true);
+
+    uiActions.closeSettings();
+    uiActions.showPage('parameters');
+    const fromMenu = api.menuService.onOpenSettings.mock.calls[0]![0];
+    fromMenu();
+    expect(page()).toBe('settings');
+  });
+
+  it('ignores Cmd/Ctrl+, while the export is open', async () => {
+    renderApp();
+    await screen.findByText('Password');
+    uiActions.openExport();
+
+    fireEvent.keyDown(window, { key: ',', metaKey: true });
+    expect(useUiStore.getState().settingsOpen).toBe(false);
+    expect(page()).toBe('parameters');
+  });
+
+  it('opens the export from the Import & export page', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Password');
+
+    await user.click(railButton('Import & export'));
+    await user.click(screen.getByRole('button', { name: /Export as CSV/ }));
+    expect(useUiStore.getState().exportOpen).toBe(true);
   });
 });

@@ -8,6 +8,7 @@
 .pane {
   composes: content;
   flex: none;
+  width: var(--pane-width);
   overflow-x: hidden;
   overflow-y: auto;
   border-left: 1px solid var(--ant-color-border-secondary);

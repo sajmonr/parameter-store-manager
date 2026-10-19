@@ -1,70 +1,76 @@
-import { Layout } from 'antd';
-import useMediaQuery from '../hooks/useMediaQuery';
-import useResizableWidth from '../hooks/useResizableWidth';
-import useWindowWidth from '../hooks/useWindowWidth';
-import ResizeHandle from './common/ResizeHandle';
-import AppHeader from './header/AppHeader';
-import FolderTree from './sidebar/FolderTree';
-import ParameterBrowser from './parameters/ParameterBrowser';
-import DetailHost, { PANE_WIDTH } from './detail/DetailHost';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { PageVisibleContext } from '../hooks/usePageVisible';
+import { menuService } from '../services';
+import { uiActions, useUiStore } from '../state/ui';
+import type { Page } from '../state/ui';
+import { isSettingsShortcut } from '../utils/keys';
+import { layoutVariables } from '../utils/layout';
+import Rail from './rail/Rail';
+import ParametersPage from './pages/ParametersPage';
+import ImportExportPage from './pages/ImportExportPage';
+import SettingsPage from './pages/SettingsPage';
 import SettingsModal from './settings/SettingsModal';
 import ExportModal from './export/ExportModal';
 import styles from './AppShell.module.css';
 
-// Below this width the detail pane becomes a drawer.
-export const NARROW_QUERY = '(max-width: 1099px)';
+// Not over the export: changing the profile or region would stop it.
+// TODO(#32): drop the check once the export runs on its own page.
+const openSettingsUnlessExporting = () => {
+  if (!useUiStore.getState().exportOpen) uiActions.openSettings();
+};
 
-const SIDER_MIN_WIDTH = 180;
-const SIDER_MAX_WIDTH = 600;
-// The sider never squeezes the table below this, even with the pane open.
-const MIN_TABLE_WIDTH = 360;
+const onSettingsShortcut = (event: KeyboardEvent) => {
+  if (!isSettingsShortcut(event)) return;
+  event.preventDefault();
+  openSettingsUnlessExporting();
+};
 
-export const siderMaxWidth = (windowWidth: number, narrow: boolean) =>
-  Math.max(
-    SIDER_MIN_WIDTH,
-    Math.min(
-      SIDER_MAX_WIDTH,
-      windowWidth - (narrow ? 0 : PANE_WIDTH) - MIN_TABLE_WIDTH
-    )
+// Every page stays mounted, so it keeps its state, scroll position and form
+// drafts; the hidden ones keep their layout too, so nothing is re-measured
+// when they're shown again.
+const PageFrame = ({ page, children }: { page: Page; children: ReactNode }) => {
+  const visible = useUiStore(state => state.page === page);
+  return (
+    <PageVisibleContext.Provider value={visible}>
+      <div
+        className={visible ? styles.page : `${styles.page} ${styles.hidden}`}
+        aria-hidden={!visible}
+      >
+        {children}
+      </div>
+    </PageVisibleContext.Provider>
   );
+};
 
 const AppShell = () => {
-  const narrow = useMediaQuery(NARROW_QUERY);
-  const siderMax = siderMaxWidth(useWindowWidth(), narrow);
-  const sider = useResizableWidth({
-    storageKey: 'siderWidth',
-    defaultWidth: narrow ? 220 : 240,
-    min: SIDER_MIN_WIDTH,
-    max: siderMax
-  });
+  useEffect(() => {
+    window.addEventListener('keydown', onSettingsShortcut);
+    const unsubscribe = menuService.onOpenSettings(openSettingsUnlessExporting);
+    return () => {
+      window.removeEventListener('keydown', onSettingsShortcut);
+      unsubscribe();
+    };
+  }, []);
 
   return (
-    <Layout className={styles.shell}>
-      <AppHeader />
-      <Layout className={styles.body}>
-        <Layout.Sider
-          theme="light"
-          width={sider.width}
-          className={styles.sider}
-        >
-          <FolderTree />
-          <ResizeHandle
-            label="Resize folder tree"
-            width={sider.width}
-            min={SIDER_MIN_WIDTH}
-            max={siderMax}
-            onResize={sider.setWidth}
-            onReset={sider.reset}
-          />
-        </Layout.Sider>
-        <Layout.Content className={styles.main}>
-          <ParameterBrowser />
-        </Layout.Content>
-        <DetailHost narrow={narrow} />
-      </Layout>
+    <div className={styles.shell} style={layoutVariables}>
+      <Rail />
+      <main className={styles.pages}>
+        <PageFrame page="parameters">
+          <ParametersPage />
+        </PageFrame>
+        <PageFrame page="importExport">
+          <ImportExportPage />
+        </PageFrame>
+        <PageFrame page="settings">
+          <SettingsPage />
+        </PageFrame>
+      </main>
+      {/* TODO(#31), TODO(#32): remove with the modals. */}
       <SettingsModal />
       <ExportModal />
-    </Layout>
+    </div>
   );
 };
 
