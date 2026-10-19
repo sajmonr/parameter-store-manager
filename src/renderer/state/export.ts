@@ -1,11 +1,16 @@
 // CSV export of parameters, fetched from AWS when it runs: the loaded list
-// may be out of date and may miss values whose load failed.
-import { useMutation } from '@tanstack/react-query';
+// may be out of date and may miss values whose load failed. It runs outside
+// any component, so it carries on whichever page is shown.
+import { create } from 'zustand';
 import pAll from 'p-all';
+import type { ApiError } from '../clients/call';
+import { feedback } from '../feedback';
 import { accountService, filesService, parametersService } from '../services';
 import type { ParameterMetadata } from '../services';
+import { describeError } from '../utils/awsErrors';
 import { exportFileName, parametersToCsv } from '../utils/csv';
 import type { CsvParameter } from '../utils/csv';
+import { plural } from '../utils/plural';
 import { createPrefixMatcher, literalPrefix } from '../utils/search';
 import { chunk, VALUES_BATCH_SIZE } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
@@ -15,17 +20,20 @@ export type ExportProgress =
   | { phase: 'values'; done: number; total: number }
   | { phase: 'saving' };
 
-export interface ExportRequest {
+export interface ExportOptions {
   // '' exports every parameter; otherwise the names that start with it,
   // with the same wildcards as the search.
   path: string;
   // Without them nothing is decrypted, so kms:Decrypt isn't needed.
   includeSecureValues: boolean;
+}
+
+interface ExportRequest extends ExportOptions {
   signal: AbortSignal;
   onProgress: (progress: ExportProgress) => void;
 }
 
-export interface ExportResult {
+interface ExportResult {
   // null when the user cancelled the save dialog.
   filePath: string | null;
   count: number;
@@ -155,11 +163,75 @@ const exportParameters = async (
   return { filePath, count: rows.length };
 };
 
-// Shared, so other components can tell whether an export is running.
-export const EXPORT_MUTATION_KEY = ['exportParameters'];
+export const describeProgress = (progress: ExportProgress) => {
+  if (progress.phase === 'listing') {
+    return `Listing parameters… ${progress.found.toLocaleString()} found`;
+  }
+  if (progress.phase === 'values') {
+    return `Fetching values… ${progress.done.toLocaleString()} / ${progress.total.toLocaleString()}`;
+  }
+  return 'Saving…';
+};
 
-export const useExportParameters = () =>
-  useMutation({
-    mutationKey: EXPORT_MUTATION_KEY,
-    mutationFn: exportParameters
-  });
+export interface ExportState {
+  running: boolean;
+  // null until the first progress report.
+  progress: ExportProgress | null;
+}
+
+export const initialExportState: ExportState = {
+  running: false,
+  progress: null
+};
+
+export const useExportStore = create<ExportState>()(() => initialExportState);
+
+const set = useExportStore.setState;
+
+// The running export's; null while none runs.
+let controller: AbortController | null = null;
+
+// Does nothing while an export is running.
+const start = async (options: ExportOptions) => {
+  if (controller) return;
+  const current = new AbortController();
+  controller = current;
+  set({ running: true, progress: null });
+  try {
+    const { filePath, count } = await exportParameters({
+      ...options,
+      signal: current.signal,
+      // A batch still in flight after a failure can report late; by then
+      // the store may belong to the next export.
+      onProgress: progress => {
+        if (controller === current) set({ progress });
+      }
+    });
+    // null when the save dialog was cancelled.
+    if (filePath) {
+      feedback.message?.success(`Exported ${plural(count, 'parameter')}`);
+    }
+  } catch (error) {
+    if (!current.signal.aborted) {
+      feedback.notification?.error({
+        title: 'Parameters were not exported',
+        description: describeError(error as ApiError)
+      });
+    }
+  } finally {
+    // A cancelled export may finish after the next one has started.
+    if (controller === current) {
+      controller = null;
+      set(initialExportState);
+    }
+  }
+};
+
+// Stops the running export, if any.
+const cancel = () => {
+  controller?.abort();
+  controller = null;
+  set(initialExportState);
+};
+
+export const exportActions = { start, cancel };

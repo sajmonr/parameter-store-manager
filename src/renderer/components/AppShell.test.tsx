@@ -63,7 +63,12 @@ describe('AppShell', () => {
 
     expect(await screen.findByText('Password')).toBeInTheDocument();
     expect(screen.getByLabelText('Counting parameters')).toBeInTheDocument();
-    expect(document.querySelector('.ant-badge')).not.toBeInTheDocument();
+    // The count's badge; the rail has its own.
+    const countBadge = () =>
+      [...document.querySelectorAll('.ant-badge')].find(
+        badge => !badge.closest('nav[aria-label="Pages"]')
+      ) ?? null;
+    expect(countBadge()).not.toBeInTheDocument();
 
     lastPage({ parameters: parameters.slice(1) });
     await waitFor(() =>
@@ -71,7 +76,7 @@ describe('AppShell', () => {
         screen.queryByLabelText('Counting parameters')
       ).not.toBeInTheDocument()
     );
-    expect(document.querySelector('.ant-badge')).toHaveTextContent('4');
+    expect(countBadge()).toHaveTextContent('4');
   });
 
   it('filters by search and scope together', async () => {
@@ -306,22 +311,34 @@ describe('pages', () => {
     expect(page()).toBe('settings');
   });
 
-  it('ignores Cmd/Ctrl+, while the export is open', async () => {
-    renderApp();
-    await screen.findByText('Password');
-    uiActions.openExport();
-
-    fireEvent.keyDown(window, { key: ',', metaKey: true });
-    expect(page()).toBe('parameters');
-  });
-
-  it('opens the export from the Import & export page', async () => {
+  it('keeps exporting on another page, showing it in the rail', async () => {
     const user = userEvent.setup();
+    api.filesService.saveCsv.mockResolvedValue('/Downloads/export.csv');
     renderApp();
     await screen.findByText('Password');
+    let lastPage!: (page: { parameters: typeof parameters }) => void;
+    api.parametersService.describe.mockReturnValueOnce(
+      new Promise(resolve => {
+        lastPage = resolve;
+      })
+    );
 
     await user.click(railButton('Import & export'));
-    await user.click(screen.getByRole('button', { name: /Export as CSV/ }));
-    expect(useUiStore.getState().exportOpen).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(railButton('Parameters'));
+    // It fades out, but stops showing at once.
+    const busyDot = () =>
+      rail().querySelector('.ant-badge-dot[data-show="true"]');
+    expect(busyDot()).toBeInTheDocument();
+    // The dot coming and going doesn't take keyboard focus away.
+    railButton('Import & export').focus();
+
+    lastPage({ parameters });
+    expect(
+      await screen.findByText('Exported 4 parameters')
+    ).toBeInTheDocument();
+    expect(page()).toBe('parameters');
+    expect(busyDot()).not.toBeInTheDocument();
+    expect(railButton('Import & export')).toHaveFocus();
   });
 });

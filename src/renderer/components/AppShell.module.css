@@ -18,6 +18,11 @@
   min-height: 0;
 }
 
-.hidden {
+/* Visibility is inherited and animatable: antd's `transition: all` would keep
+   each element visible until its transition ends, so the page would vanish
+   piece by piece. Its selectors can outrank this one, hence !important. */
+.hidden,
+.hidden * {
   visibility: hidden;
+  transition: none !important;
 }

@@ -32,7 +32,6 @@ export interface UiState {
   newPrefill: NewParameterPrefill | null;
   // The section the Settings page shows; kept while the page is hidden.
   settingsSection: SettingsSection;
-  exportOpen: boolean;
 }
 
 export const initialUiState: UiState = {
@@ -43,8 +42,7 @@ export const initialUiState: UiState = {
   selectedName: null,
   paneMode: null,
   newPrefill: null,
-  settingsSection: 'aws',
-  exportOpen: false
+  settingsSection: 'aws'
 };
 
 export const useUiStore = create<UiState>()(() => initialUiState);
@@ -91,9 +89,6 @@ const openSettings = (section?: SettingsSection) =>
     settingsSection: section ?? state.settingsSection
   }));
 
-const openExport = () => set({ exportOpen: true });
-const closeExport = () => set({ exportOpen: false });
-
 // Shows a parameter that was just created: selects it, expands its folder
 // and moves the scope to that folder unless the parameter is already in it.
 const showCreatedParameter = (name: string) => {
@@ -113,8 +108,6 @@ export const uiActions = {
   closePane,
   openSettings,
   showSettingsSection,
-  openExport,
-  closeExport,
   showCreatedParameter,
   showPage
 };

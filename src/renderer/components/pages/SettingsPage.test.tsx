@@ -4,7 +4,7 @@ import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
 import type { Settings } from '../../../shared/availableSettings';
-import { EXPORT_MUTATION_KEY } from '../../state/export';
+import { useExportStore } from '../../state/export';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { SettingsSection } from '../../state/ui';
@@ -212,18 +212,10 @@ describe('AWS connection', () => {
   });
 
   it('warns that changing the source stops a running export', async () => {
-    const { queryClient } = setup();
+    setup();
     expect(screen.queryByText('An export is running')).toBeNull();
 
-    act(() => {
-      void queryClient
-        .getMutationCache()
-        .build(queryClient, {
-          mutationKey: EXPORT_MUTATION_KEY,
-          mutationFn: () => new Promise(() => {})
-        })
-        .execute(undefined);
-    });
+    act(() => useExportStore.setState({ running: true }));
     expect(await screen.findByText('An export is running')).toBeVisible();
   });
 });

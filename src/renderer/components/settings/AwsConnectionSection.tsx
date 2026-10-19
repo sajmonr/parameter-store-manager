@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useIsMutating } from '@tanstack/react-query';
 import { Alert, Card, Checkbox, Flex, Form, Select, Typography } from 'antd';
 import type { ListProfilesResponse } from '../../../main/endpoints/aws/listProfiles/listProfiles.contract';
 import usePageVisible from '../../hooks/usePageVisible';
 import { profilesService } from '../../services';
-import { EXPORT_MUTATION_KEY } from '../../state/export';
+import { useExportStore } from '../../state/export';
 import { useSettingsStore } from '../../state/settings';
 import { AWS_REGIONS } from '../../utils/awsRegions';
 import useSaveSettings from './useSaveSettings';
@@ -55,7 +54,7 @@ const AwsConnectionSection = () => {
   const saved = useSettingsStore();
   const save = useSaveSettings();
   const visible = usePageVisible();
-  const exporting = useIsMutating({ mutationKey: EXPORT_MUTATION_KEY }) > 0;
+  const exporting = useExportStore(state => state.running);
   const [profiles, setProfiles] = useState<ListProfilesResponse>({
     profiles: [],
     envProfile: null
