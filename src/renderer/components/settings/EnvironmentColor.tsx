@@ -32,7 +32,8 @@ const presets = [
 
 // Shows an environment's colour; a click opens a full colour picker. The
 // colour is saved once a drag ends or a value is entered, not while dragging.
-// Without `onChange` (a row that isn't saved yet), it only shows the colour.
+// A failed save shows the saved colour again. Without `onChange` (a row that
+// isn't saved yet), it only shows the colour.
 export const EnvironmentColorPicker = ({
   color,
   label,
@@ -40,7 +41,8 @@ export const EnvironmentColorPicker = ({
 }: {
   color: string;
   label: string;
-  onChange?: (color: string) => void;
+  // Resolves to whether the colour was saved.
+  onChange?: (color: string) => Promise<boolean>;
 }) => {
   const [draft, setDraft] = useState(color);
   const [savedColor, setSavedColor] = useState(color);
@@ -63,7 +65,11 @@ export const EnvironmentColorPicker = ({
       onChange={value => setDraft(value.toHexString())}
       onChangeComplete={value => {
         const hex = value.toHexString();
-        if (hex !== color.toLowerCase()) onChange(hex);
+        if (hex === color.toLowerCase()) return;
+        void onChange(hex).then(saved => {
+          // Unless another colour was picked since.
+          if (!saved) setDraft(current => (current === hex ? color : current));
+        });
       }}
     >
       <Swatch color={draft} label={label} />

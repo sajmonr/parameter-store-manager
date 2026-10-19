@@ -27,7 +27,7 @@ const SettingInput = ({
   maxLength,
   className
 }: SettingInputProps) => {
-  const { draft, error, saving, change, commit } = useDraft({
+  const { draft, error, saving, change, commit, onKeyDown } = useDraft({
     value,
     validate,
     onSave
@@ -50,6 +50,7 @@ const SettingInput = ({
         className={className}
         onChange={event => change(event.target.value)}
         onPressEnter={commit}
+        onKeyDown={onKeyDown}
         onBlur={commit}
       />
     </Form.Item>

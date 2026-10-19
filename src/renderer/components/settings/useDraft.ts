@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useEscape from '../../hooks/useEscape';
+import type { KeyboardEvent } from 'react';
 
 interface DraftOptions {
   // The saved value.
@@ -13,8 +13,9 @@ interface DraftOptions {
 
 // A text setting that keeps a draft while typing. Committing (Enter or
 // leaving the field) saves the draft when it is valid; until then the saved
-// value stays in effect and the error is returned. Esc puts the saved value
-// back.
+// value stays in effect and the error is returned. Esc in the field puts the
+// saved value back; it is handled there, not with useEscape, so it only
+// affects the field it is pressed in.
 const useDraft = ({ value, validate, onSave, onCancel }: DraftOptions) => {
   const [draft, setDraft] = useState(value);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +33,6 @@ const useDraft = ({ value, validate, onSave, onCancel }: DraftOptions) => {
     setDraft(value);
     setError(null);
   };
-
-  useEscape(onCancel ?? revert, !!onCancel || draft !== value || !!error);
 
   const commit = () => {
     if (saving) return;
@@ -57,7 +56,16 @@ const useDraft = ({ value, validate, onSave, onCancel }: DraftOptions) => {
     setError(null);
   };
 
-  return { draft, error, saving, change, commit };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    if (!onCancel && draft === value && !error) return;
+    // Nothing else, such as the detail pane, reacts to this Esc.
+    event.preventDefault();
+    event.stopPropagation();
+    (onCancel ?? revert)();
+  };
+
+  return { draft, error, saving, change, commit, onKeyDown };
 };
 
 export default useDraft;

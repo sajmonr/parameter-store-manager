@@ -23,7 +23,7 @@ const SegmentInput = ({
   onCancel,
   autoFocus
 }: SegmentInputProps) => {
-  const { draft, error, saving, change, commit } = useDraft({
+  const { draft, error, saving, change, commit, onKeyDown } = useDraft({
     value,
     validate,
     onSave,
@@ -43,6 +43,7 @@ const SegmentInput = ({
         className={styles.mono}
         onChange={event => change(event.target.value)}
         onPressEnter={commit}
+        onKeyDown={onKeyDown}
         onBlur={() => (onCancel && !draft ? onCancel() : commit())}
       />
       {error && (

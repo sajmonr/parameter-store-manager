@@ -207,6 +207,30 @@ describe('Environments', () => {
     expect(api.settingsService.set).not.toHaveBeenCalled();
   });
 
+  it('reverts only the field Esc is pressed in', async () => {
+    const user = userEvent.setup();
+    setup();
+    const staging = screen.getByRole('textbox', {
+      name: 'Environment staging'
+    });
+    const production = screen.getByRole('textbox', {
+      name: 'Environment production'
+    });
+
+    await user.clear(staging);
+    await user.type(staging, 'a b');
+    await user.clear(production);
+    await user.type(production, 'c d');
+    await user.tab();
+    expect(screen.getAllByText("Can't contain spaces.")).toHaveLength(2);
+
+    await user.click(staging);
+    await user.keyboard('{Escape}');
+    expect(staging).toHaveValue('staging');
+    expect(production).toHaveValue('c d');
+    expect(api.settingsService.set).not.toHaveBeenCalled();
+  });
+
   it('removes an environment from every service after confirming', async () => {
     const user = userEvent.setup();
     setup();
@@ -289,6 +313,27 @@ describe('Environments', () => {
       )[4]!
     );
     await waitFor(() => expect(saved().environments[0]!.color).toBe('#722ed1'));
+  });
+
+  it('shows the saved colour again when saving fails', async () => {
+    const user = userEvent.setup();
+    api.settingsService.set.mockRejectedValueOnce(new Error('Disk full'));
+    setup();
+
+    await user.click(
+      screen.getByRole('button', { name: 'development color: #52c41a' })
+    );
+    const hex = (await waitFor(() =>
+      document.querySelector('.ant-color-picker-hex-input input')
+    )) as HTMLInputElement;
+    await user.clear(hex);
+    await user.type(hex, '123abc');
+    await user.tab();
+    expect(await screen.findByText('Disk full')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'development color: #52c41a' })
+    ).toBeInTheDocument();
+    expect(saved().environments[0]!.color).toBe('#52c41a');
   });
 
   it('shows the colour of an added row, which changes once saved', async () => {
