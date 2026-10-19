@@ -150,7 +150,16 @@ describe('invokeEndpoint', () => {
       {
         structure: {
           ...DEFAULT_STRUCTURE,
-          environments: [{ segment: 'my env', color: 'green' }]
+          environments: [{ segment: 'my env', color: '#52c41a' }]
+        }
+      }
+    ],
+    [
+      'settings.set',
+      {
+        structure: {
+          ...DEFAULT_STRUCTURE,
+          environments: [{ segment: 'qa', color: 'green' }]
         }
       }
     ],

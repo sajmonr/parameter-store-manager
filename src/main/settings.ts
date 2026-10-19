@@ -4,11 +4,13 @@ import availableSettings from '../shared/availableSettings';
 import { DEFAULT_SETTINGS, THEMES } from '../shared/availableSettings';
 import type { SettingKey, Settings } from '../shared/availableSettings';
 import {
-  ENVIRONMENT_COLORS,
+  DEFAULT_ENVIRONMENT_COLOR,
+  isHexColor,
   LAYOUTS,
   PARAMETER_VIEWS,
   structureErrors
 } from '../shared/structure';
+import type { Structure } from '../shared/structure';
 
 export { availableSettings };
 
@@ -47,7 +49,9 @@ const schema: Schema<Settings> = {
           type: 'object',
           properties: {
             segment: { type: 'string' },
-            color: { type: 'string', enum: [...ENVIRONMENT_COLORS] }
+            // Any string, so a file with another colour still loads; see
+            // withHexColors.
+            color: { type: 'string' }
           },
           required: ['segment', 'color']
         }
@@ -78,12 +82,24 @@ const store = new Store<Settings>({ schema });
 
 const settingKeys: SettingKey[] = Object.values(availableSettings);
 
-export const getSetting = <K extends SettingKey>(key: K): Settings[K] =>
-  store.get(key);
+// A colour that isn't '#rrggbb' reads as the default one.
+const withHexColors = (structure: Structure): Structure => ({
+  ...structure,
+  environments: structure.environments.map(e =>
+    isHexColor(e.color) ? e : { ...e, color: DEFAULT_ENVIRONMENT_COLOR }
+  )
+});
+
+export const getSetting = <K extends SettingKey>(key: K): Settings[K] => {
+  const value = store.get(key);
+  return key === availableSettings.structure
+    ? (withHexColors(value as Structure) as Settings[K])
+    : value;
+};
 
 export const getAllSettings = (): Settings =>
   Object.fromEntries(
-    settingKeys.map(key => [key, store.get(key)])
+    settingKeys.map(key => [key, getSetting(key)])
   ) as unknown as Settings;
 
 // The settings.set endpoint validates the values on their own. Segments also

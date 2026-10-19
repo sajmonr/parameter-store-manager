@@ -42,8 +42,8 @@ describe('structureErrors', () => {
     const structure: Structure = {
       ...DEFAULT_STRUCTURE,
       environments: [
-        { segment: 'development', color: 'green' },
-        { segment: 'development', color: 'gold' }
+        { segment: 'development', color: '#52c41a' },
+        { segment: 'development', color: '#faad14' }
       ],
       services: [
         { segment: 'a b', environments: ['development'] },
@@ -65,7 +65,7 @@ describe('structureErrors', () => {
 describe('delimiterConflict', () => {
   const structure: Structure = {
     ...DEFAULT_STRUCTURE,
-    environments: [{ segment: 'dev-eu', color: 'green' }],
+    environments: [{ segment: 'dev-eu', color: '#52c41a' }],
     services: [{ segment: 'compass.api', environments: ['dev-eu'] }]
   };
 
@@ -78,7 +78,7 @@ describe('delimiterConflict', () => {
   it('finds segments that end with the start of the delimiter', () => {
     const dotted: Structure = {
       ...DEFAULT_STRUCTURE,
-      environments: [{ segment: 'dev.', color: 'green' }]
+      environments: [{ segment: 'dev.', color: '#52c41a' }]
     };
     expect(delimiterConflict(dotted, '..')).toBe('dev.');
   });

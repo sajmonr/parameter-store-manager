@@ -3,7 +3,7 @@ import { THEMES } from '../../../../shared/availableSettings';
 import type { Settings } from '../../../../shared/availableSettings';
 import { defineContract } from '../../../../shared/contract';
 import {
-  ENVIRONMENT_COLORS,
+  isHexColor,
   LAYOUTS,
   PARAMETER_VIEWS,
   structureErrors
@@ -18,7 +18,7 @@ const structure = z
     environments: z.array(
       z.strictObject({
         segment: z.string(),
-        color: z.enum(ENVIRONMENT_COLORS)
+        color: z.string().refine(isHexColor, 'Expected a #rrggbb color.')
       })
     ),
     services: z.array(

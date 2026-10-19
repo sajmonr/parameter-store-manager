@@ -6,20 +6,26 @@
 export const LAYOUTS = ['env-first', 'svc-first'] as const;
 export type Layout = (typeof LAYOUTS)[number];
 
-// antd Tag presets. A new environment gets the next one in this order.
+// Environment colours are stored as '#rrggbb'.
+export const isHexColor = (value: string) => /^#[0-9a-f]{6}$/i.test(value);
+
+// antd's green, gold, red, blue, purple and cyan. A new environment gets the
+// next one in this order; the colour picker suggests them.
 export const ENVIRONMENT_COLORS = [
-  'green',
-  'gold',
-  'red',
-  'blue',
-  'purple',
-  'cyan'
+  '#52c41a',
+  '#faad14',
+  '#f5222d',
+  '#1677ff',
+  '#722ed1',
+  '#13c2c2'
 ] as const;
-export type EnvironmentColor = (typeof ENVIRONMENT_COLORS)[number];
+
+// Green, also used for a stored colour that isn't a hex colour.
+export const DEFAULT_ENVIRONMENT_COLOR = ENVIRONMENT_COLORS[0];
 
 export interface StructureEnvironment {
   segment: string;
-  color: EnvironmentColor;
+  color: string;
 }
 
 export interface StructureService {
@@ -41,9 +47,9 @@ export const DEFAULT_STRUCTURE: Structure = {
   enabled: false,
   layout: 'env-first',
   environments: [
-    { segment: 'development', color: 'green' },
-    { segment: 'staging', color: 'gold' },
-    { segment: 'production', color: 'red' }
+    { segment: 'development', color: ENVIRONMENT_COLORS[0] },
+    { segment: 'staging', color: ENVIRONMENT_COLORS[1] },
+    { segment: 'production', color: ENVIRONMENT_COLORS[2] }
   ],
   services: []
 };

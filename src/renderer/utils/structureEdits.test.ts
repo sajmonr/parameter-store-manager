@@ -29,13 +29,13 @@ const segments = (s: Structure) => s.environments.map(e => e.segment);
 
 describe('nextColor', () => {
   it('picks the first preset no environment uses', () => {
-    expect(nextColor(structure)).toBe('blue');
+    expect(nextColor(structure)).toBe('#1677ff');
     expect(
       nextColor({
         ...structure,
-        environments: [{ segment: 'a', color: 'gold' }]
+        environments: [{ segment: 'a', color: '#FAAD14' }]
       })
-    ).toBe('green');
+    ).toBe('#52c41a');
   });
 
   it('repeats the presets once all are used', () => {
@@ -43,21 +43,24 @@ describe('nextColor', () => {
       segment: color,
       color
     }));
-    expect(nextColor({ ...structure, environments })).toBe('green');
+    expect(nextColor({ ...structure, environments })).toBe('#52c41a');
   });
 });
 
 describe('environments', () => {
   it('adds one at the end', () => {
-    const next = addEnvironment(structure, 'qa', 'blue');
-    expect(next.environments.at(-1)).toEqual({ segment: 'qa', color: 'blue' });
+    const next = addEnvironment(structure, 'qa', '#1677ff');
+    expect(next.environments.at(-1)).toEqual({
+      segment: 'qa',
+      color: '#1677ff'
+    });
     expect(next.services).toEqual(structure.services);
   });
 
   it('renames one in every service', () => {
     const next = renameEnvironment(structure, 'staging', 'stage');
     expect(segments(next)).toEqual(['development', 'stage', 'production']);
-    expect(next.environments[1]!.color).toBe('gold');
+    expect(next.environments[1]!.color).toBe('#faad14');
     expect(next.services.map(s => s.environments)).toEqual([
       ['development', 'stage', 'production'],
       ['development', 'stage']
@@ -84,11 +87,11 @@ describe('environments', () => {
   });
 
   it('sets the colour of one', () => {
-    const next = setEnvironmentColor(structure, 'staging', 'purple');
+    const next = setEnvironmentColor(structure, 'staging', '#123abc');
     expect(next.environments.map(e => e.color)).toEqual([
-      'green',
-      'purple',
-      'red'
+      '#52c41a',
+      '#123abc',
+      '#f5222d'
     ]);
   });
 });

@@ -244,7 +244,7 @@ describe('Environments', () => {
     await waitFor(() =>
       expect(saved().environments.at(-1)).toEqual({
         segment: 'qa',
-        color: 'blue'
+        color: '#1677ff'
       })
     );
     expect(
@@ -267,72 +267,46 @@ describe('Environments', () => {
     expect(api.settingsService.set).not.toHaveBeenCalled();
   });
 
-  it('picks a colour from the presets', async () => {
+  it('picks any colour, saved as hex', async () => {
     const user = userEvent.setup();
     setup();
 
     await user.click(
-      screen.getByRole('button', { name: /^development: green/ })
+      screen.getByRole('button', { name: 'development color: #52c41a' })
     );
-    const presets = await screen.findByRole('group', {
-      name: 'development colors'
-    });
-    expect(
-      within(presets).getByRole('button', { name: 'green' })
-    ).toHaveAttribute('aria-pressed', 'true');
-    await user.click(within(presets).getByRole('button', { name: 'purple' }));
-    await waitFor(() => expect(saved().environments[0]!.color).toBe('purple'));
+    const hex = (await waitFor(() =>
+      document.querySelector('.ant-color-picker-hex-input input')
+    )) as HTMLInputElement;
+    await user.clear(hex);
+    await user.type(hex, '123ABC');
+    await user.tab();
+    await waitFor(() => expect(saved().environments[0]!.color).toBe('#123abc'));
+
+    // The suggested colours are antd's presets.
+    await user.click(
+      document.querySelectorAll<HTMLElement>(
+        '.ant-color-picker-presets-color'
+      )[4]!
+    );
+    await waitFor(() => expect(saved().environments[0]!.color).toBe('#722ed1'));
   });
 
-  it('picks the colour of an added row before it is saved', async () => {
+  it('shows the colour of an added row, which changes once saved', async () => {
     const user = userEvent.setup();
     setup();
 
     await user.click(screen.getByRole('button', { name: /Add environment/ }));
-    await user.click(
-      screen.getByRole('button', { name: /^New environment: blue/ })
-    );
-    await user.click(
-      within(
-        await screen.findByRole('group', { name: 'New environment colors' })
-      ).getByRole('button', { name: 'cyan' })
-    );
-    expect(api.settingsService.set).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: 'New environment color: #1677ff' })
+    ).toBeDisabled();
 
     await user.type(
       screen.getByRole('textbox', { name: 'New environment' }),
       'qa{Enter}'
     );
-    await waitFor(() =>
-      expect(saved().environments.at(-1)).toEqual({
-        segment: 'qa',
-        color: 'cyan'
-      })
-    );
-  });
-
-  it('drops an empty added row left after picking a colour', async () => {
-    const user = userEvent.setup();
-    setup();
-
-    await user.click(screen.getByRole('button', { name: /Add environment/ }));
-    await user.click(
-      screen.getByRole('button', { name: /^New environment: blue/ })
-    );
-    await user.click(
-      within(
-        await screen.findByRole('group', { name: 'New environment colors' })
-      ).getByRole('button', { name: 'cyan' })
-    );
     expect(
-      screen.getByRole('textbox', { name: 'New environment' })
-    ).toHaveFocus();
-
-    await user.click(screen.getByText('Path structure'));
-    expect(
-      screen.queryByRole('textbox', { name: 'New environment' })
-    ).toBeNull();
-    expect(api.settingsService.set).not.toHaveBeenCalled();
+      await screen.findByRole('button', { name: 'qa color: #1677ff' })
+    ).toBeEnabled();
   });
 
   it('discards a typed added row without saving it', async () => {
@@ -536,7 +510,7 @@ describe('Display', () => {
     setup({
       structure: {
         ...structure,
-        environments: [{ segment: 'dev-eu', color: 'green' }],
+        environments: [{ segment: 'dev-eu', color: '#52c41a' }],
         services: []
       }
     });

@@ -1,83 +1,72 @@
-import { useState } from 'react';
-import { Button, Flex, Popover, theme } from 'antd';
+import { forwardRef, useState } from 'react';
+import { Button, ColorPicker } from 'antd';
+import type { ButtonProps } from 'antd';
 import { ENVIRONMENT_COLORS } from '../../../shared/structure';
-import type { EnvironmentColor } from '../../../shared/structure';
 import styles from './Settings.module.css';
 
-// An antd preset colour, as the theme draws it.
-export const useEnvironmentColor = (color: EnvironmentColor) =>
-  theme.useToken().token[color];
-
-export const EnvironmentDot = ({ color }: { color: EnvironmentColor }) => (
-  <span
-    className={styles.dot}
-    style={{ background: useEnvironmentColor(color) }}
-    aria-hidden
-  />
+export const EnvironmentDot = ({ color }: { color: string }) => (
+  <span className={styles.dot} style={{ background: color }} aria-hidden />
 );
 
-const Swatch = ({
-  color,
-  label,
-  selected,
-  onClick
-}: {
-  color: EnvironmentColor;
-  label: string;
-  selected?: boolean;
-  onClick?: () => void;
-}) => (
+// The picker opens from the swatch it wraps, so the swatch takes the props
+// and ref it is given.
+const Swatch = forwardRef<
+  HTMLButtonElement,
+  { color: string; label: string } & Omit<ButtonProps, 'color'>
+>(({ color, label, ...props }, ref) => (
   <Button
+    {...props}
+    ref={ref}
     size="small"
-    aria-label={label}
-    aria-pressed={selected}
+    aria-label={`${label} color: ${color}`}
     className={styles.swatch}
-    style={{ borderColor: useEnvironmentColor(color) }}
+    style={{ borderColor: color }}
     icon={<EnvironmentDot color={color} />}
-    // Focus stays in the segment input, so picking a colour doesn't end
-    // editing a row that isn't saved yet.
-    onMouseDown={event => event.preventDefault()}
-    onClick={onClick}
   />
-);
+));
+Swatch.displayName = 'Swatch';
 
-// Shows an environment's colour; a click opens the presets to pick from.
-export const ColorPicker = ({
+const presets = [
+  { label: 'Suggested', colors: [...ENVIRONMENT_COLORS], defaultOpen: true }
+];
+
+// Shows an environment's colour; a click opens a full colour picker. The
+// colour is saved once a drag ends or a value is entered, not while dragging.
+// Without `onChange` (a row that isn't saved yet), it only shows the colour.
+export const EnvironmentColorPicker = ({
   color,
   label,
   onChange
 }: {
-  color: EnvironmentColor;
+  color: string;
   label: string;
-  onChange: (color: EnvironmentColor) => void;
+  onChange?: (color: string) => void;
 }) => {
-  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(color);
+  const [savedColor, setSavedColor] = useState(color);
+
+  // A newly saved colour, from here or elsewhere, replaces the draft.
+  if (color !== savedColor) {
+    setSavedColor(color);
+    setDraft(color);
+  }
+
+  if (!onChange) return <Swatch color={color} label={label} disabled />;
+
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      trigger="click"
-      placement="bottomLeft"
-      content={
-        <Flex gap={6} role="group" aria-label={`${label} colors`}>
-          {ENVIRONMENT_COLORS.map(preset => (
-            <Swatch
-              key={preset}
-              color={preset}
-              label={preset}
-              selected={preset === color}
-              onClick={() => {
-                setOpen(false);
-                if (preset !== color) onChange(preset);
-              }}
-            />
-          ))}
-        </Flex>
-      }
+    <ColorPicker
+      value={draft}
+      format="hex"
+      disabledAlpha
+      disabledFormat
+      presets={presets}
+      onChange={value => setDraft(value.toHexString())}
+      onChangeComplete={value => {
+        const hex = value.toHexString();
+        if (hex !== color.toLowerCase()) onChange(hex);
+      }}
     >
-      <span>
-        <Swatch color={color} label={`${label}: ${color}. Change color`} />
-      </span>
-    </Popover>
+      <Swatch color={draft} label={label} />
+    </ColorPicker>
   );
 };

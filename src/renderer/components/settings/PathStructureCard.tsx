@@ -1,10 +1,10 @@
-import { Alert, Radio, Typography } from 'antd';
+import { Alert, Radio, theme, Typography } from 'antd';
+import { DEFAULT_ENVIRONMENT_COLOR } from '../../../shared/structure';
 import type { Layout, Structure } from '../../../shared/structure';
 import { useParameters } from '../../state/parameters';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
 import { useStructuredParameters } from '../../state/views';
 import { rootFolder } from '../../utils/paths';
-import { useEnvironmentColor } from './EnvironmentColor';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
@@ -26,13 +26,12 @@ const LayoutExample = ({
 }) => {
   const env = structure.environments[0] ?? {
     segment: 'development',
-    color: 'green'
+    color: DEFAULT_ENVIRONMENT_COLOR
   };
   const service = structure.services[0]?.segment ?? 'my-service';
-  const envColor = useEnvironmentColor(env.color);
-  const serviceColor = useEnvironmentColor('blue');
+  const serviceColor = theme.useToken().token.blue;
   const envPart = (
-    <span key="env" style={{ color: envColor }}>
+    <span key="env" style={{ color: env.color }}>
       {env.segment}
     </span>
   );

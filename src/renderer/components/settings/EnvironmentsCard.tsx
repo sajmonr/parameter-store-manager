@@ -28,7 +28,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { segmentError } from '../../../shared/structure';
-import type { EnvironmentColor } from '../../../shared/structure';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
 import { updateStructure } from '../../state/settingsChanges';
 import { useStructuredParameters } from '../../state/views';
@@ -40,7 +39,7 @@ import {
   renameEnvironment,
   setEnvironmentColor
 } from '../../utils/structureEdits';
-import { ColorPicker } from './EnvironmentColor';
+import { EnvironmentColorPicker } from './EnvironmentColor';
 import SegmentInput from './SegmentInput';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
@@ -49,7 +48,7 @@ import styles from './Settings.module.css';
 interface EnvironmentRow {
   key: string;
   segment: string;
-  color: EnvironmentColor;
+  color: string;
   // The added row, kept here until its segment is valid.
   added?: boolean;
 }
@@ -127,7 +126,7 @@ const EnvironmentsCard = () => {
   const update = useUpdateStructure();
   const { byEnv } = useStructuredParameters();
   // The colour of the row being added, or null when there is none.
-  const [addedColor, setAddedColor] = useState<EnvironmentColor | null>(null);
+  const [addedColor, setAddedColor] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -163,15 +162,17 @@ const EnvironmentsCard = () => {
       title: 'Color',
       width: 64,
       render: (_, row) => (
-        <ColorPicker
+        <EnvironmentColorPicker
           color={row.color}
           label={row.segment || 'New environment'}
-          onChange={color =>
+          // A row's colour can change once its segment is saved.
+          onChange={
             row.added
-              ? setAddedColor(color)
-              : update(current =>
-                  setEnvironmentColor(current, row.segment, color)
-                )
+              ? undefined
+              : color =>
+                  update(current =>
+                    setEnvironmentColor(current, row.segment, color)
+                  )
           }
         />
       )

@@ -2,19 +2,19 @@
 // a new structure and keeps the services' environment lists consistent with
 // the environments.
 import { ENVIRONMENT_COLORS } from '../../shared/structure';
-import type { EnvironmentColor, Structure } from '../../shared/structure';
+import type { Structure } from '../../shared/structure';
 
-// The first preset no environment uses yet; once all are used, they repeat
-// in order.
-export const nextColor = ({ environments }: Structure): EnvironmentColor =>
+// The first suggested colour no environment uses yet; once all are used,
+// they repeat in order.
+export const nextColor = ({ environments }: Structure): string =>
   ENVIRONMENT_COLORS.find(
-    color => !environments.some(e => e.color === color)
+    color => !environments.some(e => e.color.toLowerCase() === color)
   ) ?? ENVIRONMENT_COLORS[environments.length % ENVIRONMENT_COLORS.length]!;
 
 export const addEnvironment = (
   structure: Structure,
   segment: string,
-  color: EnvironmentColor
+  color: string
 ): Structure => ({
   ...structure,
   environments: [...structure.environments, { segment, color }]
@@ -65,7 +65,7 @@ export const moveEnvironment = (
 export const setEnvironmentColor = (
   structure: Structure,
   segment: string,
-  color: EnvironmentColor
+  color: string
 ): Structure => ({
   ...structure,
   environments: structure.environments.map(e =>
