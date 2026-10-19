@@ -1,10 +1,15 @@
+import { DEFAULT_STRUCTURE } from './structure';
+import type { ParameterView, Structure } from './structure';
+
 // Setting keys shared by the main process (which stores them) and the renderer.
 const availableSettings = {
   pathDelimiter: 'pathDelimiter',
   ssmRegion: 'ssmRegion',
   kmsRegion: 'kmsRegion',
   profile: 'profile',
-  theme: 'theme'
+  theme: 'theme',
+  structure: 'structure',
+  defaultView: 'defaultView'
 } as const;
 
 export default availableSettings;
@@ -19,6 +24,10 @@ export interface Settings {
   kmsRegion: string;
   profile: string;
   theme: Theme;
+  // How paths name a service and an environment (see ./structure).
+  structure: Structure;
+  // The view the parameter list opens in while the structure is enabled.
+  defaultView: ParameterView;
 }
 
 export type SettingKey = keyof Settings;
@@ -28,5 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ssmRegion: 'eu-west-1',
   kmsRegion: 'eu-west-1',
   profile: '',
-  theme: 'system'
+  theme: 'system',
+  structure: DEFAULT_STRUCTURE,
+  defaultView: 'services'
 };

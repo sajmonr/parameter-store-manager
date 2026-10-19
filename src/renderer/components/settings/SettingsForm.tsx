@@ -29,7 +29,17 @@ const { pathDelimiter, ssmRegion, kmsRegion, profile, theme } =
 // Form-only field; it isn't saved, it decides what kmsRegion is saved as.
 const KMS_SAME_AS_SSM = 'kmsSameAsSsm';
 
-type SettingsFormValues = Settings & { [KMS_SAME_AS_SSM]: boolean };
+// The settings this form edits; it leaves the others as they are.
+type FormSettings = Pick<
+  Settings,
+  | typeof pathDelimiter
+  | typeof ssmRegion
+  | typeof kmsRegion
+  | typeof profile
+  | typeof theme
+>;
+
+type SettingsFormValues = FormSettings & { [KMS_SAME_AS_SSM]: boolean };
 
 const themeOptions = [
   { value: 'system', label: 'System', icon: <DesktopOutlined /> },
@@ -123,7 +133,7 @@ const SettingsForm = ({ onClose }: { onClose: () => void }) => {
   // Parameters and KMS keys are loaded per profile and region, so a change
   // there loads them again by itself. The open pane and the folder state
   // don't carry over.
-  const applyChanges = (next: Settings) => {
+  const applyChanges = (next: FormSettings) => {
     if (
       next[profile] !== saved[profile] ||
       next[ssmRegion] !== saved[ssmRegion]
@@ -138,7 +148,7 @@ const SettingsForm = ({ onClose }: { onClose: () => void }) => {
   };
 
   const onFinish = (values: SettingsFormValues) => {
-    const next: Settings = {
+    const next: FormSettings = {
       [profile]: values[profile] || '',
       [ssmRegion]: values[ssmRegion],
       [kmsRegion]: values[KMS_SAME_AS_SSM]
