@@ -88,12 +88,17 @@ export const getAllSettings = (): Settings =>
 
 // The settings.set endpoint validates the values on their own. Segments also
 // can't contain the path delimiter, which may be saved separately, so that is
-// checked against the settings they would be saved with.
+// checked against the settings they would be saved with. The form always sends
+// the delimiter, so it is only checked when it changes: an old file may hold
+// one the default structure already clashes with.
 export const setSettings = (values: Partial<Settings>): Settings => {
   const updates = Object.fromEntries(
     Object.entries(values).filter(([, value]) => value !== undefined)
   ) as Partial<Settings>;
-  if (updates.structure || updates.pathDelimiter !== undefined) {
+  const delimiterChanged =
+    updates.pathDelimiter !== undefined &&
+    updates.pathDelimiter !== getSetting(availableSettings.pathDelimiter);
+  if (updates.structure || delimiterChanged) {
     const next = { ...getAllSettings(), ...updates };
     const [error] = structureErrors(next.structure, next.pathDelimiter || '/');
     if (error) throw new Error(error);

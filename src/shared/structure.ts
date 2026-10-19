@@ -52,6 +52,12 @@ export const DEFAULT_STRUCTURE: Structure = {
 export const PARAMETER_VIEWS = ['services', 'environments', 'paths'] as const;
 export type ParameterView = (typeof PARAMETER_VIEWS)[number];
 
+// Whether the delimiter starts inside `segment`: it contains the delimiter, or
+// ends with the start of a longer one ('dev.' and '..'). Either way the path
+// would split in the wrong place.
+const clashes = (segment: string, delimiter: string) =>
+  `${segment}${delimiter}`.indexOf(delimiter) !== segment.length;
+
 // Why `segment` can't name an environment or service, or null when it can.
 // `others` are the segments already in the same list. An empty delimiter
 // skips the delimiter check.
@@ -64,6 +70,9 @@ export const segmentError = (
   if (/\s/.test(segment)) return "Can't contain spaces.";
   if (delimiter && segment.includes(delimiter)) {
     return `Can't contain "${delimiter}".`;
+  }
+  if (delimiter && clashes(segment, delimiter)) {
+    return `Can't end with part of "${delimiter}".`;
   }
   if (others.includes(segment)) return 'Already in the list.';
   return null;
@@ -99,11 +108,11 @@ export const structureErrors = (structure: Structure, delimiter: string) => {
   return errors;
 };
 
-// The first configured segment that contains `delimiter`, which then can't be
-// the path delimiter. Null when there is none.
+// The first configured segment that clashes with `delimiter`, which then can't
+// be the path delimiter. Null when there is none.
 export const delimiterConflict = (structure: Structure, delimiter: string) =>
   (delimiter &&
     [...structure.environments, ...structure.services]
       .map(item => item.segment)
-      .find(segment => segment.includes(delimiter))) ||
+      .find(segment => clashes(segment, delimiter))) ||
   null;

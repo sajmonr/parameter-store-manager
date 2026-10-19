@@ -112,6 +112,18 @@ describe('pathOf', () => {
       expect(pathOf(env, service, key, config, delimiter)).toBe(name);
     });
   });
+
+  // Why segmentError rejects 'dev.' with '..': its path wouldn't parse back.
+  it("can't be inverted for segments that end with the start of the delimiter", () => {
+    const dotted: Structure = {
+      ...structure,
+      environments: [{ segment: 'dev.', color: 'green' }],
+      services: [{ segment: 'compass', environments: ['dev.'] }]
+    };
+    const name = pathOf('dev.', 'compass', 'Title', dotted, '..');
+    expect(name).toBe('dev...compass..Title');
+    expect(parse(name, dotted, '..')).toBeNull();
+  });
 });
 
 describe('structureNames', () => {

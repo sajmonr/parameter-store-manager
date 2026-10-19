@@ -22,6 +22,12 @@ describe('segmentError', () => {
     );
   });
 
+  it('rejects segments that end with the start of the delimiter', () => {
+    expect(segmentError('dev.', '..')).toBe('Can\'t end with part of "..".');
+    expect(segmentError('a:', '::')).toBe('Can\'t end with part of "::".');
+    expect(segmentError('.dev', '..')).toBeNull();
+  });
+
   it('skips the delimiter check without a delimiter', () => {
     expect(segmentError('a/b', '')).toBeNull();
   });
@@ -67,5 +73,13 @@ describe('delimiterConflict', () => {
     expect(delimiterConflict(structure, '-')).toBe('dev-eu');
     expect(delimiterConflict(structure, '.')).toBe('compass.api');
     expect(delimiterConflict(structure, '/')).toBeNull();
+  });
+
+  it('finds segments that end with the start of the delimiter', () => {
+    const dotted: Structure = {
+      ...DEFAULT_STRUCTURE,
+      environments: [{ segment: 'dev.', color: 'green' }]
+    };
+    expect(delimiterConflict(dotted, '..')).toBe('dev.');
   });
 });

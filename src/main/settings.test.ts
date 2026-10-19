@@ -78,4 +78,17 @@ describe('settings', () => {
     expect(getAllSettings().pathDelimiter).toBe('/');
     expect(getAllSettings().structure).toEqual(DEFAULT_STRUCTURE);
   });
+
+  it('saves other settings with an unchanged delimiter that clashes', async () => {
+    writeFileSync(
+      join(dir.path, 'config.json'),
+      JSON.stringify({ ...OLD_FILE, pathDelimiter: 'e' })
+    );
+    const { getAllSettings, setSettings } = await load();
+    setSettings({ pathDelimiter: 'e', theme: 'light' });
+    expect(getAllSettings().theme).toBe('light');
+    expect(() =>
+      setSettings({ structure: { ...DEFAULT_STRUCTURE, enabled: true } })
+    ).toThrow('Environment "development": Can\'t contain "e".');
+  });
 });
