@@ -1,59 +1,14 @@
-import { useEffect } from 'react';
-import { Button, Dropdown, Flex, Layout } from 'antd';
-import type { MenuProps } from 'antd';
-import {
-  DownloadOutlined,
-  EllipsisOutlined,
-  PlusOutlined,
-  SettingOutlined,
-  SyncOutlined
-} from '@ant-design/icons';
+import { Button, Flex, Layout, Tooltip } from 'antd';
+import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
-import { uiActions, useUiStore } from '../../state/ui';
-import { isSettingsShortcut, settingsShortcutLabel } from '../../utils/keys';
+import { uiActions } from '../../state/ui';
 import ProfileChip from './ProfileChip';
 import SearchInput from './SearchInput';
 import styles from './AppHeader.module.css';
 
-// Not over the export: changing the profile or region would stop it.
-const onSettingsShortcut = (event: KeyboardEvent) => {
-  if (!isSettingsShortcut(event) || useUiStore.getState().exportOpen) return;
-  event.preventDefault();
-  uiActions.openSettings();
-};
-
+// Settings and the export live in the rail.
 const AppHeader = () => {
   const { loading, refresh } = useParameters();
-
-  useEffect(() => {
-    window.addEventListener('keydown', onSettingsShortcut);
-    return () => window.removeEventListener('keydown', onSettingsShortcut);
-  }, []);
-
-  // Everything but creating a parameter lives in the More menu.
-  const moreActions: MenuProps = {
-    items: [
-      {
-        key: 'refresh',
-        icon: <SyncOutlined />,
-        label: 'Refresh',
-        disabled: loading
-      },
-      { key: 'export', icon: <DownloadOutlined />, label: 'Export as CSV' },
-      { type: 'divider' },
-      {
-        key: 'settings',
-        icon: <SettingOutlined />,
-        label: 'Settings',
-        extra: settingsShortcutLabel
-      }
-    ],
-    onClick: ({ key }) => {
-      if (key === 'refresh') refresh();
-      else if (key === 'export') uiActions.openExport();
-      else if (key === 'settings') uiActions.openSettings();
-    }
-  };
 
   return (
     <Layout.Header className={styles.header}>
@@ -68,13 +23,14 @@ const AppHeader = () => {
           >
             New parameter
           </Button>
-          <Dropdown
-            menu={moreActions}
-            trigger={['click']}
-            placement="bottomRight"
-          >
-            <Button aria-label="More" icon={<EllipsisOutlined />} />
-          </Dropdown>
+          <Tooltip title="Refresh">
+            <Button
+              aria-label="Refresh"
+              icon={<SyncOutlined spin={loading} />}
+              disabled={loading}
+              onClick={() => refresh()}
+            />
+          </Tooltip>
         </Flex>
       </Flex>
     </Layout.Header>

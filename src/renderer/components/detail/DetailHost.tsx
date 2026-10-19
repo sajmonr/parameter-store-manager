@@ -3,16 +3,17 @@ import { useParameters } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useSelectedParameter } from '../../state/views';
 import useEscape from '../../hooks/useEscape';
+import usePageVisible from '../../hooks/usePageVisible';
 import ParameterDetail from './ParameterDetail';
 import ParameterForm from '../form/ParameterForm';
 import styles from './DetailHost.module.css';
 
-export const PANE_WIDTH = 440;
-
 // Hosts the selected parameter or the new-parameter form: docked on the
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
-// while nothing is open.
+// while nothing is open. The drawer is a portal over the whole window, so it
+// closes while its page is hidden and reopens, with its contents, after.
 const DetailHost = ({ narrow }: { narrow: boolean }) => {
+  const pageVisible = usePageVisible();
   const { loadState } = useParameters();
   const paneMode = useUiStore(state => state.paneMode);
   const parameter = useSelectedParameter();
@@ -36,7 +37,7 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
   if (narrow) {
     return (
       <Drawer
-        open={!!content}
+        open={!!content && pageVisible}
         onClose={close}
         placement="right"
         size={420}
@@ -51,11 +52,7 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
 
   return (
     content && (
-      <aside
-        className={styles.pane}
-        style={{ width: PANE_WIDTH }}
-        aria-label="Details"
-      >
+      <aside className={styles.pane} aria-label="Details">
         {content}
       </aside>
     )

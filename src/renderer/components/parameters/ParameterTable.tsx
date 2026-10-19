@@ -5,6 +5,7 @@ import { LockOutlined } from '@ant-design/icons';
 import type { ParameterEntry } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
 import useElementSize from '../../hooks/useElementSize';
+import usePageVisible from '../../hooks/usePageVisible';
 import NameCell from './NameCell';
 import ValueCell from './ValueCell';
 import styles from './ParameterTable.module.css';
@@ -25,7 +26,9 @@ const isArrowNavigationTarget = (target: EventTarget | null) =>
 
 const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   const selectedName = useUiStore(state => state.selectedName);
+  // TODO(#31): drop with the settings modal.
   const settingsOpen = useUiStore(state => state.settingsOpen);
+  const pageVisible = usePageVisible();
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [ref, { width, height }] = useElementSize();
   const tableRef = useRef<GetRef<typeof Table>>(null);
@@ -42,7 +45,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-      if (settingsOpen || !parameters.length) return;
+      if (!pageVisible || settingsOpen || !parameters.length) return;
       if (!isArrowNavigationTarget(event.target)) return;
       event.preventDefault();
       const index = parameters.findIndex(p => p.Name === selectedName);
@@ -58,7 +61,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [parameters, selectedName, settingsOpen]);
+  }, [parameters, selectedName, settingsOpen, pageVisible]);
 
   const columns = useMemo<TableColumnsType<ParameterEntry>>(
     () => [

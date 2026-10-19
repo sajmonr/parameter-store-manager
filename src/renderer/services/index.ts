@@ -9,3 +9,4 @@ export { settingsService } from './settingsService';
 export { updatesService } from './updatesService';
 export { filesService } from './filesService';
 export { accountService } from './accountService';
+export { menuService } from './menuService';

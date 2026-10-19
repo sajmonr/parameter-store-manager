@@ -41,6 +41,11 @@ export default class MenuBuilder {
     });
   }
 
+  // The renderer opens the Settings page.
+  openSettings() {
+    this.mainWindow.webContents.send('menu.openSettings');
+  }
+
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
     const subMenuAbout: MenuItemConstructorOptions = {
       label: 'Parameter Store Manager',
@@ -54,6 +59,14 @@ export default class MenuBuilder {
           label: 'Check for Updates…',
           click: () => {
             checkInteractively();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Settings…',
+          accelerator: 'Command+,',
+          click: () => {
+            this.openSettings();
           }
         },
         { type: 'separator' },
@@ -158,6 +171,14 @@ export default class MenuBuilder {
       {
         label: '&File',
         submenu: [
+          {
+            label: '&Settings…',
+            accelerator: 'Ctrl+,',
+            click: () => {
+              this.openSettings();
+            }
+          },
+          { type: 'separator' },
           {
             label: '&Close',
             accelerator: 'Ctrl+W',

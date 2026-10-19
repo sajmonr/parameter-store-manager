@@ -1,0 +1,10 @@
+/* A page of cards that scrolls as a whole. */
+.scroll {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--ant-color-bg-container);
+}
+
+.content {
+  padding: 28px 40px;
+}

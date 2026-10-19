@@ -58,6 +58,12 @@ export const accountService = {
   )
 };
 
+export const menuService = {
+  onOpenSettings: vi.fn<Service<'menuService'>['onOpenSettings']>(
+    () => () => {}
+  )
+};
+
 // Makes the parameters service serve `parameters` as AWS would.
 export const serveParameters = (parameters: ParameterEntry[]) => {
   parametersService.describe.mockResolvedValue({

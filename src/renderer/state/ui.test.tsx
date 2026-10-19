@@ -97,4 +97,20 @@ describe('ui state', () => {
     uiActions.showCreatedParameter('/dev/app/db/Host');
     expect(ui().scope).toBe('/dev/');
   });
+
+  it('switches pages without touching the Parameters state', () => {
+    setup();
+    uiActions.setScope('/dev/');
+    uiActions.selectParameter('/dev/app/Title');
+
+    uiActions.showPage('importExport');
+    expect(ui().page).toBe('importExport');
+    uiActions.openSettings();
+    expect(ui().page).toBe('settings');
+    expect(ui().settingsOpen).toBe(true);
+
+    uiActions.showPage('parameters');
+    expect(ui().scope).toBe('/dev/');
+    expect(ui().selectedName).toBe('/dev/app/Title');
+  });
 });
