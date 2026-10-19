@@ -63,7 +63,12 @@ describe('AppShell', () => {
 
     expect(await screen.findByText('Password')).toBeInTheDocument();
     expect(screen.getByLabelText('Counting parameters')).toBeInTheDocument();
-    expect(document.querySelector('.ant-badge')).not.toBeInTheDocument();
+    // The count's badge; the rail has its own.
+    const countBadge = () =>
+      [...document.querySelectorAll('.ant-badge')].find(
+        badge => !badge.closest('nav[aria-label="Pages"]')
+      ) ?? null;
+    expect(countBadge()).not.toBeInTheDocument();
 
     lastPage({ parameters: parameters.slice(1) });
     await waitFor(() =>
@@ -71,7 +76,7 @@ describe('AppShell', () => {
         screen.queryByLabelText('Counting parameters')
       ).not.toBeInTheDocument()
     );
-    expect(document.querySelector('.ant-badge')).toHaveTextContent('4');
+    expect(countBadge()).toHaveTextContent('4');
   });
 
   it('filters by search and scope together', async () => {
@@ -324,8 +329,12 @@ describe('pages', () => {
     await user.click(railButton('Import & export'));
     await user.click(screen.getByRole('button', { name: 'Export' }));
     await user.click(railButton('Parameters'));
-    const busyDot = () => rail().querySelector('.ant-badge-status-processing');
+    // It fades out, but stops showing at once.
+    const busyDot = () =>
+      rail().querySelector('.ant-badge-dot[data-show="true"]');
     expect(busyDot()).toBeInTheDocument();
+    // The dot coming and going doesn't take keyboard focus away.
+    railButton('Import & export').focus();
 
     lastPage({ parameters });
     expect(
@@ -333,5 +342,6 @@ describe('pages', () => {
     ).toBeInTheDocument();
     expect(page()).toBe('parameters');
     expect(busyDot()).not.toBeInTheDocument();
+    expect(railButton('Import & export')).toHaveFocus();
   });
 });

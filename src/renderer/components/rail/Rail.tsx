@@ -30,27 +30,21 @@ const RailItem = ({
   onClick
 }: RailItemProps) => {
   const active = useUiStore(state => state.page === page);
-  const button = (
-    <Button
-      color={active ? 'primary' : 'default'}
-      variant={active ? 'filled' : 'text'}
-      icon={icon}
-      aria-label={label}
-      aria-current={active ? 'page' : undefined}
-      // Large is the rail's 40×40 with an 8px radius.
-      size="large"
-      onClick={onClick}
-    />
-  );
+  // The Badge stays when the dot goes, so the button keeps keyboard focus.
   return (
     <Tooltip title={tooltip} placement="right">
-      {busy ? (
-        <Badge status="processing" dot offset={[-4, 4]}>
-          {button}
-        </Badge>
-      ) : (
-        button
-      )}
+      <Badge status="processing" dot={busy} offset={[-4, 4]}>
+        <Button
+          color={active ? 'primary' : 'default'}
+          variant={active ? 'filled' : 'text'}
+          icon={icon}
+          aria-label={label}
+          aria-current={active ? 'page' : undefined}
+          // Large is the rail's 40×40 with an 8px radius.
+          size="large"
+          onClick={onClick}
+        />
+      </Badge>
     </Tooltip>
   );
 };

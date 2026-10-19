@@ -201,8 +201,10 @@ const start = async (options: ExportOptions) => {
     const { filePath, count } = await exportParameters({
       ...options,
       signal: current.signal,
+      // A batch still in flight after a failure can report late; by then
+      // the store may belong to the next export.
       onProgress: progress => {
-        if (!current.signal.aborted) set({ progress });
+        if (controller === current) set({ progress });
       }
     });
     // null when the save dialog was cancelled.

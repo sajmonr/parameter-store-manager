@@ -342,6 +342,32 @@ describe('ExportForm', () => {
     expect(api.filesService.saveCsv).not.toHaveBeenCalled();
   });
 
+  it('ignores progress from a batch that finishes after another failed', async () => {
+    const user = userEvent.setup();
+    const many = Array.from({ length: 20 }, (_, i) => makeParameter(`/p${i}`));
+    setup({ loaded: many });
+    api.serveParameters(many);
+    let lateBatch!: () => void;
+    api.parametersService.getValues
+      .mockReturnValueOnce(
+        new Promise(resolve => {
+          lateBatch = () => resolve({ parameters: [], invalidParameters: [] });
+        })
+      )
+      .mockRejectedValueOnce(new Error('throttled'));
+
+    await user.click(exportButton());
+    expect(
+      await screen.findByText('Parameters were not exported')
+    ).toBeInTheDocument();
+    await act(async () => lateBatch());
+
+    expect(useExportStore.getState()).toEqual({
+      running: false,
+      progress: null
+    });
+  });
+
   it('says nothing when the save dialog is cancelled', async () => {
     const user = userEvent.setup();
     api.filesService.saveCsv.mockResolvedValue(null);
