@@ -56,8 +56,6 @@ const menuItems = sections.map(({ key, label, icon }) => ({
 
 const SettingsPage = () => {
   const current = useUiStore(state => state.settingsSection);
-  const { label, description, Content } =
-    sections.find(section => section.key === current) ?? sections[0]!;
 
   return (
     <div className={styles.layout}>
@@ -78,8 +76,13 @@ const SettingsPage = () => {
       </nav>
       <div className={`${pageStyles.scroll} ${styles.main}`}>
         <div className={pageStyles.content} style={{ maxWidth: 680 }}>
-          <PageHeading title={label} description={description} />
-          <Content />
+          {/* All sections stay mounted, so each keeps its local state. */}
+          {sections.map(({ key, label, description, Content }) => (
+            <section key={key} hidden={key !== current}>
+              <PageHeading title={label} description={description} />
+              <Content />
+            </section>
+          ))}
           <Typography.Text type="secondary" className={styles.footer}>
             Changes are saved automatically.
           </Typography.Text>

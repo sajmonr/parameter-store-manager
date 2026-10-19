@@ -158,6 +158,41 @@ describe('AWS connection', () => {
     });
   });
 
+  it('keeps the box unchecked after visiting another section', async () => {
+    const user = userEvent.setup();
+    setup({ ssmRegion: 'us-east-1', kmsRegion: 'us-east-1' });
+
+    await user.click(
+      screen.getByRole('checkbox', { name: 'KMS region same as SSM' })
+    );
+    await user.click(screen.getByRole('menuitem', { name: /Display/ }));
+    await user.click(screen.getByRole('menuitem', { name: /AWS connection/ }));
+    expect(
+      screen.getByRole('checkbox', { name: 'KMS region same as SSM' })
+    ).not.toBeChecked();
+
+    await pickOption(user, 'SSM region', 'us-west-2', { search: true });
+    expect(api.settingsService.set).toHaveBeenCalledWith({
+      ssmRegion: 'us-west-2'
+    });
+  });
+
+  it('leaves the box unchecked when copying the region fails', async () => {
+    const user = userEvent.setup();
+    api.settingsService.set.mockRejectedValueOnce(new Error('Disk full'));
+    setup({ ssmRegion: 'us-east-1', kmsRegion: 'eu-west-1' });
+    const box = screen.getByRole('checkbox', {
+      name: 'KMS region same as SSM'
+    });
+
+    await user.click(box);
+    expect(await screen.findByText('Disk full')).toBeInTheDocument();
+    expect(box).not.toBeChecked();
+    expect(
+      screen.getByRole('combobox', { name: 'KMS region' })
+    ).not.toBeDisabled();
+  });
+
   it('lists the named default profile apart from AWS_PROFILE', async () => {
     const user = userEvent.setup();
     api.profilesService.list.mockResolvedValue({

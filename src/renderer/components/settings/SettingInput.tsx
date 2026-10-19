@@ -76,6 +76,8 @@ const SettingInput = ({
       <Input
         id={id}
         value={draft}
+        // A save in flight would replace a newer draft.
+        readOnly={saving}
         maxLength={maxLength}
         className={className}
         onChange={event => {

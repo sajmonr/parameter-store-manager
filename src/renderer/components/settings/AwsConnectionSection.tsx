@@ -79,11 +79,12 @@ const AwsConnectionSection = () => {
   const onSsmRegionChange = (ssmRegion: string) =>
     save(kmsSame ? { ssmRegion, kmsRegion: ssmRegion } : { ssmRegion });
 
-  const onKmsSameChange = (checked: boolean) => {
-    setKmsSame(checked);
+  // Checked only once the KMS region is saved to match.
+  const onKmsSameChange = async (checked: boolean) => {
     if (checked && saved.kmsRegion !== saved.ssmRegion) {
-      save({ kmsRegion: saved.ssmRegion });
+      if (!(await save({ kmsRegion: saved.ssmRegion }))) return;
     }
+    setKmsSame(checked);
   };
 
   return (
