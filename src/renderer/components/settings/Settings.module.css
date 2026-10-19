@@ -20,3 +20,130 @@
 .suffix {
   font-size: 12px;
 }
+
+.mono {
+  font-family: var(--ant-font-family-code);
+}
+
+/* Cards with a title and a description (SettingsCard). */
+.cardHeader {
+  padding-block: 14px;
+}
+
+.cardTitle.cardTitle {
+  white-space: normal;
+}
+
+.cardDescription {
+  display: block;
+  font-weight: normal;
+  font-size: 13px;
+}
+
+.flushBody.flushBody {
+  padding: 0;
+}
+
+.cardFooter {
+  padding: 16px 24px;
+}
+
+.switchCard {
+  cursor: pointer;
+}
+
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.hint,
+.count,
+.caption {
+  font-size: 12px;
+}
+
+/* Path structure: two radio cards side by side. */
+.layouts.layouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.layoutOption.layoutOption {
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px;
+  align-items: flex-start;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-lg);
+}
+
+.layoutOption:global(.ant-radio-wrapper-checked) {
+  border-color: var(--ant-color-primary);
+  background: var(--ant-color-primary-bg);
+}
+
+.layoutRadio.layoutRadio {
+  align-self: flex-start;
+  margin-top: 3px;
+}
+
+.layoutLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.layoutPattern,
+.layoutExample {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--ant-font-family-code);
+}
+
+.layoutPattern {
+  font-weight: 600;
+}
+
+.layoutExample {
+  margin: 4px 0 6px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.stats {
+  margin-top: 16px;
+}
+
+/* Environments and services tables. */
+.dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.swatch.swatch {
+  width: 28px;
+}
+
+.dragHandle {
+  cursor: grab;
+}
+
+.serviceIcon {
+  color: var(--ant-color-primary);
+}
+
+.serviceInput.serviceInput {
+  width: 220px;
+}
+
+.inOther {
+  font-size: 12px;
+  color: var(--ant-color-warning);
+}

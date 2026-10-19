@@ -117,7 +117,7 @@ describe('pathOf', () => {
   it("can't be inverted for segments that end with the start of the delimiter", () => {
     const dotted: Structure = {
       ...structure,
-      environments: [{ segment: 'dev.', color: 'green' }],
+      environments: [{ segment: 'dev.', color: '#52c41a' }],
       services: [{ segment: 'compass', environments: ['dev.'] }]
     };
     const name = pathOf('dev.', 'compass', 'Title', dotted, '..');

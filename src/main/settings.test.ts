@@ -51,6 +51,29 @@ describe('settings', () => {
     });
   });
 
+  it('reads a colour that is not hex as green', async () => {
+    writeFileSync(
+      join(dir.path, 'config.json'),
+      JSON.stringify({
+        ...OLD_FILE,
+        structure: {
+          ...DEFAULT_STRUCTURE,
+          environments: [
+            { segment: 'development', color: 'gold' },
+            { segment: 'staging', color: '#123abc' }
+          ]
+        }
+      })
+    );
+    const { getAllSettings, getSetting } = await load();
+    const expected = [
+      { segment: 'development', color: '#52c41a' },
+      { segment: 'staging', color: '#123abc' }
+    ];
+    expect(getAllSettings().structure.environments).toEqual(expected);
+    expect(getSetting('structure').environments).toEqual(expected);
+  });
+
   it('saves a structure', async () => {
     const { getAllSettings, setSettings } = await load();
     const structure = {
