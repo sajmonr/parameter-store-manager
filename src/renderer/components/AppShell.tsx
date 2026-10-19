@@ -10,7 +10,6 @@ import Rail from './rail/Rail';
 import ParametersPage from './pages/ParametersPage';
 import ImportExportPage from './pages/ImportExportPage';
 import SettingsPage from './pages/SettingsPage';
-import SettingsModal from './settings/SettingsModal';
 import styles from './AppShell.module.css';
 
 const onSettingsShortcut = (event: KeyboardEvent) => {
@@ -60,8 +59,6 @@ const AppShell = () => {
           <SettingsPage />
         </PageFrame>
       </main>
-      {/* TODO(#31): remove with the modal. */}
-      <SettingsModal />
     </div>
   );
 };

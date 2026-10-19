@@ -82,7 +82,7 @@ const Rail = () => (
       label="Settings"
       tooltip={`Settings (${settingsShortcutLabel})`}
       icon={<SettingOutlined />}
-      onClick={uiActions.openSettings}
+      onClick={() => uiActions.openSettings()}
     />
   </nav>
 );

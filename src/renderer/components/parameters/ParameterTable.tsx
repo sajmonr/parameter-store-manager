@@ -26,8 +26,6 @@ const isArrowNavigationTarget = (target: EventTarget | null) =>
 
 const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   const selectedName = useUiStore(state => state.selectedName);
-  // TODO(#31): drop with the settings modal.
-  const settingsOpen = useUiStore(state => state.settingsOpen);
   const pageVisible = usePageVisible();
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [ref, { width, height }] = useElementSize();
@@ -45,7 +43,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-      if (!pageVisible || settingsOpen || !parameters.length) return;
+      if (!pageVisible || !parameters.length) return;
       if (!isArrowNavigationTarget(event.target)) return;
       event.preventDefault();
       const index = parameters.findIndex(p => p.Name === selectedName);
@@ -61,7 +59,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [parameters, selectedName, settingsOpen, pageVisible]);
+  }, [parameters, selectedName, pageVisible]);
 
   const columns = useMemo<TableColumnsType<ParameterEntry>>(
     () => [

@@ -301,13 +301,10 @@ describe('pages', () => {
     await user.click(railButton('Settings'));
     expect(page()).toBe('settings');
 
-    uiActions.closeSettings();
     uiActions.showPage('parameters');
     fireEvent.keyDown(window, { key: ',', ctrlKey: true });
     expect(page()).toBe('settings');
-    expect(useUiStore.getState().settingsOpen).toBe(true);
 
-    uiActions.closeSettings();
     uiActions.showPage('parameters');
     const fromMenu = api.menuService.onOpenSettings.mock.calls[0]![0];
     fromMenu();

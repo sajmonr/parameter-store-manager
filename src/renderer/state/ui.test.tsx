@@ -107,10 +107,24 @@ describe('ui state', () => {
     expect(ui().page).toBe('importExport');
     uiActions.openSettings();
     expect(ui().page).toBe('settings');
-    expect(ui().settingsOpen).toBe(true);
 
     uiActions.showPage('parameters');
     expect(ui().scope).toBe('/dev/');
     expect(ui().selectedName).toBe('/dev/app/Title');
+  });
+
+  it('opens Settings on the section used last unless one is given', () => {
+    setup();
+    expect(ui().settingsSection).toBe('aws');
+
+    uiActions.openSettings();
+    uiActions.showSettingsSection('display');
+    uiActions.showPage('parameters');
+    uiActions.openSettings();
+    expect(ui().page).toBe('settings');
+    expect(ui().settingsSection).toBe('display');
+
+    uiActions.openSettings('aws');
+    expect(ui().settingsSection).toBe('aws');
   });
 });

@@ -8,6 +8,8 @@ export type PaneMode = 'detail' | 'new';
 
 export type Page = 'parameters' | 'importExport' | 'settings';
 
+export type SettingsSection = 'aws' | 'services' | 'display';
+
 // The new-parameter form's starting values when duplicating.
 export interface NewParameterPrefill {
   folder?: string;
@@ -28,7 +30,8 @@ export interface UiState {
   // null while the pane is closed.
   paneMode: PaneMode | null;
   newPrefill: NewParameterPrefill | null;
-  settingsOpen: boolean;
+  // The section the Settings page shows; kept while the page is hidden.
+  settingsSection: SettingsSection;
 }
 
 export const initialUiState: UiState = {
@@ -39,7 +42,7 @@ export const initialUiState: UiState = {
   selectedName: null,
   paneMode: null,
   newPrefill: null,
-  settingsOpen: false
+  settingsSection: 'aws'
 };
 
 export const useUiStore = create<UiState>()(() => initialUiState);
@@ -76,10 +79,15 @@ const closePane = () =>
 // Pages stay mounted while hidden, so each keeps its state.
 const showPage = (page: Page) => set({ page });
 
-// Until the settings page has its own content, it opens the settings modal.
-// TODO(#31): only switch the page once the modal is gone.
-const openSettings = () => set({ page: 'settings', settingsOpen: true });
-const closeSettings = () => set({ settingsOpen: false });
+const showSettingsSection = (settingsSection: SettingsSection) =>
+  set({ settingsSection });
+
+// Without a section, Settings opens on the one used last.
+const openSettings = (section?: SettingsSection) =>
+  set(state => ({
+    page: 'settings',
+    settingsSection: section ?? state.settingsSection
+  }));
 
 // Shows a parameter that was just created: selects it, expands its folder
 // and moves the scope to that folder unless the parameter is already in it.
@@ -99,7 +107,7 @@ export const uiActions = {
   openNewParameter,
   closePane,
   openSettings,
-  closeSettings,
+  showSettingsSection,
   showCreatedParameter,
   showPage
 };

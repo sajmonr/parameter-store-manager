@@ -12,7 +12,7 @@ const ProfileChip = () => {
     <Tooltip title="AWS profile and region">
       <Button
         icon={<CloudOutlined />}
-        onClick={uiActions.openSettings}
+        onClick={() => uiActions.openSettings('aws')}
         style={{ flex: 'none' }}
       >
         <Typography.Text strong>{profile || 'default'}</Typography.Text>
