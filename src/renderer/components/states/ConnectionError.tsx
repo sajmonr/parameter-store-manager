@@ -78,7 +78,9 @@ const ConnectionError = ({
         {...result}
         extra={
           <Space>
-            <Button onClick={uiActions.openSettings}>Switch profile</Button>
+            <Button onClick={() => uiActions.openSettings('aws')}>
+              Switch profile
+            </Button>
             <Button type="primary" onClick={refresh}>
               Retry
             </Button>

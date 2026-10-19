@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
-import { useUiStore } from '../../state/ui';
+import { uiActions, useUiStore } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import AppHeader from './AppHeader';
@@ -45,11 +45,13 @@ describe('AppHeader', () => {
     );
   });
 
-  it('opens Settings from the profile chip', async () => {
+  it('opens the AWS connection settings from the profile chip', async () => {
     const user = userEvent.setup();
     setup();
+    uiActions.showSettingsSection('display');
 
     await user.click(screen.getByRole('button', { name: /default/ }));
     expect(useUiStore.getState().page).toBe('settings');
+    expect(useUiStore.getState().settingsSection).toBe('aws');
   });
 });
