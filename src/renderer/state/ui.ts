@@ -6,6 +6,8 @@ import { getPathDelimiter } from './settings';
 
 export type PaneMode = 'detail' | 'new';
 
+export type Page = 'parameters' | 'importExport' | 'settings';
+
 // The new-parameter form's starting values when duplicating.
 export interface NewParameterPrefill {
   folder?: string;
@@ -17,6 +19,7 @@ export interface NewParameterPrefill {
 }
 
 export interface UiState {
+  page: Page;
   // Folder path ending in the delimiter; '' means all parameters.
   scope: string;
   query: string;
@@ -30,6 +33,7 @@ export interface UiState {
 }
 
 export const initialUiState: UiState = {
+  page: 'parameters',
   scope: '',
   query: '',
   expandedFolders: [],
@@ -71,7 +75,12 @@ const openNewParameter = (newPrefill: NewParameterPrefill | null = null) =>
 const closePane = () =>
   set({ selectedName: null, paneMode: null, newPrefill: null });
 
-const openSettings = () => set({ settingsOpen: true });
+// Pages stay mounted while hidden, so each keeps its state.
+const showPage = (page: Page) => set({ page });
+
+// Until the settings page has its own content, it opens the settings modal.
+// TODO(#31): only switch the page once the modal is gone.
+const openSettings = () => set({ page: 'settings', settingsOpen: true });
 const closeSettings = () => set({ settingsOpen: false });
 
 const openExport = () => set({ exportOpen: true });
@@ -98,5 +107,6 @@ export const uiActions = {
   closeSettings,
   openExport,
   closeExport,
-  showCreatedParameter
+  showCreatedParameter,
+  showPage
 };

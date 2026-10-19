@@ -1,0 +1,33 @@
+/* Positioned and clipped for the narrow-window drawer, which renders inline. */
+.page {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  background: var(--ant-color-bg-container);
+}
+
+.body {
+  min-height: 0;
+  background: var(--ant-color-bg-container);
+}
+
+.sider {
+  position: relative;
+  flex: none;
+  border-right: 1px solid var(--ant-color-border-secondary);
+}
+
+/* The sider's children are the tree header and the scrolling tree. */
+.sider > :global(.ant-layout-sider-children) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* min-width: 0 lets this flex item shrink next to the sider and pane. */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
