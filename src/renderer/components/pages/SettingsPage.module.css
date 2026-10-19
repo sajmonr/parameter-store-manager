@@ -1,0 +1,28 @@
+/* The section menu on the left; the chosen section scrolls on the right. */
+.layout {
+  display: flex;
+  height: 100%;
+}
+
+.nav {
+  flex: none;
+  width: 232px;
+  padding: 28px 12px;
+  overflow-y: auto;
+  border-right: 1px solid var(--ant-color-border-secondary);
+}
+
+.title.title {
+  margin: 0 12px 16px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.footer {
+  display: block;
+  margin-top: 16px;
+  font-size: 12px;
+}

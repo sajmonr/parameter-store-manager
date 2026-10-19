@@ -10,7 +10,6 @@ import Rail from './rail/Rail';
 import ParametersPage from './pages/ParametersPage';
 import ImportExportPage from './pages/ImportExportPage';
 import SettingsPage from './pages/SettingsPage';
-import SettingsModal from './settings/SettingsModal';
 import ExportModal from './export/ExportModal';
 import styles from './AppShell.module.css';
 
@@ -67,8 +66,7 @@ const AppShell = () => {
           <SettingsPage />
         </PageFrame>
       </main>
-      {/* TODO(#31), TODO(#32): remove with the modals. */}
-      <SettingsModal />
+      {/* TODO(#32): remove with the modal. */}
       <ExportModal />
     </div>
   );

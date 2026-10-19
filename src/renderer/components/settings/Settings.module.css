@@ -2,16 +2,8 @@
   margin-bottom: 14px;
 }
 
-.group {
-  margin-bottom: 8px;
-}
-
-.groupTitle {
-  display: block;
-  margin: 4px 0 10px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.form :global(.ant-form-item):last-child {
+  margin-bottom: 0;
 }
 
 .half {

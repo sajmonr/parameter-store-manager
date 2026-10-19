@@ -24,7 +24,10 @@ const EmptyAccount = () => {
         }
       >
         <Space>
-          <Button icon={<SettingOutlined />} onClick={uiActions.openSettings}>
+          <Button
+            icon={<SettingOutlined />}
+            onClick={() => uiActions.openSettings('aws')}
+          >
             Settings
           </Button>
           <Button

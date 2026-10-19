@@ -155,5 +155,11 @@ const exportParameters = async (
   return { filePath, count: rows.length };
 };
 
+// Shared, so other components can tell whether an export is running.
+export const EXPORT_MUTATION_KEY = ['exportParameters'];
+
 export const useExportParameters = () =>
-  useMutation({ mutationFn: exportParameters });
+  useMutation({
+    mutationKey: EXPORT_MUTATION_KEY,
+    mutationFn: exportParameters
+  });
