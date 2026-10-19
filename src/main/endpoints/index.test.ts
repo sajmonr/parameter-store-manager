@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Contract } from '../../shared/contract';
+import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type * as Aws from '../aws';
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
@@ -138,6 +139,30 @@ describe('invokeEndpoint', () => {
     ['parameters.delete', {}],
     ['settings.set', { unknown: 'x' }],
     ['settings.set', { theme: 'blue' }],
+    ['settings.set', { defaultView: 'table' }],
+    ['settings.set', { structure: { enabled: true } }],
+    [
+      'settings.set',
+      { structure: { ...DEFAULT_STRUCTURE, layout: 'middle-first' } }
+    ],
+    [
+      'settings.set',
+      {
+        structure: {
+          ...DEFAULT_STRUCTURE,
+          environments: [{ segment: 'my env', color: 'green' }]
+        }
+      }
+    ],
+    [
+      'settings.set',
+      {
+        structure: {
+          ...DEFAULT_STRUCTURE,
+          services: [{ segment: 'compass', environments: ['qa'] }]
+        }
+      }
+    ],
     // The URL to open is decided in the main process.
     ['updates.openReleasePage', 'https://evil.example'],
     // The suggested name can't point outside the folder the user picks.
@@ -183,6 +208,21 @@ describe('invokeEndpoint', () => {
   it('saves only the given settings', async () => {
     await invoke('settings.set', { theme: 'dark' });
     expect(settings.setSettings).toHaveBeenCalledWith({ theme: 'dark' });
+  });
+
+  it('saves a valid structure and default view', async () => {
+    const structure = {
+      ...DEFAULT_STRUCTURE,
+      enabled: true,
+      services: [{ segment: 'compass', environments: ['development'] }]
+    };
+    await expect(
+      invoke('settings.set', { structure, defaultView: 'paths' })
+    ).resolves.toMatchObject({ ok: true });
+    expect(settings.setSettings).toHaveBeenCalledWith({
+      structure,
+      defaultView: 'paths'
+    });
   });
 
   it('returns the account of the current credentials', async () => {

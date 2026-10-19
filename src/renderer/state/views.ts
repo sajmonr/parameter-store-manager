@@ -3,8 +3,12 @@
 import { useMemo } from 'react';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
+import { structureNames } from '../utils/structure';
+import type { StructuredNames } from '../utils/structure';
+import type { Structure } from '../../shared/structure';
 import { useParameters } from './parameters';
-import { usePathDelimiter } from './settings';
+import type { ParameterEntry } from './parameters';
+import { usePathDelimiter, useSettingsStore } from './settings';
 import { useUiStore } from './ui';
 
 export const useMatcher = () => {
@@ -59,6 +63,41 @@ export const useAllFolderTree = () => {
       ),
     [parameters, delimiter]
   );
+};
+
+// The loaded parameters are read with the structure once, not once per
+// component. The settings are replaced on every change, so the structure is
+// compared by value.
+let lastStructured: {
+  parameters: ParameterEntry[];
+  config: string;
+  result: StructuredNames;
+} | null = null;
+
+const structuredParameters = (
+  parameters: ParameterEntry[],
+  structure: Structure,
+  delimiter: string
+) => {
+  const config = JSON.stringify([structure, delimiter]);
+  if (
+    lastStructured?.parameters !== parameters ||
+    lastStructured.config !== config
+  ) {
+    const names = parameters.map(p => p.Name);
+    const result = structureNames(names, structure, delimiter);
+    lastStructured = { parameters, config, result };
+  }
+  return lastStructured.result;
+};
+
+// Every loaded parameter's service and environment, and the counts per
+// service and environment, ignoring the search.
+export const useStructuredParameters = () => {
+  const { parameters } = useParameters();
+  const structure = useSettingsStore(settings => settings.structure);
+  const delimiter = usePathDelimiter();
+  return structuredParameters(parameters, structure, delimiter);
 };
 
 export const useNameSet = () => {
