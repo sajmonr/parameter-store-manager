@@ -4,12 +4,13 @@ import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
 import type { ParameterEntry } from '../../state/parameters';
-import { SOURCE_CHANGED } from '../../state/export';
+import { PageVisibleContext } from '../../hooks/usePageVisible';
+import { SOURCE_CHANGED, useExportStore } from '../../state/export';
 import { useSettingsStore } from '../../state/settings';
-import { uiActions, useUiStore } from '../../state/ui';
+import { uiActions } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
-import ExportModal from './ExportModal';
+import ExportForm from './ExportForm';
 
 vi.mock('../../services', () => import('../../test/mockServices'));
 
@@ -39,15 +40,23 @@ const setup = ({
     settings: { profile: 'prod', ssmRegion: 'eu-west-1' }
   });
   if (scope) uiActions.setScope(scope);
-  uiActions.openExport();
-  return renderWithProviders(<ExportModal />, { queryClient });
+  return renderWithProviders(<ExportForm />, { queryClient });
 };
+
+// The form on a page that can be hidden and shown again.
+const Page = ({ visible }: { visible: boolean }) => (
+  <PageVisibleContext.Provider value={visible}>
+    <ExportForm />
+  </PageVisibleContext.Provider>
+);
 
 const status = () => screen.getByRole('status');
 // A finished loading state leaves antd's icon behind in jsdom, which has no
 // animations to end it.
 const exportButton = () =>
   screen.getByRole('button', { name: /^(loading )?Export$/ });
+const cancelButton = () => screen.queryByRole('button', { name: 'Cancel' });
+const running = () => useExportStore.getState().running;
 const savedCsv = () => api.filesService.saveCsv.mock.calls[0]!;
 const exported = async () => {
   await waitFor(() => expect(api.filesService.saveCsv).toHaveBeenCalled());
@@ -76,6 +85,8 @@ describe('ExportForm', () => {
     expect(
       screen.queryByText('SecureString values are exported as plain text')
     ).not.toBeInTheDocument();
+    // Cancel only stops a running export.
+    expect(cancelButton()).not.toBeInTheDocument();
     await user.click(exportButton());
 
     const [fileName, content] = await exported();
@@ -99,7 +110,8 @@ describe('ExportForm', () => {
     expect(
       await screen.findByText('Exported 4 parameters')
     ).toBeInTheDocument();
-    expect(useUiStore.getState().exportOpen).toBe(false);
+    expect(running()).toBe(false);
+    expect(cancelButton()).not.toBeInTheDocument();
   });
 
   it('decrypts SecureString values when asked to, with a warning', async () => {
@@ -215,10 +227,10 @@ describe('ExportForm', () => {
 
     expect(await screen.findByText(SOURCE_CHANGED)).toBeInTheDocument();
     expect(api.filesService.saveCsv).not.toHaveBeenCalled();
-    expect(useUiStore.getState().exportOpen).toBe(true);
+    expect(running()).toBe(false);
   });
 
-  it("can't be cancelled or closed while the file is being saved", async () => {
+  it("can't be cancelled while the file is being saved", async () => {
     const user = userEvent.setup();
     let finishSave!: (path: string | null) => void;
     api.filesService.saveCsv.mockReturnValue(
@@ -231,14 +243,10 @@ describe('ExportForm', () => {
     await user.click(exportButton());
 
     await exported();
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    );
-    expect(
-      screen.queryByRole('button', { name: 'Close' })
-    ).not.toBeInTheDocument();
+    await waitFor(() => expect(cancelButton()).toBeDisabled());
     await act(async () => finishSave('/Downloads/export.csv'));
-    expect(useUiStore.getState().exportOpen).toBe(false);
+    expect(running()).toBe(false);
+    expect(cancelButton()).not.toBeInTheDocument();
   });
 
   it('names the file after the profile when the account is unknown', async () => {
@@ -268,7 +276,47 @@ describe('ExportForm', () => {
     expect(screen.queryByText('/other/')).not.toBeInTheDocument();
   });
 
-  it('shows progress, and Cancel stops the export but keeps the form open', async () => {
+  it('starts over from the current folder each time the page is shown', async () => {
+    const user = userEvent.setup();
+    const queryClient = createTestState({ parameters });
+    const { rerender } = renderWithProviders(<Page visible />, {
+      queryClient
+    });
+    expect(screen.getByRole('radio', { name: 'All parameters' })).toBeChecked();
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Include SecureString values' })
+    );
+
+    rerender(<Page visible={false} />);
+    act(() => uiActions.setScope('/app/prod/'));
+    rerender(<Page visible />);
+
+    expect(screen.getByRole('combobox', { name: 'Path' })).toHaveValue(
+      '/app/prod/'
+    );
+    expect(
+      screen.getByRole('checkbox', { name: 'Include SecureString values' })
+    ).not.toBeChecked();
+  });
+
+  it('keeps the form as it was when the page is shown during an export', async () => {
+    const user = userEvent.setup();
+    api.parametersService.describe.mockReturnValue(new Promise(() => {}));
+    const queryClient = createTestState({ parameters });
+    const { rerender } = renderWithProviders(<Page visible />, {
+      queryClient
+    });
+
+    await user.click(exportButton());
+    rerender(<Page visible={false} />);
+    act(() => uiActions.setScope('/app/prod/'));
+    rerender(<Page visible />);
+
+    expect(running()).toBe(true);
+    expect(screen.getByRole('radio', { name: 'All parameters' })).toBeChecked();
+  });
+
+  it('shows progress, and Cancel stops the export', async () => {
     const user = userEvent.setup();
     let resolvePage!: (
       page: Awaited<ReturnType<typeof api.parametersService.describe>>
@@ -281,9 +329,10 @@ describe('ExportForm', () => {
     setup();
 
     await user.click(exportButton());
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(cancelButton()!);
 
-    expect(useUiStore.getState().exportOpen).toBe(true);
+    expect(running()).toBe(false);
+    expect(cancelButton()).not.toBeInTheDocument();
     await waitFor(() =>
       expect(exportButton()).not.toHaveClass('ant-btn-loading')
     );
@@ -293,7 +342,7 @@ describe('ExportForm', () => {
     expect(api.filesService.saveCsv).not.toHaveBeenCalled();
   });
 
-  it('stays open when the save dialog is cancelled', async () => {
+  it('says nothing when the save dialog is cancelled', async () => {
     const user = userEvent.setup();
     api.filesService.saveCsv.mockResolvedValue(null);
     setup();
@@ -301,7 +350,7 @@ describe('ExportForm', () => {
     await user.click(exportButton());
 
     await exported();
-    await act(() => Promise.resolve());
-    expect(useUiStore.getState().exportOpen).toBe(true);
+    await waitFor(() => expect(running()).toBe(false));
+    expect(screen.queryByText(/^Exported/)).not.toBeInTheDocument();
   });
 });

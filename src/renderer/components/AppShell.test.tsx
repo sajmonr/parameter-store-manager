@@ -309,23 +309,29 @@ describe('pages', () => {
     expect(page()).toBe('settings');
   });
 
-  it('ignores Cmd/Ctrl+, while the export is open', async () => {
-    renderApp();
-    await screen.findByText('Password');
-    uiActions.openExport();
-
-    fireEvent.keyDown(window, { key: ',', metaKey: true });
-    expect(useUiStore.getState().settingsOpen).toBe(false);
-    expect(page()).toBe('parameters');
-  });
-
-  it('opens the export from the Import & export page', async () => {
+  it('keeps exporting on another page, showing it in the rail', async () => {
     const user = userEvent.setup();
+    api.filesService.saveCsv.mockResolvedValue('/Downloads/export.csv');
     renderApp();
     await screen.findByText('Password');
+    let lastPage!: (page: { parameters: typeof parameters }) => void;
+    api.parametersService.describe.mockReturnValueOnce(
+      new Promise(resolve => {
+        lastPage = resolve;
+      })
+    );
 
     await user.click(railButton('Import & export'));
-    await user.click(screen.getByRole('button', { name: /Export as CSV/ }));
-    expect(useUiStore.getState().exportOpen).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(railButton('Parameters'));
+    const busyDot = () => rail().querySelector('.ant-badge-status-processing');
+    expect(busyDot()).toBeInTheDocument();
+
+    lastPage({ parameters });
+    expect(
+      await screen.findByText('Exported 4 parameters')
+    ).toBeInTheDocument();
+    expect(page()).toBe('parameters');
+    expect(busyDot()).not.toBeInTheDocument();
   });
 });

@@ -29,7 +29,6 @@ export interface UiState {
   paneMode: PaneMode | null;
   newPrefill: NewParameterPrefill | null;
   settingsOpen: boolean;
-  exportOpen: boolean;
 }
 
 export const initialUiState: UiState = {
@@ -40,8 +39,7 @@ export const initialUiState: UiState = {
   selectedName: null,
   paneMode: null,
   newPrefill: null,
-  settingsOpen: false,
-  exportOpen: false
+  settingsOpen: false
 };
 
 export const useUiStore = create<UiState>()(() => initialUiState);
@@ -83,9 +81,6 @@ const showPage = (page: Page) => set({ page });
 const openSettings = () => set({ page: 'settings', settingsOpen: true });
 const closeSettings = () => set({ settingsOpen: false });
 
-const openExport = () => set({ exportOpen: true });
-const closeExport = () => set({ exportOpen: false });
-
 // Shows a parameter that was just created: selects it, expands its folder
 // and moves the scope to that folder unless the parameter is already in it.
 const showCreatedParameter = (name: string) => {
@@ -105,8 +100,6 @@ export const uiActions = {
   closePane,
   openSettings,
   closeSettings,
-  openExport,
-  closeExport,
   showCreatedParameter,
   showPage
 };

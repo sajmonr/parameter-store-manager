@@ -11,19 +11,12 @@ import ParametersPage from './pages/ParametersPage';
 import ImportExportPage from './pages/ImportExportPage';
 import SettingsPage from './pages/SettingsPage';
 import SettingsModal from './settings/SettingsModal';
-import ExportModal from './export/ExportModal';
 import styles from './AppShell.module.css';
-
-// Not over the export: changing the profile or region would stop it.
-// TODO(#32): drop the check once the export runs on its own page.
-const openSettingsUnlessExporting = () => {
-  if (!useUiStore.getState().exportOpen) uiActions.openSettings();
-};
 
 const onSettingsShortcut = (event: KeyboardEvent) => {
   if (!isSettingsShortcut(event)) return;
   event.preventDefault();
-  openSettingsUnlessExporting();
+  uiActions.openSettings();
 };
 
 // Every page stays mounted, so it keeps its state, scroll position and form
@@ -46,7 +39,7 @@ const PageFrame = ({ page, children }: { page: Page; children: ReactNode }) => {
 const AppShell = () => {
   useEffect(() => {
     window.addEventListener('keydown', onSettingsShortcut);
-    const unsubscribe = menuService.onOpenSettings(openSettingsUnlessExporting);
+    const unsubscribe = menuService.onOpenSettings(uiActions.openSettings);
     return () => {
       window.removeEventListener('keydown', onSettingsShortcut);
       unsubscribe();
@@ -67,9 +60,8 @@ const AppShell = () => {
           <SettingsPage />
         </PageFrame>
       </main>
-      {/* TODO(#31), TODO(#32): remove with the modals. */}
+      {/* TODO(#31): remove with the modal. */}
       <SettingsModal />
-      <ExportModal />
     </div>
   );
 };

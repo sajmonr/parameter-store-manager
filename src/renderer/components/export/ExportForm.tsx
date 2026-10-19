@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
-  App,
   AutoComplete,
   Button,
   Checkbox,
@@ -11,16 +10,19 @@ import {
   Radio,
   Typography
 } from 'antd';
-import { describeError } from '../../utils/awsErrors';
-import type { ApiError } from '../../clients/call';
-import { useExportParameters } from '../../state/export';
-import type { ExportProgress } from '../../state/export';
+import {
+  describeProgress,
+  exportActions,
+  useExportStore
+} from '../../state/export';
 import { useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { useUiStore } from '../../state/ui';
 import { useAllFolderTree } from '../../state/views';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
+import usePageVisible from '../../hooks/usePageVisible';
 import { foldersOf } from '../../utils/paths';
+import { plural } from '../../utils/plural';
 import { createPrefixMatcher } from '../../utils/search';
 import styles from './ExportForm.module.css';
 
@@ -29,9 +31,6 @@ type Scope = 'all' | 'path';
 // The count waits until typing pauses, so it doesn't flicker.
 const COUNT_DEBOUNCE_MS = 250;
 const MAX_SUGGESTIONS = 20;
-
-const plural = (count: number, word: string) =>
-  `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
 
 // Folders under what was typed, shallowest first, so the next level down is
 // at the top of the list.
@@ -45,47 +44,36 @@ const suggestFolders = (folders: string[], path: string, delimiter: string) => {
     .map(({ folder }) => folder);
 };
 
-const progressText = (progress: ExportProgress) => {
-  if (progress.phase === 'listing') {
-    return `Listing parameters… ${progress.found.toLocaleString()} found`;
-  }
-  if (progress.phase === 'values') {
-    return `Fetching values… ${progress.done.toLocaleString()} / ${progress.total.toLocaleString()}`;
-  }
-  return 'Saving…';
-};
-
 // Exports all parameters, or those under a path, to a CSV file. The count is
-// a preview from the loaded parameters; the export itself reads AWS. Starts
-// with the scoped folder as the path.
-const ExportForm = ({
-  onClose,
-  onSavingChange
-}: {
-  onClose: () => void;
-  onSavingChange: (saving: boolean) => void;
-}) => {
-  const { message, notification } = App.useApp();
+// a preview from the loaded parameters; the export itself reads AWS and keeps
+// running when the page is left. Each time the page is shown, the form starts
+// over from the current folder, unless an export is running.
+const ExportForm = () => {
   const { parameters, loading } = useParameters();
   const { keys: folders } = useAllFolderTree();
   const delimiter = usePathDelimiter();
   const initialPath = useUiStore(state => state.scope);
-  const exportParameters = useExportParameters();
+  const visible = usePageVisible();
+  const exporting = useExportStore(state => state.running);
+  const progress = useExportStore(state => state.progress);
 
   const [scope, setScope] = useState<Scope>(initialPath ? 'path' : 'all');
   const [path, setPath] = useState(initialPath);
   const [includeSecureValues, setIncludeSecureValues] = useState(false);
-  const [progress, setProgress] = useState<ExportProgress | null>(null);
   const debouncedPath = useDebouncedValue(path, COUNT_DEBOUNCE_MS);
   const byPath = scope === 'path';
   const typing = byPath && path !== debouncedPath;
-  const exporting = exportParameters.isPending;
   const saving = progress?.phase === 'saving';
-  useEffect(() => onSavingChange(saving), [onSavingChange, saving]);
 
-  // Closing the modal stops a running export.
-  const abortRef = useRef<AbortController | null>(null);
-  useEffect(() => () => abortRef.current?.abort(), []);
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible && !exporting) {
+      setScope(initialPath ? 'path' : 'all');
+      setPath(initialPath);
+      setIncludeSecureValues(false);
+    }
+  }
 
   const selected = useMemo(() => {
     if (!byPath) return parameters;
@@ -107,51 +95,14 @@ const ExportForm = ({
   const canExport =
     !exporting && !loading && !typing && !pathMissing && selected.length > 0;
 
-  const onExport = () => {
-    const controller = new AbortController();
-    abortRef.current = controller;
-    exportParameters.mutate(
-      {
-        path: byPath ? path.trim() : '',
-        includeSecureValues,
-        signal: controller.signal,
-        onProgress: next => {
-          if (!controller.signal.aborted) setProgress(next);
-        }
-      },
-      {
-        onSuccess: ({ filePath, count }) => {
-          setProgress(null);
-          // Cancelling the save dialog keeps the form open.
-          if (!filePath) return;
-          message.success(`Exported ${plural(count, 'parameter')}`);
-          onClose();
-        },
-        onError: error => {
-          setProgress(null);
-          if (controller.signal.aborted) return;
-          notification.error({
-            title: 'Parameters were not exported',
-            description: describeError(error as ApiError)
-          });
-        }
-      }
-    );
-  };
-
-  // While exporting, Cancel stops the export and keeps the form open.
-  const onCancel = () => {
-    if (!exporting) {
-      onClose();
-      return;
-    }
-    abortRef.current?.abort();
-    setProgress(null);
-    exportParameters.reset();
-  };
+  const onExport = () =>
+    exportActions.start({
+      path: byPath ? path.trim() : '',
+      includeSecureValues
+    });
 
   let status: string;
-  if (progress) status = progressText(progress);
+  if (progress) status = describeProgress(progress);
   else if (loading) status = 'Waiting for parameters to finish loading…';
   else if (pathMissing) status = 'Enter a path.';
   else if (typing) status = 'Counting…';
@@ -232,9 +183,12 @@ const ExportForm = ({
         />
       )}
       <Flex justify="flex-end" gap={8}>
-        <Button onClick={onCancel} disabled={saving}>
-          Cancel
-        </Button>
+        {/* Once the file is being saved, the export can't be stopped. */}
+        {exporting && (
+          <Button onClick={exportActions.cancel} disabled={saving}>
+            Cancel
+          </Button>
+        )}
         <Button
           type="primary"
           disabled={!canExport && !exporting}

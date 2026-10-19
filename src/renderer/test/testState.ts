@@ -1,6 +1,7 @@
 // Settings, UI state and loaded parameters for state and component tests.
 import { DEFAULT_SETTINGS } from '../../shared/availableSettings';
 import type { Settings } from '../../shared/availableSettings';
+import { exportActions } from '../state/export';
 import { parametersKey } from '../state/parameters';
 import type { ParameterEntry, ParameterList } from '../state/parameters';
 import { createQueryClient } from '../state/queryClient';
@@ -19,7 +20,7 @@ export const makeParameter = (
   ...extra
 });
 
-// Resets the settings and UI stores and returns a query client. With
+// Resets the settings, UI and export stores and returns a query client. With
 // `parameters`, they are loaded as after a successful load; without, the
 // first component that reads them starts a load.
 export const createTestState = ({
@@ -37,6 +38,7 @@ export const createTestState = ({
   };
   useSettingsStore.setState(fullSettings, true);
   useUiStore.setState(initialUiState, true);
+  exportActions.cancel();
 
   const queryClient = createQueryClient();
   if (parameters.length) {

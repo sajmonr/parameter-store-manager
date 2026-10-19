@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { Button, Tooltip } from 'antd';
+import { Badge, Button, Tooltip } from 'antd';
 import {
   SettingOutlined,
   SwapOutlined,
   UnorderedListOutlined
 } from '@ant-design/icons';
+import { describeProgress, useExportStore } from '../../state/export';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { Page } from '../../state/ui';
 import { settingsShortcutLabel } from '../../utils/keys';
@@ -15,6 +16,8 @@ interface RailItemProps {
   label: string;
   tooltip?: string;
   icon: ReactNode;
+  // Shows a pulsing dot, for work that runs while the page isn't shown.
+  busy?: boolean;
   onClick: () => void;
 }
 
@@ -23,22 +26,49 @@ const RailItem = ({
   label,
   tooltip = label,
   icon,
+  busy = false,
   onClick
 }: RailItemProps) => {
   const active = useUiStore(state => state.page === page);
+  const button = (
+    <Button
+      color={active ? 'primary' : 'default'}
+      variant={active ? 'filled' : 'text'}
+      icon={icon}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
+      // Large is the rail's 40×40 with an 8px radius.
+      size="large"
+      onClick={onClick}
+    />
+  );
   return (
     <Tooltip title={tooltip} placement="right">
-      <Button
-        color={active ? 'primary' : 'default'}
-        variant={active ? 'filled' : 'text'}
-        icon={icon}
-        aria-label={label}
-        aria-current={active ? 'page' : undefined}
-        // Large is the rail's 40×40 with an 8px radius.
-        size="large"
-        onClick={onClick}
-      />
+      {busy ? (
+        <Badge status="processing" dot offset={[-4, 4]}>
+          {button}
+        </Badge>
+      ) : (
+        button
+      )}
     </Tooltip>
+  );
+};
+
+// While an export runs, the tooltip says how far it's got.
+const ImportExportItem = () => {
+  const running = useExportStore(state => state.running);
+  const progress = useExportStore(state => state.progress);
+  const label = 'Import & export';
+  return (
+    <RailItem
+      page="importExport"
+      label={label}
+      tooltip={progress ? `${label}: ${describeProgress(progress)}` : undefined}
+      icon={<SwapOutlined rotate={90} />}
+      busy={running}
+      onClick={() => uiActions.showPage('importExport')}
+    />
   );
 };
 
@@ -51,12 +81,7 @@ const Rail = () => (
       icon={<UnorderedListOutlined />}
       onClick={() => uiActions.showPage('parameters')}
     />
-    <RailItem
-      page="importExport"
-      label="Import & export"
-      icon={<SwapOutlined rotate={90} />}
-      onClick={() => uiActions.showPage('importExport')}
-    />
+    <ImportExportItem />
     <div className={styles.spacer} />
     <RailItem
       page="settings"
