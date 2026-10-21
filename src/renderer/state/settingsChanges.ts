@@ -7,7 +7,9 @@ import { uiActions } from './ui';
 
 // Parameters and KMS keys are loaded per profile and region, so a change
 // there loads them again by itself. The open pane and the folder don't carry
-// over, and a new delimiter makes the expanded folders meaningless.
+// over (the view and service do), and a new delimiter makes the expanded
+// folders meaningless. A removed service or environment needs nothing here:
+// the location is validated whenever it is read.
 export const saveSettingsAndApply = async (values: Partial<Settings>) => {
   const before = getSettings();
   await saveSettings(values);
@@ -15,11 +17,11 @@ export const saveSettingsAndApply = async (values: Partial<Settings>) => {
   const sourceChanged =
     after.profile !== before.profile || after.ssmRegion !== before.ssmRegion;
   const delimiterChanged = after.pathDelimiter !== before.pathDelimiter;
+  if (delimiterChanged) uiActions.collapseAll();
   if (sourceChanged || delimiterChanged) {
     uiActions.closePane();
-    uiActions.setScope('');
+    uiActions.resetLocation();
   }
-  if (delimiterChanged) uiActions.setExpandedFolders([]);
 };
 
 // Saves run one at a time, each changing the structure saved by the one

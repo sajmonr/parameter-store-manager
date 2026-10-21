@@ -1,11 +1,22 @@
 import { Button, Empty, Space, Typography } from 'antd';
-import { uiActions, useUiStore } from '../../state/ui';
-import { useMatcher } from '../../state/views';
+import { uiActions } from '../../state/ui';
+import { useLocation, useMatcher } from '../../state/views';
 import styles from './StateLayout.module.css';
 
 const NoResults = () => {
   const { query } = useMatcher();
-  const scope = useUiStore(state => state.scope);
+  const location = useLocation();
+  // Only the Paths view can widen to all parameters; the Services view's
+  // sidebar counts where the matches are.
+  const scope = location.view === 'paths' ? location.scope : '';
+  let hint =
+    'Plain text matches anywhere in the name. Use * or a leading / for globs.';
+  if (scope) {
+    hint =
+      'Only this folder is searched. Clear the folder to search everything.';
+  } else if (location.view !== 'paths') {
+    hint = 'The sidebar counts the matches in every service and environment.';
+  }
 
   return (
     <div className={styles.center}>
@@ -18,9 +29,7 @@ const NoResults = () => {
               <Typography.Text code>{query}</Typography.Text>
             </Typography.Text>
             <Typography.Text type="secondary" className={styles.hint}>
-              {scope
-                ? 'Only this folder is searched. Clear the folder to search everything.'
-                : 'Plain text matches anywhere in the name. Use * or a leading / for globs.'}
+              {hint}
             </Typography.Text>
           </>
         }

@@ -2,15 +2,17 @@ import { Input, Tag, Tooltip } from 'antd';
 import { FolderOutlined, SearchOutlined } from '@ant-design/icons';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
-import { useMatcher } from '../../state/views';
+import { useLocation, useMatcher } from '../../state/views';
 import { shortFolder } from '../../utils/paths';
 import styles from './SearchInput.module.css';
 
-// One box for plain-text and glob search. The scoped folder shows as a tag
-// inside the box; closing the tag searches all folders again.
+// One box for plain-text and glob search. It matches full names in every
+// view. In the Paths view, the scoped folder shows as a tag inside the box;
+// closing the tag searches all folders again.
 const SearchInput = () => {
   const query = useUiStore(state => state.query);
-  const scope = useUiStore(state => state.scope);
+  const location = useLocation();
+  const scope = location.view === 'paths' ? location.scope : '';
   const { isGlob } = useMatcher();
   const delimiter = usePathDelimiter();
 
@@ -30,6 +32,13 @@ const SearchInput = () => {
       </Tag>
     </Tooltip>
   );
+
+  let placeholder = `Search names, or a glob like ${delimiter}development${delimiter}**`;
+  if (location.view !== 'paths') {
+    placeholder = 'Search keys in every service and environment';
+  } else if (scope) {
+    placeholder = `Search this folder, or a glob like **${delimiter}Password`;
+  }
 
   return (
     <Input
@@ -53,11 +62,7 @@ const SearchInput = () => {
           </Tooltip>
         )
       }
-      placeholder={
-        scope
-          ? `Search this folder, or a glob like **${delimiter}Password`
-          : `Search names, or a glob like ${delimiter}development${delimiter}**`
-      }
+      placeholder={placeholder}
     />
   );
 };

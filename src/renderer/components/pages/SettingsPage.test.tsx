@@ -6,7 +6,7 @@ import * as api from '../../test/mockServices';
 import type { Settings } from '../../../shared/availableSettings';
 import { useExportStore } from '../../state/export';
 import { useSettingsStore } from '../../state/settings';
-import { uiActions, useUiStore } from '../../state/ui';
+import { getLocation, uiActions, useUiStore } from '../../state/ui';
 import type { SettingsSection } from '../../state/ui';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
@@ -101,7 +101,7 @@ describe('AWS connection', () => {
       expect(api.parametersService.describe).toHaveBeenCalled()
     );
     expect(ui().paneMode).toBeNull();
-    expect(ui().scope).toBe('');
+    expect(getLocation()).toEqual({ view: 'paths', scope: '' });
   });
 
   it('saves the KMS region with the SSM region while it follows it', async () => {
@@ -225,7 +225,7 @@ describe('Display', () => {
     const user = userEvent.setup();
     setup({}, 'display');
     uiActions.setScope('/a/');
-    uiActions.setExpandedFolders(['/a/']);
+    uiActions.setExpanded('paths', ['/a/']);
 
     await user.clear(delimiterInput());
     await user.type(delimiterInput(), '.');
@@ -235,8 +235,8 @@ describe('Display', () => {
     expect(api.settingsService.set).toHaveBeenCalledWith({
       pathDelimiter: '.'
     });
-    await waitFor(() => expect(ui().expandedFolders).toEqual([]));
-    expect(ui().scope).toBe('');
+    await waitFor(() => expect(ui().expanded.paths).toEqual([]));
+    expect(getLocation()).toEqual({ view: 'paths', scope: '' });
   });
 
   it('saves the delimiter on blur', async () => {

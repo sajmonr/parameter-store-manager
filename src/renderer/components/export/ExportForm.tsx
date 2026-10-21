@@ -17,8 +17,7 @@ import {
 } from '../../state/export';
 import { useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
-import { useUiStore } from '../../state/ui';
-import { useAllFolderTree } from '../../state/views';
+import { useAllFolderTree, useLocationPath } from '../../state/views';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import usePageVisible from '../../hooks/usePageVisible';
 import { foldersOf } from '../../utils/paths';
@@ -52,7 +51,7 @@ const ExportForm = () => {
   const { parameters, loading } = useParameters();
   const { keys: folders } = useAllFolderTree();
   const delimiter = usePathDelimiter();
-  const initialPath = useUiStore(state => state.scope);
+  const initialPath = useLocationPath();
   const visible = usePageVisible();
   const exporting = useExportStore(state => state.running);
   const progress = useExportStore(state => state.progress);

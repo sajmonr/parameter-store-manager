@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
+import { DEFAULT_STRUCTURE } from '../../shared/structure';
+import type { Structure } from '../../shared/structure';
 import { createWrapper } from '../test/render';
 import { createTestState, makeParameter } from '../test/testState';
-import { uiActions, useUiStore } from './ui';
+import { serviceNodeKey } from '../utils/location';
+import { useSettingsStore } from './settings';
+import { getLocation, uiActions, useUiStore } from './ui';
 import {
   useMatchedFolderTree,
   useSelectedParameter,
@@ -53,11 +57,7 @@ describe('ui state', () => {
   it('expands the path to a new scope', () => {
     setup();
     uiActions.setScope('/dev/app/db/');
-    expect(ui().expandedFolders).toEqual([
-      '/dev/',
-      '/dev/app/',
-      '/dev/app/db/'
-    ]);
+    expect(ui().expanded.paths).toEqual(['/dev/', '/dev/app/', '/dev/app/db/']);
   });
 
   it('opens the detail pane on selection and closes it again', () => {
@@ -86,16 +86,16 @@ describe('ui state', () => {
     uiActions.showCreatedParameter('/dev/app/db/Host');
 
     expect(ui().query).toBe('');
-    expect(ui().scope).toBe('/dev/app/db/');
+    expect(getLocation()).toEqual({ view: 'paths', scope: '/dev/app/db/' });
     expect(ui().selectedName).toBe('/dev/app/db/Host');
-    expect(ui().expandedFolders).toContain('/dev/app/db/');
+    expect(ui().expanded.paths).toContain('/dev/app/db/');
   });
 
   it('keeps the scope when a created parameter is inside it', () => {
     setup();
     uiActions.setScope('/dev/');
     uiActions.showCreatedParameter('/dev/app/db/Host');
-    expect(ui().scope).toBe('/dev/');
+    expect(getLocation()).toEqual({ view: 'paths', scope: '/dev/' });
   });
 
   it('switches pages without touching the Parameters state', () => {
@@ -109,7 +109,7 @@ describe('ui state', () => {
     expect(ui().page).toBe('settings');
 
     uiActions.showPage('parameters');
-    expect(ui().scope).toBe('/dev/');
+    expect(getLocation()).toEqual({ view: 'paths', scope: '/dev/' });
     expect(ui().selectedName).toBe('/dev/app/Title');
   });
 
@@ -126,5 +126,136 @@ describe('ui state', () => {
 
     uiActions.openSettings('aws');
     expect(ui().settingsSection).toBe('aws');
+  });
+});
+
+describe('ui state in the Services view', () => {
+  const structure: Structure = {
+    ...DEFAULT_STRUCTURE,
+    enabled: true,
+    services: [
+      { segment: 'compass', environments: ['development', 'staging'] },
+      { segment: 'billing', environments: ['production'] }
+    ]
+  };
+  const grouped = [
+    '/development/compass/App/Port',
+    '/development/compass/Flag',
+    '/staging/compass/App/Port',
+    '/production/billing/Key',
+    '/random/thing'
+  ];
+  const setupGrouped = () =>
+    renderHook(() => useVisibleParameters(), {
+      wrapper: createWrapper(
+        createTestState({
+          parameters: grouped.map(n => makeParameter(n)),
+          settings: { structure }
+        })
+      )
+    });
+  const compass = (env: string, folder = '') => ({
+    view: 'services' as const,
+    service: 'compass',
+    env,
+    folder
+  });
+
+  it('opens on the first service in its first environment', () => {
+    const { result } = setupGrouped();
+    expect(getLocation()).toEqual(compass('development'));
+    expect(result.current.map(p => p.Name)).toEqual([
+      '/development/compass/App/Port',
+      '/development/compass/Flag'
+    ]);
+  });
+
+  it('keeps the service and folder when the environment changes', () => {
+    setupGrouped();
+    uiActions.setLocation(compass('development', 'App/'));
+    uiActions.setEnv('staging');
+    expect(getLocation()).toEqual(compass('staging', 'App/'));
+  });
+
+  it('keeps the environment across services that are in it', () => {
+    setupGrouped();
+    uiActions.setEnv('staging');
+    uiActions.setLocation({
+      view: 'services',
+      service: 'billing',
+      env: 'staging',
+      folder: ''
+    });
+    // billing isn't in staging.
+    expect(getLocation()).toMatchObject({ env: 'production' });
+    uiActions.setLocation(compass('staging'));
+    expect(getLocation()).toEqual(compass('staging'));
+  });
+
+  it('switches to Paths and back at the same place', () => {
+    setupGrouped();
+    uiActions.setLocation(compass('staging', 'App/'));
+    uiActions.setView('paths');
+    expect(getLocation()).toEqual({
+      view: 'paths',
+      scope: '/staging/compass/App/'
+    });
+    expect(ui().expanded.paths).toContain('/staging/compass/App/');
+    uiActions.setView('services');
+    expect(getLocation()).toEqual(compass('staging', 'App/'));
+  });
+
+  it('keeps the selection when switching views', () => {
+    setupGrouped();
+    uiActions.selectParameter('/random/thing');
+    uiActions.setView('paths');
+    expect(ui().selectedName).toBe('/random/thing');
+    // /development/compass/ doesn't list it, so its folder opens.
+    expect(getLocation()).toEqual({ view: 'paths', scope: '/random/' });
+    uiActions.setView('services');
+    expect(getLocation()).toEqual({
+      view: 'services',
+      other: true,
+      folder: '/random/'
+    });
+  });
+
+  it('shows a created parameter in place, or goes to its folder', () => {
+    setupGrouped();
+    uiActions.showCreatedParameter('/development/compass/App/New');
+    expect(getLocation()).toEqual(compass('development'));
+    expect(ui().expanded.services).toContain(serviceNodeKey('compass', 'App/'));
+    expect(ui().selectedName).toBe('/development/compass/App/New');
+
+    uiActions.showCreatedParameter('/staging/compass/Other');
+    expect(getLocation()).toEqual(compass('staging'));
+  });
+
+  it('falls back when the selected service is removed', () => {
+    setupGrouped();
+    uiActions.setLocation({
+      view: 'services',
+      service: 'billing',
+      env: 'production',
+      folder: ''
+    });
+    act(() =>
+      useSettingsStore.setState({
+        structure: { ...structure, services: structure.services.slice(0, 1) }
+      })
+    );
+    expect(getLocation()).toEqual(compass('development'));
+  });
+
+  it('is in the Paths view while the switch is off', () => {
+    setupGrouped();
+    uiActions.setLocation(compass('staging', 'App/'));
+    act(() =>
+      useSettingsStore.setState({ structure: { ...structure, enabled: false } })
+    );
+    expect(getLocation()).toEqual({
+      view: 'paths',
+      scope: '/staging/compass/App/'
+    });
   });
 });

@@ -1,8 +1,8 @@
 // Reads a service, an environment and a key out of parameter names, as the
 // structure setting describes them. A name that doesn't fit is listed under
 // Other paths.
-import type { Structure } from '../../shared/structure';
-import { rootFolder } from './paths';
+import type { Layout, Structure } from '../../shared/structure';
+import { folderLabel, foldersOf, rootFolder } from './paths';
 
 export interface Match {
   env: string;
@@ -132,3 +132,35 @@ export const countAt = (
   service: string,
   env: string
 ) => counts.get(service)?.get(env) ?? 0;
+
+// The layout as a path pattern: '/{environment}/{service}/…'.
+export const layoutPattern = (layout: Layout, delimiter: string) => {
+  const segments =
+    layout === 'env-first'
+      ? ['{environment}', '{service}']
+      : ['{service}', '{environment}'];
+  return `${rootFolder(delimiter)}${segments.join(delimiter)}${delimiter}…`;
+};
+
+// The colour of the environment a folder stands for, or null when it isn't
+// one: a top-level folder with the environment convention, a folder in a
+// service's folder with the services convention.
+export const environmentColorOf = (
+  folder: string,
+  { enabled, layout, environments, services }: Structure,
+  delimiter: string
+) => {
+  if (!enabled) return null;
+  const chain = foldersOf(folder, delimiter);
+  const depth = layout === 'env-first' ? 1 : 2;
+  if (chain.length !== depth) return null;
+  const [first] = chain as [string];
+  if (
+    layout === 'svc-first' &&
+    !services.some(s => s.segment === folderLabel(first, delimiter))
+  ) {
+    return null;
+  }
+  const segment = folderLabel(folder, delimiter);
+  return environments.find(e => e.segment === segment)?.color ?? null;
+};

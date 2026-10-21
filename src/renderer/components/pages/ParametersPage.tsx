@@ -9,12 +9,12 @@ import {
 } from '../../utils/layout';
 import ResizeHandle from '../common/ResizeHandle';
 import AppHeader from '../header/AppHeader';
-import FolderTree from '../sidebar/FolderTree';
+import Sidebar from '../sidebar/Sidebar';
 import ParameterBrowser from '../parameters/ParameterBrowser';
 import DetailHost from '../detail/DetailHost';
 import styles from './ParametersPage.module.css';
 
-// The header, folder tree, table and detail pane.
+// The header, sidebar, table and detail pane.
 const ParametersPage = () => {
   const narrow = useMediaQuery(NARROW_QUERY);
   const siderMax = siderMaxWidth(useWindowWidth(), narrow);
@@ -34,7 +34,7 @@ const ParametersPage = () => {
           width={sider.width}
           className={styles.sider}
         >
-          <FolderTree />
+          <Sidebar />
           <ResizeHandle
             label="Resize folder tree"
             width={sider.width}

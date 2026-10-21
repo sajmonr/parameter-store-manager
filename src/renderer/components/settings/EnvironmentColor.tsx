@@ -2,11 +2,8 @@ import { forwardRef, useState } from 'react';
 import { Button, ColorPicker } from 'antd';
 import type { ButtonProps } from 'antd';
 import { ENVIRONMENT_COLORS } from '../../../shared/structure';
+import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './Settings.module.css';
-
-export const EnvironmentDot = ({ color }: { color: string }) => (
-  <span className={styles.dot} style={{ background: color }} aria-hidden />
-);
 
 // The picker opens from the swatch it wraps, so the swatch takes the props
 // and ref it is given.

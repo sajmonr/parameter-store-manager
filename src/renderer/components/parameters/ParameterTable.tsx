@@ -4,6 +4,8 @@ import type { GetRef, TableColumnsType } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import type { ParameterEntry } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
+import { useLocation } from '../../state/views';
+import { isServiceLocation } from '../../utils/location';
 import useElementSize from '../../hooks/useElementSize';
 import usePageVisible from '../../hooks/usePageVisible';
 import NameCell from './NameCell';
@@ -26,6 +28,8 @@ const isArrowNavigationTarget = (target: EventTarget | null) =>
 
 const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   const selectedName = useUiStore(state => state.selectedName);
+  // A service's rows are its keys.
+  const nameTitle = isServiceLocation(useLocation()) ? 'Key' : 'Name';
   const pageVisible = usePageVisible();
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [ref, { width, height }] = useElementSize();
@@ -64,7 +68,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   const columns = useMemo<TableColumnsType<ParameterEntry>>(
     () => [
       {
-        title: 'Name',
+        title: nameTitle,
         key: 'name',
         width: Math.round((width - LOCK_COLUMN_WIDTH) * 0.45),
         render: (_, parameter) => (
@@ -97,7 +101,7 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
           )
       }
     ],
-    [width, selectedName, revealed]
+    [width, selectedName, revealed, nameTitle]
   );
 
   return (

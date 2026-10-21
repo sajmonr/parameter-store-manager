@@ -5,10 +5,6 @@
   overflow: hidden;
 }
 
-.skeleton {
-  padding: 4px 12px;
-}
-
 /* Icon and title share one row; the count sits at the right edge. */
 .container :global(.ant-tree-node-content-wrapper) {
   display: flex;
@@ -44,4 +40,30 @@
 
 :global(.ant-tree-treenode-selected) .count {
   color: var(--ant-color-primary);
+}
+
+.dot {
+  align-self: center;
+}
+
+/* The Services view's groups scroll together. */
+.scroll {
+  overflow-y: auto;
+}
+
+.group {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ant-color-text-tertiary);
+}
+
+.group + :global(.ant-tree) {
+  margin-bottom: 8px;
+}
+
+.empty {
+  color: var(--ant-color-text-quaternary);
 }
