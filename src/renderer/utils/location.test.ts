@@ -5,6 +5,7 @@ import {
   contains,
   convert,
   envFor,
+  locationInEnv,
   locationOf,
   otherNodeKey,
   pathFolderOf,
@@ -235,6 +236,47 @@ describe('pathFolderOf', () => {
       '/development/compass/AppServer/'
     );
     expect(pathFolderOf({ view: 'paths', scope: '/a/' }, ctx)).toBe('/a/');
+  });
+});
+
+describe('locationInEnv', () => {
+  const staging = '/staging/compass/AppServer/Port';
+
+  it('changes the environment in the Services view', () => {
+    expect(locationInEnv(compassDev('AppServer/'), staging, ctx)).toEqual({
+      ...compassDev('AppServer/'),
+      env: 'staging'
+    });
+  });
+
+  it('moves a Paths folder of the service to that environment', () => {
+    expect(
+      locationInEnv(
+        { view: 'paths', scope: '/development/compass/AppServer/' },
+        staging,
+        ctx
+      )
+    ).toEqual({ view: 'paths', scope: '/staging/compass/AppServer/' });
+  });
+
+  it('stays where the name is already listed', () => {
+    expect(locationInEnv({ view: 'paths', scope: '' }, staging, ctx)).toEqual({
+      view: 'paths',
+      scope: ''
+    });
+  });
+
+  it("goes to the name's folder from anywhere else", () => {
+    expect(
+      locationInEnv({ view: 'paths', scope: '/development/' }, staging, ctx)
+    ).toEqual({ view: 'paths', scope: '/staging/compass/AppServer/' });
+    expect(
+      locationInEnv(
+        { ...compassDev(), service: 'billing', env: 'production' },
+        staging,
+        ctx
+      )
+    ).toEqual({ ...compassDev('AppServer/'), env: 'staging' });
   });
 });
 

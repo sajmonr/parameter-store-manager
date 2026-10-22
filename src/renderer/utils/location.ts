@@ -211,6 +211,29 @@ export const pathFolderOf = (location: Location, ctx: LocationContext) => {
   return converted.view === 'paths' ? converted.scope : '';
 };
 
+// Where to list `name`, the same key in another environment of the service,
+// from `location` in the same view: the same place in that environment when
+// it lists the name, otherwise `location` if it does, otherwise the name's
+// own folder.
+export const locationInEnv = (
+  location: Location,
+  name: string,
+  ctx: LocationContext
+): Location => {
+  const match = parse(name, ctx.structure, ctx.delimiter);
+  const asService = convert(location, 'services', ctx);
+  if (
+    match &&
+    isServiceLocation(asService) &&
+    asService.service === match.service
+  ) {
+    const moved = convert({ ...asService, env: match.env }, location.view, ctx);
+    if (contains(moved, name, ctx)) return moved;
+  }
+  if (contains(location, name, ctx)) return location;
+  return locationOf(name, location.view, ctx);
+};
+
 interface Preferences {
   defaultView: ParameterView;
   // The environment last picked in the Services view.

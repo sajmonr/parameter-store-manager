@@ -1,0 +1,28 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: 0;
+}
+
+.open {
+  cursor: pointer;
+}
+
+.open:hover,
+.open:focus-visible {
+  border-color: var(--ant-color-primary);
+  color: var(--ant-color-primary);
+}
+
+.missing {
+  border-style: dashed;
+  border-color: var(--ant-color-error);
+  color: var(--ant-color-text-secondary);
+}

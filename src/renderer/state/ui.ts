@@ -5,6 +5,7 @@ import {
   contains,
   convert,
   isServiceLocation,
+  locationInEnv,
   locationOf,
   treeKeysTo,
   validate
@@ -174,6 +175,14 @@ const showCreatedParameter = (name: string) => {
   selectParameter(name);
 };
 
+// Selects `name`, the selected parameter's key in another environment, and
+// moves the table to it: another environment tab in the Services view, the
+// same folder in that environment in the Paths view.
+const showInEnvironment = (name: string) => {
+  setLocation(locationInEnv(getLocation(), name, getLocationContext()));
+  selectParameter(name);
+};
+
 export const uiActions = {
   setQuery,
   setLocation,
@@ -189,5 +198,6 @@ export const uiActions = {
   openSettings,
   showSettingsSection,
   showCreatedParameter,
+  showInEnvironment,
   showPage
 };
