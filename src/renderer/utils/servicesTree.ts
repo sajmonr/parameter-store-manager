@@ -42,18 +42,25 @@ const toNodes = (
   folders.map(folder => toNode(folder, toNodes(folder.children, toNode)));
 
 // `names` are the parameters that match the search. A service and its
-// folders are counted in the environment it would open on: `preferredEnv`
-// if it's in it. Folders come from the keys in all its environments. While
+// folders are counted in the environment they show: `active`'s for the
+// selected service, and for the others the one they would open on,
+// `preferredEnv` if they're in it. Folders come from the keys in all its environments. While
 // searching, services and Other paths without matches are left out.
 export const buildServicesTree = (
   names: readonly string[],
   ctx: LocationContext,
   preferredEnv: string | null,
-  searching: boolean
+  searching: boolean,
+  active: { service: string; env: string } | null = null
 ): ServicesTree => {
   const { structure, delimiter } = ctx;
   const envs = new Map(
-    structure.services.map(s => [s.segment, envFor(s, preferredEnv, structure)])
+    structure.services.map(s => [
+      s.segment,
+      s.segment === active?.service
+        ? active.env
+        : envFor(s, preferredEnv, structure)
+    ])
   );
   const keys = new Map<string, { all: string[]; inEnv: string[] }>(
     structure.services.map(s => [s.segment, { all: [], inEnv: [] }])

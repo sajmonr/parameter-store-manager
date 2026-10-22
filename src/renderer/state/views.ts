@@ -96,25 +96,26 @@ export const useEnvironmentTabs = () => {
   }, [matched, location, context]);
 };
 
-// The Services view's sidebar, with the matches counted in the environment
-// each service would open on.
+// The Services view's sidebar. The selected service is counted in the
+// environment on screen, the others in the one each would open on.
 export const useServicesTree = () => {
   const matched = useMatchedParameters();
   const { query } = useMatcher();
   const location = useLocation();
   const lastEnv = useUiStore(state => state.lastEnv);
   const context = useLocationContext();
-  const preferredEnv =
-    lastEnv ?? (isServiceLocation(location) ? location.env : null);
+  const active = isServiceLocation(location) ? location : null;
+  const preferredEnv = lastEnv ?? active?.env ?? null;
   return useMemo(
     () =>
       buildServicesTree(
         matched.map(p => p.Name),
         context,
         preferredEnv,
-        !!query
+        !!query,
+        active
       ),
-    [matched, context, preferredEnv, query]
+    [matched, context, preferredEnv, query, active]
   );
 };
 

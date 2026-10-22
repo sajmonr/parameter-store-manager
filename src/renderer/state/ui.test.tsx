@@ -11,6 +11,7 @@ import { getLocation, uiActions, useUiStore } from './ui';
 import {
   useMatchedFolderTree,
   useSelectedParameter,
+  useServicesTree,
   useVisibleParameters
 } from './views';
 
@@ -180,16 +181,43 @@ describe('ui state in the Services view', () => {
   it('keeps the environment across services that are in it', () => {
     setupGrouped();
     uiActions.setEnv('staging');
-    uiActions.setLocation({
-      view: 'services',
-      service: 'billing',
-      env: 'staging',
-      folder: ''
-    });
+    // A sidebar click into another service.
+    uiActions.setLocation(
+      { view: 'services', service: 'billing', env: 'staging', folder: '' },
+      { rememberEnv: false }
+    );
     // billing isn't in staging.
     expect(getLocation()).toMatchObject({ env: 'production' });
-    uiActions.setLocation(compass('staging'));
+    expect(ui().lastEnv).toBe('staging');
+    uiActions.setLocation(compass('staging'), { rememberEnv: false });
     expect(getLocation()).toEqual(compass('staging'));
+  });
+
+  it('counts and opens folders in the environment shown after coming back from Paths', () => {
+    const { result } = renderHook(() => useServicesTree(), {
+      wrapper: createWrapper(
+        createTestState({
+          parameters: grouped.map(n => makeParameter(n)),
+          settings: { structure }
+        })
+      )
+    });
+    act(() => {
+      uiActions.setEnv('staging');
+      uiActions.setView('paths');
+      uiActions.setScope('/development/compass/');
+      uiActions.setView('services');
+    });
+    expect(getLocation()).toEqual(compass('development'));
+    // Other services now open on development too.
+    expect(ui().lastEnv).toBe('development');
+
+    const [compassNode] = result.current.services;
+    expect(compassNode!.count).toBe(2);
+    const app = compassNode!.children.find(f => f.label === 'App')!;
+    expect(app.count).toBe(1);
+    act(() => uiActions.setLocation(app.location));
+    expect(getLocation()).toEqual(compass('development', 'App/'));
   });
 
   it('switches to Paths and back at the same place', () => {

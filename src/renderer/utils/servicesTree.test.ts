@@ -68,6 +68,24 @@ describe('buildServicesTree', () => {
     });
   });
 
+  it('counts the selected service in the environment shown', () => {
+    const tree = buildServicesTree(names, ctx, 'staging', false, {
+      service: 'compass',
+      env: 'development'
+    });
+    expect(tree.services.map(summary)[0]).toEqual([
+      'compass',
+      2,
+      [
+        ['AppServer', 1],
+        ['Workers', 0]
+      ]
+    ]);
+    expect(tree.services[0]!.children[0]!.location).toMatchObject({
+      env: 'development'
+    });
+  });
+
   it('leaves out what has no matches while searching', () => {
     const tree = buildServicesTree(names.slice(0, 1), ctx, null, true);
     expect(tree.services.map(s => s.label)).toEqual(['compass']);

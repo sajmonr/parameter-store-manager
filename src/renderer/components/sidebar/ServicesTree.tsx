@@ -4,7 +4,8 @@ import type { TreeDataNode } from 'antd';
 import { AppstoreOutlined, InboxOutlined } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import { useLocation, useServicesTree } from '../../state/views';
-import { treeKeyOf } from '../../utils/location';
+import { isServiceLocation, treeKeyOf } from '../../utils/location';
+import type { Location } from '../../utils/location';
 import type { SidebarNode } from '../../utils/servicesTree';
 import HighlightText from '../common/HighlightText';
 import { folderIcon } from './FolderTree';
@@ -33,12 +34,14 @@ const Group = ({
   title,
   nodes,
   selectedKey,
-  expansion
+  expansion,
+  onSelect
 }: {
   title: string;
   nodes: SidebarNode[];
   selectedKey: string;
   expansion: ReturnType<typeof useTreeExpansion>;
+  onSelect: (location: Location) => void;
 }) => {
   const treeData = useMemo(() => withIcons(nodes), [nodes]);
   const { expandedKeys, onExpand, highlight } = expansion;
@@ -52,7 +55,7 @@ const Group = ({
         expandedKeys={expandedKeys}
         onExpand={onExpand}
         selectedKeys={[selectedKey]}
-        onSelect={(_keys, { node }) => uiActions.setLocation(node.location)}
+        onSelect={(_keys, { node }) => onSelect(node.location)}
         titleRender={node => (
           <span className={styles.title}>
             <span className={styles.label} title={node.label}>
@@ -83,6 +86,14 @@ const ServicesTree = () => {
   const location = useLocation();
   const expansion = useTreeExpansion('services', tree.keys);
   const selectedKey = treeKeyOf(location);
+  // Another service opens on the environment picked before, or falls back
+  // to one it's in; that fallback isn't a new pick.
+  const onSelect = (next: Location) => {
+    const otherService =
+      isServiceLocation(next) &&
+      !(isServiceLocation(location) && location.service === next.service);
+    uiActions.setLocation(next, { rememberEnv: !otherService });
+  };
   const other = useMemo(() => (tree.other ? [tree.other] : []), [tree.other]);
 
   return (
@@ -93,6 +104,7 @@ const ServicesTree = () => {
           nodes={tree.services}
           selectedKey={selectedKey}
           expansion={expansion}
+          onSelect={onSelect}
         />
       )}
       {other.length > 0 && (
@@ -101,6 +113,7 @@ const ServicesTree = () => {
           nodes={other}
           selectedKey={selectedKey}
           expansion={expansion}
+          onSelect={onSelect}
         />
       )}
       {!tree.services.length && !other.length && (

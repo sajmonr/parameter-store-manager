@@ -82,14 +82,25 @@ const expand = (view: LocationView, keys: string[]) =>
 
 const setQuery = (query: string) => set({ query });
 
-// Going somewhere also expands the tree to it.
-const setLocation = (next: Location) => {
-  const { lastEnv } = get();
+// Going somewhere also expands the tree to it, and makes its environment
+// the one other services open on. A sidebar click into another service
+// passes `rememberEnv: false`: that service may have fallen back to another
+// environment, and the one picked before should still apply to the rest.
+const setLocation = (next: Location, { rememberEnv = true } = {}) => {
   const { defaultView } = getSettings();
   const context = getLocationContext();
-  const location = validate(next, context, { defaultView, lastEnv });
+  const location = validate(next, context, {
+    defaultView,
+    lastEnv: get().lastEnv
+  });
   expand(location.view, treeKeysTo(location, context));
-  set({ location });
+  set(state => ({
+    location,
+    lastEnv:
+      rememberEnv && isServiceLocation(location) && location.env
+        ? location.env
+        : state.lastEnv
+  }));
 };
 
 const setScope = (scope: string) => setLocation({ view: 'paths', scope });
@@ -98,7 +109,6 @@ const setScope = (scope: string) => setLocation({ view: 'paths', scope });
 const setEnv = (env: string) => {
   const location = getLocation();
   if (!isServiceLocation(location)) return;
-  set({ lastEnv: env });
   setLocation({ ...location, env });
 };
 
