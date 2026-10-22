@@ -4,6 +4,7 @@ import type { EditableParameterType } from '../../main/endpoints/parameters/putP
 import {
   contains,
   convert,
+  isEnvironmentLocation,
   isServiceLocation,
   locationInEnv,
   locationOf,
@@ -36,8 +37,8 @@ export interface UiState {
   // default view's starting place. It can point at a service that was since
   // removed, so it is read through getLocation or useLocation.
   location: Location | null;
-  // The environment last picked in the Services view. Other services open
-  // on it when they are in it.
+  // The environment last picked in a grouped view. Other services open on
+  // it when they are in it.
   lastEnv: string | null;
   query: string;
   // The expanded tree nodes of each view.
@@ -55,7 +56,7 @@ export const initialUiState: UiState = {
   location: null,
   lastEnv: null,
   query: '',
-  expanded: { paths: [], services: [] },
+  expanded: { paths: [], services: [], environments: [] },
   selectedName: null,
   paneMode: null,
   newPrefill: null,
@@ -99,7 +100,9 @@ const setLocation = (next: Location, { rememberEnv = true } = {}) => {
   set(state => ({
     location,
     lastEnv:
-      rememberEnv && isServiceLocation(location) && location.env
+      rememberEnv &&
+      (isServiceLocation(location) || isEnvironmentLocation(location)) &&
+      location.env
         ? location.env
         : state.lastEnv
   }));
@@ -114,18 +117,18 @@ const setEnv = (env: string) => {
   setLocation({ ...location, env });
 };
 
-// Switches the view and goes to the same place in it. A selected parameter
-// stays selected; when it isn't listed there, the view opens on its folder.
+// Switches the view. A selected parameter stays selected and the view opens
+// on its folder; otherwise it goes to the same place in the new view.
 const setView = (view: LocationView) => {
   const current = getLocation();
   if (current.view === view) return;
   const context = getLocationContext();
   const { selectedName } = get();
-  let next = convert(current, view, context);
-  if (selectedName && !contains(next, selectedName, context)) {
-    next = locationOf(selectedName, view, context);
-  }
-  setLocation(next);
+  setLocation(
+    selectedName
+      ? locationOf(selectedName, view, context)
+      : convert(current, view, context)
+  );
 };
 
 // The same view's starting place, for when the folders mean something else:
@@ -178,8 +181,8 @@ const showCreatedParameter = (name: string) => {
 
 // Selects `name`, the selected parameter's key in another environment, and
 // moves the table to it: another environment tab in the Services view, the
-// same folder in that environment in the Paths view. A search that leaves it
-// out is cleared, so the table lists it.
+// same place in that environment in the Environments and Paths views. A
+// search that leaves it out is cleared, so the table lists it.
 const showInEnvironment = (name: string) => {
   const context = getLocationContext();
   if (!createMatcher(get().query, context.delimiter).test(name)) setQuery('');

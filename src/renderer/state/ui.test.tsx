@@ -5,7 +5,7 @@ import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
 import { createWrapper } from '../test/render';
 import { createTestState, makeParameter } from '../test/testState';
-import { serviceNodeKey } from '../utils/location';
+import { environmentNodeKey, serviceNodeKey } from '../utils/location';
 import { useSettingsStore } from './settings';
 import { getLocation, uiActions, useUiStore } from './ui';
 import {
@@ -273,6 +273,75 @@ describe('ui state in the Services view', () => {
       })
     );
     expect(getLocation()).toEqual(compass('development'));
+  });
+
+  it('switches between all three views without losing the selection', () => {
+    setupGrouped();
+    const name = '/staging/compass/App/Port';
+    uiActions.setLocation(compass('development'));
+    uiActions.selectParameter(name);
+
+    uiActions.setView('environments');
+    expect(getLocation()).toEqual({
+      view: 'environments',
+      env: 'staging',
+      service: 'compass',
+      folder: 'App/'
+    });
+    expect(ui().expanded.environments).toEqual(
+      expect.arrayContaining([
+        environmentNodeKey('staging'),
+        environmentNodeKey('staging', 'compass'),
+        environmentNodeKey('staging', 'compass', 'App/')
+      ])
+    );
+    uiActions.setView('paths');
+    expect(getLocation()).toEqual({
+      view: 'paths',
+      scope: '/staging/compass/App/'
+    });
+    uiActions.setView('services');
+    expect(getLocation()).toEqual(compass('staging', 'App/'));
+    expect(ui().selectedName).toBe(name);
+  });
+
+  it('keeps the place between the views with nothing selected', () => {
+    setupGrouped();
+    uiActions.setLocation(compass('staging', 'App/'));
+    uiActions.setView('environments');
+    expect(getLocation()).toEqual({
+      view: 'environments',
+      env: 'staging',
+      service: 'compass',
+      folder: 'App/'
+    });
+
+    // A whole environment opens on a service in it.
+    uiActions.setLocation({
+      view: 'environments',
+      env: 'production',
+      service: null,
+      folder: ''
+    });
+    uiActions.setView('services');
+    expect(getLocation()).toEqual({
+      view: 'services',
+      service: 'billing',
+      env: 'production',
+      folder: ''
+    });
+
+    uiActions.setView('paths');
+    uiActions.setScope('/development/');
+    uiActions.setView('environments');
+    expect(getLocation()).toEqual({
+      view: 'environments',
+      env: 'development',
+      service: null,
+      folder: ''
+    });
+    uiActions.setView('paths');
+    expect(getLocation()).toEqual({ view: 'paths', scope: '/development/' });
   });
 
   it('is in the Paths view while the switch is off', () => {

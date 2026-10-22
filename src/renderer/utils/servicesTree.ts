@@ -1,16 +1,24 @@
-// The Services view's sidebar: each service with the folders of its keys,
-// then Other paths with its folders.
+// The grouped views' sidebars. Services: each service with the folders of
+// its keys. Environments: each environment with its services and their
+// folders. Both end with Other paths and its folders.
 import { buildFolderTree, foldersOf } from './paths';
 import type { FolderNode } from './paths';
-import { envFor, otherNodeKey, serviceNodeKey } from './location';
-import type { Location, LocationContext } from './location';
+import {
+  envFor,
+  environmentNodeKey,
+  otherNodeKey,
+  serviceNodeKey
+} from './location';
+import type { GroupedView, Location, LocationContext } from './location';
 import { parse } from './structure';
 
 export interface SidebarNode {
   key: string;
   label: string;
   count: number;
-  kind: 'service' | 'other' | 'folder';
+  kind: 'environment' | 'service' | 'other' | 'folder';
+  // An environment's colour.
+  color?: string;
   // Where selecting the node goes. A service node's environment is a
   // preference; validate settles it.
   location: Location;
@@ -40,6 +48,57 @@ const toNodes = (
   toNode: (folder: FolderNode, children: SidebarNode[]) => SidebarNode
 ): SidebarNode[] =>
   folders.map(folder => toNode(folder, toNodes(folder.children, toNode)));
+
+// Makes nodes, keeping the keys of those with children.
+const nodeMaker = () => {
+  const expandable: string[] = [];
+  const node = (
+    fields: Omit<SidebarNode, 'children'>,
+    children: SidebarNode[]
+  ): SidebarNode => {
+    if (children.length) expandable.push(fields.key);
+    return { ...fields, children };
+  };
+  return { expandable, node };
+};
+
+type MakeNode = ReturnType<typeof nodeMaker>['node'];
+
+// Other paths with the folders of `names`. Null while searching finds
+// nothing there.
+const otherPathsNode = (
+  names: string[],
+  view: GroupedView,
+  { delimiter }: LocationContext,
+  searching: boolean,
+  node: MakeNode
+) => {
+  if (searching && !names.length) return null;
+  const children = toNodes(
+    buildFolderTree(names, delimiter).roots,
+    (folder, nested) =>
+      node(
+        {
+          key: otherNodeKey(folder.key),
+          label: folder.label,
+          count: folder.count,
+          kind: 'folder',
+          location: { view, other: true, folder: folder.key }
+        },
+        nested
+      )
+  );
+  return node(
+    {
+      key: otherNodeKey(),
+      label: 'Other paths',
+      count: names.length,
+      kind: 'other',
+      location: { view, other: true, folder: '' }
+    },
+    children
+  );
+};
 
 // `names` are the parameters that match the search. A service and its
 // folders are counted in the environment they show: `active`'s for the
@@ -78,15 +137,7 @@ export const buildServicesTree = (
     if (match.env === envs.get(match.service)) service.inEnv.push(match.key);
   });
 
-  const expandable: string[] = [];
-  const node = (
-    fields: Omit<SidebarNode, 'children'>,
-    children: SidebarNode[]
-  ) => {
-    if (children.length) expandable.push(fields.key);
-    return { ...fields, children };
-  };
-
+  const { expandable, node } = nodeMaker();
   const services = structure.services.flatMap(({ segment }) => {
     const { all, inEnv } = keys.get(segment)!;
     if (searching && !all.length) return [];
@@ -126,33 +177,102 @@ export const buildServicesTree = (
     ];
   });
 
-  let otherNode: SidebarNode | null = null;
-  if (!searching || other.length) {
-    const children = toNodes(
-      buildFolderTree(other, delimiter).roots,
-      (folder, nested) =>
+  const otherNode = otherPathsNode(other, 'services', ctx, searching, node);
+  return { services, other: otherNode, keys: expandable };
+};
+
+export interface EnvironmentsTree {
+  environments: SidebarNode[];
+  // Null when searching finds nothing there.
+  other: SidebarNode | null;
+  // Every node with children, for expanding all of them.
+  keys: string[];
+}
+
+// `names` are the parameters that match the search. Each environment lists
+// the services that are in it, in the configured order. While searching,
+// environments, services and Other paths without matches are left out.
+export const buildEnvironmentsTree = (
+  names: readonly string[],
+  ctx: LocationContext,
+  searching: boolean
+): EnvironmentsTree => {
+  const { structure, delimiter } = ctx;
+  // Environment → service → keys.
+  const keys = new Map(
+    structure.environments.map(e => [
+      e.segment,
+      new Map(
+        structure.services
+          .filter(s => s.environments.includes(e.segment))
+          .map(s => [s.segment, [] as string[]])
+      )
+    ])
+  );
+  const other: string[] = [];
+
+  names.forEach(name => {
+    const match = parse(name, structure, delimiter);
+    const serviceKeys = match && keys.get(match.env)?.get(match.service);
+    if (!match || !serviceKeys) other.push(name);
+    else serviceKeys.push(match.key);
+  });
+
+  const { expandable, node } = nodeMaker();
+  const environments = structure.environments.flatMap(
+    ({ segment: env, color }) => {
+      const services = [...keys.get(env)!].flatMap(([service, serviceKeys]) => {
+        if (searching && !serviceKeys.length) return [];
+        const children = toNodes(
+          buildFolderTree(serviceKeys, delimiter).roots,
+          (folder, nested) =>
+            node(
+              {
+                key: environmentNodeKey(env, service, folder.key),
+                label: folder.label,
+                count: folder.count,
+                kind: 'folder',
+                location: {
+                  view: 'environments',
+                  env,
+                  service,
+                  folder: folder.key
+                }
+              },
+              nested
+            )
+        );
+        return [
+          node(
+            {
+              key: environmentNodeKey(env, service),
+              label: service,
+              count: serviceKeys.length,
+              kind: 'service',
+              location: { view: 'environments', env, service, folder: '' }
+            },
+            children
+          )
+        ];
+      });
+      const count = services.reduce((sum, s) => sum + s.count, 0);
+      if (searching && !count) return [];
+      return [
         node(
           {
-            key: otherNodeKey(folder.key),
-            label: folder.label,
-            count: folder.count,
-            kind: 'folder',
-            location: { view: 'services', other: true, folder: folder.key }
+            key: environmentNodeKey(env),
+            label: env,
+            count,
+            kind: 'environment',
+            color,
+            location: { view: 'environments', env, service: null, folder: '' }
           },
-          nested
+          services
         )
-    );
-    otherNode = node(
-      {
-        key: otherNodeKey(),
-        label: 'Other paths',
-        count: other.length,
-        kind: 'other',
-        location: { view: 'services', other: true, folder: '' }
-      },
-      children
-    );
-  }
+      ];
+    }
+  );
 
-  return { services, other: otherNode, keys: expandable };
+  const otherNode = otherPathsNode(other, 'environments', ctx, searching, node);
+  return { environments, other: otherNode, keys: expandable };
 };

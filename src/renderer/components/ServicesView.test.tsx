@@ -187,7 +187,10 @@ describe('Services view', () => {
     await user.click(within(envTabs()).getByText('development'));
     await user.click(within(table()).getByText('Port'));
     await user.click(within(viewSwitcher()).getByText('Paths'));
-    await user.click(within(sidebar()).getByText('AppServer'));
+    expect(getLocation()).toEqual({
+      view: 'paths',
+      scope: '/development/compass/AppServer/'
+    });
     await openStaging();
     expect(getLocation()).toEqual({
       view: 'paths',

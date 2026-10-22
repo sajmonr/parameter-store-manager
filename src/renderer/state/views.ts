@@ -11,7 +11,10 @@ import {
 } from '../utils/location';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
-import { buildServicesTree } from '../utils/servicesTree';
+import {
+  buildEnvironmentsTree,
+  buildServicesTree
+} from '../utils/servicesTree';
 import { parse, pathOf, structureNames } from '../utils/structure';
 import type { StructuredNames } from '../utils/structure';
 import type { Structure } from '../../shared/structure';
@@ -116,6 +119,22 @@ export const useServicesTree = () => {
         active
       ),
     [matched, context, preferredEnv, query, active]
+  );
+};
+
+// The Environments view's sidebar.
+export const useEnvironmentsTree = () => {
+  const matched = useMatchedParameters();
+  const { query } = useMatcher();
+  const context = useLocationContext();
+  return useMemo(
+    () =>
+      buildEnvironmentsTree(
+        matched.map(p => p.Name),
+        context,
+        !!query
+      ),
+    [matched, context, query]
   );
 };
 

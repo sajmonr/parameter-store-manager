@@ -10,12 +10,10 @@ const options = [
     label: 'Services',
     tooltip: 'Group by service, switch environments with tabs'
   },
-  // Added with the Environments view.
   {
     value: 'environments',
     label: 'Environments',
-    tooltip: 'Group by environment',
-    disabled: true
+    tooltip: 'Group by environment'
   },
   { value: 'paths', label: 'Paths', tooltip: 'Full path tree' }
 ];

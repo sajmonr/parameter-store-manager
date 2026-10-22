@@ -4,7 +4,7 @@ import { useParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import { useLocation } from '../../state/views';
-import { isOtherLocation } from '../../utils/location';
+import { isEnvironmentLocation, isOtherLocation } from '../../utils/location';
 import type { Location, LocationContext } from '../../utils/location';
 import { folderChain } from '../../utils/paths';
 import { environmentColorOf, layoutPattern } from '../../utils/structure';
@@ -17,6 +17,16 @@ interface Crumb {
   label: ReactNode;
   location: Location;
 }
+
+const envLabel = (env: string, color: string | undefined) =>
+  color ? (
+    <span className={styles.env}>
+      <EnvironmentDot color={color} />
+      {env}
+    </span>
+  ) : (
+    env
+  );
 
 // The location and each place above it, outermost first.
 const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
@@ -32,14 +42,7 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
         const color = environmentColorOf(key, structure, delimiter);
         return {
           key,
-          label: color ? (
-            <span className={styles.env}>
-              <EnvironmentDot color={color} />
-              {label}
-            </span>
-          ) : (
-            label
-          ),
+          label: envLabel(label, color ?? undefined),
           location: { view: 'paths', scope: key } as const
         };
       })
@@ -49,6 +52,31 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   if (isOtherLocation(location)) {
     return [
       { key: '', label: 'Other paths', location: { ...location, folder: '' } },
+      ...folders.map(({ key, label }) => ({
+        key,
+        label,
+        location: { ...location, folder: key }
+      }))
+    ];
+  }
+  if (isEnvironmentLocation(location)) {
+    const { env, service } = location;
+    const color = structure.environments.find(e => e.segment === env)?.color;
+    const crumbs: Crumb[] = [
+      {
+        key: 'env',
+        label: envLabel(env, color),
+        location: { ...location, service: null, folder: '' }
+      }
+    ];
+    if (!service) return crumbs;
+    return [
+      ...crumbs,
+      {
+        key: '',
+        label: service,
+        location: { ...location, folder: '' }
+      },
       ...folders.map(({ key, label }) => ({
         key,
         label,
