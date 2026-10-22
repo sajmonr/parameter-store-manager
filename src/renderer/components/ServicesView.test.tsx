@@ -196,6 +196,36 @@ describe('Services view', () => {
     expect(rowNames()).toEqual(['/staging/compass/AppServer/Port']);
   });
 
+  it('clears a search that leaves out the parameter a chip opens', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Port');
+    const search = screen.getByLabelText('Search parameters');
+    const openStaging = () =>
+      user.click(
+        within(
+          screen.getByRole('complementary', { name: 'Details' })
+        ).getByRole('button', { name: 'staging' })
+      );
+
+    await user.type(search, 'Port');
+    await user.click(within(table()).getByText('Port'));
+    await openStaging();
+    expect(useUiStore.getState().query).toBe('Port');
+    expect(rowNames()).toEqual(['/staging/compass/AppServer/Port']);
+
+    await user.click(within(envTabs()).getByText('development'));
+    await user.clear(search);
+    await user.type(search, '/development/**');
+    await user.click(within(table()).getByText('Port'));
+    await openStaging();
+    expect(useUiStore.getState().query).toBe('');
+    expect(useUiStore.getState().selectedName).toBe(
+      '/staging/compass/AppServer/Port'
+    );
+    expect(rowNames()).toEqual(['/staging/compass/AppServer/Port']);
+  });
+
   it('shows the Paths view only, without the switcher, while the switch is off', async () => {
     renderApp({ structure: { ...structure, enabled: false } });
     await screen.findAllByText('Port');

@@ -11,6 +11,7 @@ import {
   validate
 } from '../utils/location';
 import type { Location, LocationView } from '../utils/location';
+import { createMatcher } from '../utils/search';
 import { getLocationContext, getSettings } from './settings';
 
 export type PaneMode = 'detail' | 'new';
@@ -177,9 +178,12 @@ const showCreatedParameter = (name: string) => {
 
 // Selects `name`, the selected parameter's key in another environment, and
 // moves the table to it: another environment tab in the Services view, the
-// same folder in that environment in the Paths view.
+// same folder in that environment in the Paths view. A search that leaves it
+// out is cleared, so the table lists it.
 const showInEnvironment = (name: string) => {
-  setLocation(locationInEnv(getLocation(), name, getLocationContext()));
+  const context = getLocationContext();
+  if (!createMatcher(get().query, context.delimiter).test(name)) setQuery('');
+  setLocation(locationInEnv(getLocation(), name, context));
   selectParameter(name);
 };
 
