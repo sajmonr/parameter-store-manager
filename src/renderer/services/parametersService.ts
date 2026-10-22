@@ -6,7 +6,7 @@ import { describeParametersContract } from '../../main/endpoints/parameters/desc
 import { getParameterValuesContract } from '../../main/endpoints/parameters/getParameterValues/getParameterValues.contract';
 import { putParameterContract } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
-import { deleteParameterContract } from '../../main/endpoints/parameters/deleteParameter/deleteParameter.contract';
+import { deleteParametersContract } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
 import { call } from '../clients/call';
 
 type WithDate<T> = Omit<T, 'LastModifiedDate'> & { LastModifiedDate?: Date };
@@ -55,5 +55,6 @@ export const parametersService = {
 
   put: (request: PutParameterRequest) => call(putParameterContract, request),
 
-  delete: (name: string) => call(deleteParameterContract, { name })
+  // At most 10 names per call.
+  delete: (names: string[]) => call(deleteParametersContract, { names })
 };

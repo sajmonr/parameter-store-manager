@@ -73,15 +73,19 @@ describe('FakeParameterStore', () => {
     const [saved] = store.get({ Names: ['/d/New'] }).Parameters!;
     expect(saved).toMatchObject({ Type: 'SecureString', Value: 'again' });
 
-    store.delete({ Name: '/a/One' });
-    expect(() => store.delete({ Name: '/a/One' })).toThrow(
-      expect.objectContaining({ name: 'ParameterNotFound' })
-    );
+    expect(store.delete({ Names: ['/a/One', '/d/New'] })).toMatchObject({
+      DeletedParameters: ['/a/One', '/d/New'],
+      InvalidParameters: []
+    });
+    expect(store.delete({ Names: ['/a/One'] })).toMatchObject({
+      DeletedParameters: [],
+      InvalidParameters: ['/a/One']
+    });
   });
 
   it('keeps changes in the working copy, not the fixture, until reset', () => {
     const store = createStore();
-    store.delete({ Name: '/a/One' });
+    store.delete({ Names: ['/a/One'] });
     expect(createStore().get({ Names: ['/a/One'] }).Parameters).toEqual([]);
     expect(readFileSync(join(dir, 'fixture.json'), 'utf8')).toBe(
       JSON.stringify(dataset)

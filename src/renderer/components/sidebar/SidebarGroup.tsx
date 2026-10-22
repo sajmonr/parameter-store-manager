@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 import { Tree } from 'antd';
 import type { TreeDataNode } from 'antd';
 import { AppstoreOutlined, InboxOutlined } from '@ant-design/icons';
+import { useTreeNames } from '../../state/views';
 import type { Location } from '../../utils/location';
 import type { SidebarNode } from '../../utils/servicesTree';
 import EnvironmentDot from '../common/EnvironmentDot';
 import HighlightText from '../common/HighlightText';
 import { folderIcon } from './FolderTree';
+import TreeNodeMenu from './TreeNodeMenu';
 import type useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
 
@@ -33,7 +35,8 @@ const withIcons = (nodes: SidebarNode[]): GroupTreeNode[] =>
   }));
 
 // One group of a grouped view's sidebar. Clicking a node goes there; the
-// caret only expands or collapses it.
+// caret only expands or collapses it. Right-clicking offers to delete its
+// tree, as the node shows it (a service in its current environment).
 const SidebarGroup = ({
   title,
   nodes,
@@ -49,6 +52,7 @@ const SidebarGroup = ({
 }) => {
   const treeData = useMemo(() => withIcons(nodes), [nodes]);
   const { expandedKeys, onExpand, highlight } = expansion;
+  const treeNames = useTreeNames();
   return (
     <>
       <div className={styles.group}>{title}</div>
@@ -61,22 +65,28 @@ const SidebarGroup = ({
         selectedKeys={[selectedKey]}
         onSelect={(_keys, { node }) => onSelect(node.location)}
         titleRender={node => (
-          <span className={styles.title}>
-            <span className={styles.label} title={node.label}>
-              {node.kind === 'other' ? (
-                node.label
-              ) : (
-                <HighlightText text={node.label} highlight={highlight} />
-              )}
+          <TreeNodeMenu
+            location={node.location}
+            label={node.label}
+            treeNames={treeNames}
+          >
+            <span className={styles.title}>
+              <span className={styles.label} title={node.label}>
+                {node.kind === 'other' ? (
+                  node.label
+                ) : (
+                  <HighlightText text={node.label} highlight={highlight} />
+                )}
+              </span>
+              <span
+                className={
+                  node.count ? styles.count : `${styles.count} ${styles.empty}`
+                }
+              >
+                {node.count}
+              </span>
             </span>
-            <span
-              className={
-                node.count ? styles.count : `${styles.count} ${styles.empty}`
-              }
-            >
-              {node.count}
-            </span>
-          </span>
+          </TreeNodeMenu>
         )}
       />
     </>

@@ -1,6 +1,10 @@
 import { useParameters } from '../../state/parameters';
 import type { LoadState, ParameterEntry } from '../../state/parameters';
-import { useMatcher, useVisibleParameters } from '../../state/views';
+import {
+  useCheckedNames,
+  useMatcher,
+  useVisibleParameters
+} from '../../state/views';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
 import StatusBar from './StatusBar';
@@ -13,6 +17,7 @@ import ConnectionError from '../states/ConnectionError';
 const renderContent = (
   loadState: LoadState,
   visible: ParameterEntry[],
+  checked: string[],
   query: string
 ) => {
   switch (loadState) {
@@ -26,11 +31,11 @@ const renderContent = (
       return <ConnectionError kind={loadState} />;
   }
 
-  let table = <ParameterTable parameters={visible} />;
+  let table = <ParameterTable parameters={visible} checked={checked} />;
   if (!visible.length) table = query ? <NoResults /> : <EmptyFolder />;
   return (
     <>
-      <ParameterBreadcrumb count={visible.length} />
+      <ParameterBreadcrumb count={visible.length} checked={checked} />
       {table}
     </>
   );
@@ -40,11 +45,12 @@ const renderContent = (
 const ParameterBrowser = () => {
   const { loadState } = useParameters();
   const visible = useVisibleParameters();
+  const checked = useCheckedNames();
   const { query } = useMatcher();
 
   return (
     <>
-      {renderContent(loadState, visible, query)}
+      {renderContent(loadState, visible, checked, query)}
       <StatusBar />
     </>
   );

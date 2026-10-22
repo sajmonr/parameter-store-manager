@@ -10,6 +10,7 @@ import { folderChain } from '../../utils/paths';
 import { environmentColorOf, layoutPattern } from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import EnvironmentTabs from './EnvironmentTabs';
+import SelectionBar from './SelectionBar';
 import styles from './ParameterBreadcrumb.module.css';
 
 interface Crumb {
@@ -98,9 +99,16 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   ];
 };
 
+interface ParameterBreadcrumbProps {
+  count: number;
+  checked: string[];
+}
+
 // The location as a breadcrumb, each item going there, and the row count.
 // A service adds its environment tabs; Other paths says why names are there.
-const ParameterBreadcrumb = ({ count }: { count: number }) => {
+// Checked rows add their actions at the end. It is one row that never wraps:
+// the breadcrumb and the hint shrink first.
+const ParameterBreadcrumb = ({ count, checked }: ParameterBreadcrumbProps) => {
   const location = useLocation();
   const context = useLocationContext();
   // Pages arrive one by one, so the count would keep rolling until done.
@@ -125,26 +133,27 @@ const ParameterBreadcrumb = ({ count }: { count: number }) => {
 
   return (
     <div className={styles.header}>
-      <div className={styles.bar}>
-        <Breadcrumb items={items} className={styles.breadcrumb} />
-        {loading ? (
-          <Spin size="small" aria-label="Counting parameters" />
-        ) : (
-          <Badge
-            count={count}
-            showZero
-            overflowCount={99999}
-            className={styles.count}
-          />
-        )}
+      <Breadcrumb items={items} className={styles.breadcrumb} />
+      {loading ? (
+        <Spin size="small" aria-label="Counting parameters" />
+      ) : (
+        <Badge
+          count={count}
+          showZero
+          overflowCount={99999}
+          className={styles.count}
+        />
+      )}
+      <EnvironmentTabs />
+      <div className={styles.end}>
         {isOtherLocation(location) && (
-          <Typography.Text type="secondary" className={styles.hint}>
+          <Typography.Text type="secondary" className={styles.hint} ellipsis>
             Don&apos;t match{' '}
             {layoutPattern(context.structure.layout, context.delimiter)}
           </Typography.Text>
         )}
+        <SelectionBar checked={checked} />
       </div>
-      <EnvironmentTabs />
     </div>
   );
 };

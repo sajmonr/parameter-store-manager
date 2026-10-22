@@ -11,7 +11,8 @@ import {
 } from 'node:fs';
 import { dirname } from 'node:path';
 import type {
-  DeleteParameterCommandInput,
+  DeleteParametersCommandInput,
+  DeleteParametersCommandOutput,
   DescribeParametersCommandInput,
   DescribeParametersCommandOutput,
   GetParametersCommandInput,
@@ -183,13 +184,20 @@ export class FakeParameterStore {
     return { Version: parameter.Version, Tier: 'Standard' as const };
   }
 
-  delete({ Name }: DeleteParameterCommandInput) {
+  // Like SSM, names that don't exist are listed as invalid, not an error.
+  delete(input: DeleteParametersCommandInput): DeleteParametersCommandOutput {
+    const names = new Set(input.Names ?? []);
     const data = this.load();
-    const index = data.parameters.findIndex(p => p.Name === Name);
-    if (index < 0)
-      throw awsError('ParameterNotFound', `Parameter ${Name} not found.`);
-    data.parameters.splice(index, 1);
+    const deleted = data.parameters
+      .filter(p => names.has(p.Name))
+      .map(p => p.Name);
+    data.parameters = data.parameters.filter(p => !names.has(p.Name));
     this.save();
+    return {
+      DeletedParameters: deleted,
+      InvalidParameters: [...names].filter(name => !deleted.includes(name)),
+      $metadata: {}
+    };
   }
 
   // Back to the fixture: the working file is copied again on next use.

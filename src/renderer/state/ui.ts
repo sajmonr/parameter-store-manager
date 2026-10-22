@@ -31,6 +31,22 @@ export interface NewParameterPrefill {
   value?: string;
 }
 
+// Parameters waiting for the delete confirmation: the checked rows, a
+// sidebar node's tree (`label` is its path) or the open parameter (`label` is
+// its name).
+export interface DeleteRequest {
+  kind: 'selection' | 'tree' | 'parameter';
+  label: string;
+  names: string[];
+}
+
+export interface Checked {
+  // The table context they were checked in (see views.useCheckContext).
+  // In any other context, no rows are checked.
+  context: string;
+  names: ReadonlySet<string>;
+}
+
 export interface UiState {
   page: Page;
   // Where the parameter list is, as last set; null until then, which is the
@@ -44,6 +60,9 @@ export interface UiState {
   // The expanded tree nodes of each view.
   expanded: Record<LocationView, string[]>;
   selectedName: string | null;
+  // The table rows checked for bulk actions, by full name.
+  checked: Checked;
+  pendingDelete: DeleteRequest | null;
   // null while the pane is closed.
   paneMode: PaneMode | null;
   newPrefill: NewParameterPrefill | null;
@@ -58,6 +77,8 @@ export const initialUiState: UiState = {
   query: '',
   expanded: { paths: [], services: [], environments: [] },
   selectedName: null,
+  checked: { context: '', names: new Set() },
+  pendingDelete: null,
   paneMode: null,
   newPrefill: null,
   settingsSection: 'aws'
@@ -154,6 +175,30 @@ const openNewParameter = (newPrefill: NewParameterPrefill | null = null) =>
 const closePane = () =>
   set({ selectedName: null, paneMode: null, newPrefill: null });
 
+const setChecked = (context: string, names: Iterable<string>) =>
+  set({ checked: { context, names: new Set(names) } });
+
+const clearChecked = () => set({ checked: initialUiState.checked });
+
+// Opens the delete confirmation.
+const requestDelete = (pendingDelete: DeleteRequest) => set({ pendingDelete });
+
+const cancelDelete = () => set({ pendingDelete: null });
+
+// Closes the confirmation after a delete. The names that failed stay checked,
+// and the pane closes if it showed a deleted parameter.
+const finishDelete = (
+  context: string,
+  { deleted, failed }: { deleted: string[]; failed: string[] }
+) => {
+  const { selectedName, paneMode } = get();
+  setChecked(context, failed);
+  set({ pendingDelete: null });
+  if (paneMode === 'detail' && selectedName && deleted.includes(selectedName)) {
+    closePane();
+  }
+};
+
 // Pages stay mounted while hidden, so each keeps its state.
 const showPage = (page: Page) => set({ page });
 
@@ -202,6 +247,11 @@ export const uiActions = {
   selectParameter,
   openNewParameter,
   closePane,
+  setChecked,
+  clearChecked,
+  requestDelete,
+  cancelDelete,
+  finishDelete,
   openSettings,
   showSettingsSection,
   showCreatedParameter,

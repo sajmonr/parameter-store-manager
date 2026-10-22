@@ -12,10 +12,11 @@ import userEvent from '@testing-library/user-event';
 import { DEFAULT_STRUCTURE } from '../../../shared/structure';
 import type { Structure } from '../../../shared/structure';
 import * as api from '../../test/mockServices';
-import { useDeleteParameter, usePutParameter } from '../../state/parameters';
+import { useDeleteParameters, usePutParameter } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
 import { createWrapper, renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
+import DeleteModal from '../delete/DeleteModal';
 import DetailHost from './DetailHost';
 
 vi.mock('../../services', () => import('../../test/mockServices'));
@@ -30,7 +31,13 @@ const secret = makeParameter('/dev/app/Password', {
 const setup = () => {
   const queryClient = createTestState({ parameters: [secret] });
   uiActions.selectParameter(secret.Name);
-  return renderWithProviders(<DetailHost narrow={false} />, { queryClient });
+  return renderWithProviders(
+    <>
+      <DetailHost narrow={false} />
+      <DeleteModal />
+    </>,
+    { queryClient }
+  );
 };
 
 beforeEach(() => vi.clearAllMocks());
@@ -91,21 +98,39 @@ describe('ParameterDetail', () => {
 
   it('deletes after confirmation and closes the pane', async () => {
     const user = userEvent.setup();
-    api.parametersService.delete.mockResolvedValue({ name: secret.Name });
+    api.parametersService.delete.mockResolvedValue({
+      deleted: [secret.Name],
+      invalid: []
+    });
     setup();
 
     await user.click(screen.getByRole('button', { name: /Delete/ }));
-    expect(screen.getByText('Delete this parameter?')).toBeInTheDocument();
-    const confirm = screen
-      .getAllByRole('button', { name: /Delete/ })
-      .find(button => button.closest('.ant-popconfirm'))!;
-    await user.click(confirm);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Delete Password?');
+    expect(dialog).toHaveTextContent('/dev/app/Password');
+    // Names only, never values.
+    expect(dialog).not.toHaveTextContent('value of');
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Delete 1 parameter' })
+    );
 
     await waitFor(() => expect(useUiStore.getState().paneMode).toBe(null));
-    expect(api.parametersService.delete).toHaveBeenCalledWith(
+    expect(api.parametersService.delete).toHaveBeenCalledWith([
       '/dev/app/Password'
-    );
-    expect(await screen.findByText('Parameter deleted')).toBeInTheDocument();
+    ]);
+    expect(await screen.findByText('Deleted 1 parameter')).toBeInTheDocument();
+  });
+
+  it('cancels the confirmation on Esc without closing the pane', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole('button', { name: /Delete/ }));
+    await screen.findByRole('dialog');
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useUiStore.getState().pendingDelete).toBe(null);
+    expect(useUiStore.getState().paneMode).toBe('detail');
+    expect(api.parametersService.delete).not.toHaveBeenCalled();
   });
 
   it('opens a prefilled form on Duplicate', async () => {
@@ -203,16 +228,19 @@ describe('ParameterDetail with the structure', () => {
   });
 
   it('updates the chips after a create or delete', async () => {
-    api.parametersService.delete.mockResolvedValue({ name: stagingPort.Name });
+    api.parametersService.delete.mockResolvedValue({
+      deleted: [stagingPort.Name],
+      invalid: []
+    });
     api.parametersService.put.mockResolvedValue({ version: 1 });
     const { queryClient } = setupWith(devPort.Name);
     const wrapper = createWrapper(queryClient);
-    const { result: remove } = renderHook(() => useDeleteParameter(), {
+    const { result: remove } = renderHook(() => useDeleteParameters(), {
       wrapper
     });
     const { result: put } = renderHook(() => usePutParameter(), { wrapper });
 
-    await act(() => remove.current.mutateAsync(stagingPort.Name));
+    await act(() => remove.current.mutateAsync([stagingPort.Name]));
     expect(
       await within(environmentsRow()).findByText('staging · missing')
     ).toBeInTheDocument();

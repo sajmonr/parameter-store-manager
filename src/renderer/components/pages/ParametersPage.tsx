@@ -12,9 +12,10 @@ import AppHeader from '../header/AppHeader';
 import Sidebar from '../sidebar/Sidebar';
 import ParameterBrowser from '../parameters/ParameterBrowser';
 import DetailHost from '../detail/DetailHost';
+import DeleteModal from '../delete/DeleteModal';
 import styles from './ParametersPage.module.css';
 
-// The header, sidebar, table and detail pane.
+// The header, sidebar, table and detail pane, and the delete confirmation.
 const ParametersPage = () => {
   const narrow = useMediaQuery(NARROW_QUERY);
   const siderMax = siderMaxWidth(useWindowWidth(), narrow);
@@ -49,6 +50,7 @@ const ParametersPage = () => {
         </Layout.Content>
         <DetailHost narrow={narrow} />
       </Layout>
+      <DeleteModal />
     </Layout>
   );
 };

@@ -2,11 +2,16 @@ import { Empty, Tree } from 'antd';
 import { FolderOpenOutlined, FolderOutlined } from '@ant-design/icons';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
-import { useLocation, useMatchedFolderTree } from '../../state/views';
+import {
+  useLocation,
+  useMatchedFolderTree,
+  useTreeNames
+} from '../../state/views';
 import useElementSize from '../../hooks/useElementSize';
 import { environmentColorOf } from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import HighlightText from '../common/HighlightText';
+import TreeNodeMenu from './TreeNodeMenu';
 import useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
 
@@ -21,6 +26,7 @@ export const folderIcon = ({
 // The Paths view: folders of the parameters that match the search, with
 // match counts. Selecting a folder scopes the table to it; selecting it again
 // unscopes. With grouping on, environment folders get their colour.
+// Right-clicking one offers to delete its tree.
 const FolderTree = () => {
   const tree = useMatchedFolderTree();
   const location = useLocation();
@@ -31,6 +37,7 @@ const FolderTree = () => {
     tree.keys
   );
   const [ref, { height }] = useElementSize();
+  const treeNames = useTreeNames();
 
   return (
     <div ref={ref} className={styles.container}>
@@ -50,15 +57,21 @@ const FolderTree = () => {
           titleRender={node => {
             const color = environmentColorOf(node.key, structure, delimiter);
             return (
-              <span className={styles.title}>
-                {color && (
-                  <EnvironmentDot color={color} className={styles.dot} />
-                )}
-                <span className={styles.label} title={node.label}>
-                  <HighlightText text={node.label} highlight={highlight} />
+              <TreeNodeMenu
+                location={{ view: 'paths', scope: node.key }}
+                label={node.label}
+                treeNames={treeNames}
+              >
+                <span className={styles.title}>
+                  {color && (
+                    <EnvironmentDot color={color} className={styles.dot} />
+                  )}
+                  <span className={styles.label} title={node.label}>
+                    <HighlightText text={node.label} highlight={highlight} />
+                  </span>
+                  <span className={styles.count}>{node.count}</span>
                 </span>
-                <span className={styles.count}>{node.count}</span>
-              </span>
+              </TreeNodeMenu>
             );
           }}
         />
