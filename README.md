@@ -126,7 +126,7 @@ Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
 
 ### Fake data
 
-Running from source reads a fake, local dataset by default, so you can create, edit and delete freely without touching AWS. Real data needs an explicit `npm run dev:aws` or `npm run start:aws` (or `PSM_SOURCE=aws`). The packaged app always reads AWS. While fake data is in use, the profile chip and the window title say **FAKE**, and the menu bar has a **Fake Data** menu.
+Running from source reads a fake, local dataset by default, so you can create, edit and delete freely without touching AWS. Real data needs `PSM_SOURCE=aws`, exactly; `npm run dev:aws` and `npm run start:aws` set it. Any other value reads the fake data. The packaged app always reads AWS. While fake data is in use, the window title says **FAKE**, the menu bar has a **Fake Data** menu, and the terminal logs which source is in use at startup. The tests can't reach AWS either (see `src/main/test/noAws.ts`).
 
 - `dev/fixtures/parameters.json` is the checked-in dataset: about 240 parameters across several services and environments, names that fall under Other paths, SecureStrings and StringLists. `dev/fixtures/settings.json` seeds the settings, with grouping already set up for it.
 - The first start copies them into the git-ignored `.dev-data/` folder: `.dev-data/parameters.json` for the parameters, `.dev-data/userData/` for the settings. Changes are written there, last across restarts, and never show up in git. Your real settings are not read or changed.

@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 // with a `// @vitest-environment jsdom` comment.
 export default defineConfig({
   test: {
-    setupFiles: ['./src/renderer/test/setup.ts']
+    // noAws first: no test may reach AWS or the network.
+    setupFiles: ['./src/main/test/noAws.ts', './src/renderer/test/setup.ts']
   }
 });

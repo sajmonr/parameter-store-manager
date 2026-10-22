@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Contract } from '../../shared/contract';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type * as Aws from '../aws';
+import { setSource } from '../source';
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
 
@@ -265,6 +266,9 @@ describe('invokeEndpoint', () => {
   });
 
   it('lists the AWS profiles', async () => {
+    // The real list; the fake source, the default, lists made-up ones.
+    setSource('aws');
+    onTestFinished(() => setSource('fake'));
     await expect(invoke('aws.listProfiles')).resolves.toEqual({
       ok: true,
       result: {

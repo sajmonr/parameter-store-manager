@@ -6,7 +6,7 @@
  * keeps existing settings (electron-store's config.json) working after the
  * rename instead of silently starting users over with defaults.
  *
- * With the fake source (development, unless started with --aws), everything
+ * With the fake source (development, unless PSM_SOURCE=aws), everything
  * lives in the project's git-ignored .dev-data folder instead, so trying
  * things never touches the real settings or AWS. The checked-in fixtures in
  * dev/fixtures seed it the first time.
@@ -17,10 +17,14 @@
 import { copyFileSync, existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import { app } from 'electron';
+import log from 'electron-log/main';
 import { startFakeSource } from './fake/fakeAws';
 import { chooseSource, fakeOptions, isFakeSource, setSource } from './source';
 
-setSource(chooseSource(app.isPackaged, process.argv, process.env));
+setSource(chooseSource(app.isPackaged, process.env));
+// One loud line, so a terminal running from source shows which it is.
+if (isFakeSource()) log.info('Data source: FAKE (local .dev-data, no AWS)');
+else log.warn('Data source: AWS. Requests go to your real AWS account.');
 
 // The project folder while running from source.
 const projectDir = app.getAppPath();

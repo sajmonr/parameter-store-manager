@@ -1,19 +1,20 @@
 // Where parameters come from. A development build reads a fake, local
-// dataset unless it is started with --aws (npm run dev:aws) or
-// PSM_SOURCE=aws; a packaged build always reads AWS.
+// dataset unless PSM_SOURCE is exactly `aws` (npm run dev:aws sets it); a
+// packaged build always reads AWS. Anything else, including a typo, reads
+// the fake data: reaching AWS from source must be asked for.
 import type { DataSource } from '../shared/source';
 
 export const chooseSource = (
   isPackaged: boolean,
-  argv: readonly string[],
   env: NodeJS.ProcessEnv
 ): DataSource => {
   if (isPackaged) return 'aws';
-  return argv.includes('--aws') || env.PSM_SOURCE === 'aws' ? 'aws' : 'fake';
+  return env.PSM_SOURCE === 'aws' ? 'aws' : 'fake';
 };
 
-// Set once at startup by ./userData, before anything reads it.
-let current: DataSource = 'aws';
+// Set once at startup by ./userData. Until then, and in tests, it is fake,
+// so nothing that runs early or without the app can reach AWS.
+let current: DataSource = 'fake';
 
 export const setSource = (source: DataSource) => {
   current = source;

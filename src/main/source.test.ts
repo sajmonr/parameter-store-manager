@@ -1,16 +1,24 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { chooseSource, fakeOptions } from './source';
 
 describe('chooseSource', () => {
-  it('reads fake data in development unless told to use AWS', () => {
-    expect(chooseSource(false, [], {})).toBe('fake');
-    expect(chooseSource(false, ['electron', '.', '--aws'], {})).toBe('aws');
-    expect(chooseSource(false, [], { PSM_SOURCE: 'aws' })).toBe('aws');
+  it('reads fake data in development unless PSM_SOURCE is exactly aws', () => {
+    expect(chooseSource(false, {})).toBe('fake');
+    expect(chooseSource(false, { PSM_SOURCE: 'aws' })).toBe('aws');
+    ['AWS', ' aws', 'aws ', 'real', '1', ''].forEach(PSM_SOURCE =>
+      expect(chooseSource(false, { PSM_SOURCE })).toBe('fake')
+    );
   });
 
   it('always reads AWS when packaged', () => {
-    expect(chooseSource(true, [], {})).toBe('aws');
-    expect(chooseSource(true, [], { PSM_SOURCE: 'fake' })).toBe('aws');
+    expect(chooseSource(true, {})).toBe('aws');
+    expect(chooseSource(true, { PSM_SOURCE: 'fake' })).toBe('aws');
+  });
+
+  it('is fake until the app sets it', async () => {
+    vi.resetModules();
+    const { getSource } = await import('./source');
+    expect(getSource()).toBe('fake');
   });
 });
 
