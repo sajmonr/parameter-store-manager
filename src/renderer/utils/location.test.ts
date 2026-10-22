@@ -5,6 +5,7 @@ import {
   contains,
   convert,
   envFor,
+  environmentNodeKey,
   locationOf,
   otherNodeKey,
   pathFolderOf,
@@ -15,7 +16,12 @@ import {
   treeKeysTo,
   validate
 } from './location';
-import type { Location, LocationContext, ServiceLocation } from './location';
+import type {
+  EnvironmentLocation,
+  Location,
+  LocationContext,
+  ServiceLocation
+} from './location';
 import { parse } from './structure';
 
 const structure: Structure = {
@@ -51,6 +57,16 @@ const compassDev = (folder = ''): ServiceLocation => ({
   view: 'services',
   service: 'compass',
   env: 'development',
+  folder
+});
+
+const devEnv = (
+  service: string | null = null,
+  folder = ''
+): EnvironmentLocation => ({
+  view: 'environments',
+  env: 'development',
+  service,
   folder
 });
 
@@ -90,6 +106,17 @@ describe('locationOf', () => {
       view: 'services',
       other: true,
       folder: ''
+    });
+  });
+
+  it('is the environment, service and key folder in the Environments view', () => {
+    expect(
+      locationOf('/development/compass/AppServer/Port', 'environments', ctx)
+    ).toEqual(devEnv('compass', 'AppServer/'));
+    expect(locationOf('/random/thing', 'environments', ctx)).toEqual({
+      view: 'environments',
+      other: true,
+      folder: '/random/'
     });
   });
 });
@@ -168,6 +195,93 @@ describe('convert', () => {
       start
     );
   });
+
+  it('keeps the environment, service and folder from Services to Environments', () => {
+    expect(convert(compassDev('AppServer/'), 'environments', ctx)).toEqual(
+      devEnv('compass', 'AppServer/')
+    );
+  });
+
+  it('keeps the service and folder from Environments to Services', () => {
+    expect(convert(devEnv('compass', 'AppServer/'), 'services', ctx)).toEqual(
+      compassDev('AppServer/')
+    );
+    // validate picks a service in the environment.
+    expect(convert(devEnv(), 'services', ctx)).toEqual({
+      view: 'services',
+      service: '',
+      env: 'development',
+      folder: ''
+    });
+  });
+
+  it('turns an Environments place into its path', () => {
+    expect(convert(devEnv('compass', 'AppServer/'), 'paths', ctx)).toEqual({
+      view: 'paths',
+      scope: '/development/compass/AppServer/'
+    });
+    expect(convert(devEnv('compass'), 'paths', svcFirst)).toEqual({
+      view: 'paths',
+      scope: '/compass/development/'
+    });
+    // A whole environment is a folder only when environments come first.
+    expect(convert(devEnv(), 'paths', ctx)).toEqual({
+      view: 'paths',
+      scope: '/development/'
+    });
+    expect(convert(devEnv(), 'paths', svcFirst)).toEqual({
+      view: 'paths',
+      scope: ''
+    });
+  });
+
+  it('reads a path folder into the Environments view', () => {
+    expect(
+      convert(
+        { view: 'paths', scope: '/development/compass/AppServer/' },
+        'environments',
+        ctx
+      )
+    ).toEqual(devEnv('compass', 'AppServer/'));
+    expect(
+      convert({ view: 'paths', scope: '/development/' }, 'environments', ctx)
+    ).toEqual(devEnv());
+    expect(
+      convert({ view: 'paths', scope: '/billing/' }, 'environments', svcFirst)
+    ).toEqual({
+      view: 'environments',
+      env: '',
+      service: 'billing',
+      folder: ''
+    });
+    expect(convert({ view: 'paths', scope: '' }, 'environments', ctx)).toEqual({
+      view: 'environments',
+      env: '',
+      service: null,
+      folder: ''
+    });
+    expect(
+      convert({ view: 'paths', scope: '/random/' }, 'environments', ctx)
+    ).toEqual({ view: 'environments', other: true, folder: '/random/' });
+  });
+
+  it('keeps an Other paths folder in every view', () => {
+    const other: Location = { view: 'services', other: true, folder: '/x/' };
+    const otherEnv = convert(other, 'environments', ctx);
+    expect(otherEnv).toEqual({ ...other, view: 'environments' });
+    expect(convert(otherEnv, 'services', ctx)).toEqual(other);
+    expect(convert(otherEnv, 'paths', ctx)).toEqual({
+      view: 'paths',
+      scope: '/x/'
+    });
+  });
+
+  it('comes back to the same place through every view', () => {
+    const start = devEnv('compass', 'AppServer/');
+    const viaServices = convert(start, 'services', ctx);
+    const viaPaths = convert(viaServices, 'paths', ctx);
+    expect(convert(viaPaths, 'environments', ctx)).toEqual(start);
+  });
 });
 
 describe('rowsFor', () => {
@@ -200,6 +314,33 @@ describe('rowsFor', () => {
     expect(rowsFor({ view: 'paths', scope: '' }, rows, ctx)).toBe(rows);
   });
 
+  it('lists a whole environment by service, in the configured order', () => {
+    const unsorted = [
+      '/staging/compass/Zeta',
+      '/staging/billing/B',
+      '/staging/compass/Alpha',
+      '/staging/billing/A',
+      '/development/compass/Flag'
+    ].map(Name => ({ Name }));
+    const staging = { ...devEnv(), env: 'staging' };
+    expect(rowsFor(staging, unsorted, ctx).map(r => r.Name)).toEqual([
+      '/staging/compass/Alpha',
+      '/staging/compass/Zeta',
+      '/staging/billing/A',
+      '/staging/billing/B'
+    ]);
+  });
+
+  it('lists a service of an environment below the folder', () => {
+    expect(namesAt(devEnv('compass', 'AppServer/'))).toEqual([
+      '/development/compass/AppServer/Dashboard/Title',
+      '/development/compass/AppServer/Port'
+    ]);
+    expect(namesAt({ view: 'environments', other: true, folder: '' })).toEqual(
+      namesAt({ view: 'services', other: true, folder: '' })
+    );
+  });
+
   it('agrees with contains', () => {
     expect(contains(compassDev(), '/staging/compass/AppServer/Port', ctx)).toBe(
       false
@@ -226,6 +367,10 @@ describe('relativeFolder', () => {
         ctx
       )
     ).toBe('a/');
+    expect(relativeFolder(devEnv(), name, ctx)).toBe('AppServer/Dashboard/');
+    expect(relativeFolder(devEnv('compass', 'AppServer/'), name, ctx)).toBe(
+      'Dashboard/'
+    );
   });
 });
 
@@ -264,10 +409,9 @@ describe('validate', () => {
       view: 'paths',
       scope: ''
     });
-    // Until the Environments view exists.
     expect(
       validate(null, ctx, { ...prefs, defaultView: 'environments' })
-    ).toEqual(compassDev());
+    ).toEqual(devEnv());
   });
 
   it('is always Paths with the switch off, at the same place', () => {
@@ -276,6 +420,21 @@ describe('validate', () => {
     expect(validate(compassDev('AppServer/'), off, prefs)).toEqual({
       view: 'paths',
       scope: '/development/compass/AppServer/'
+    });
+  });
+
+  it('prefers a service in the environment shown', () => {
+    expect(
+      validate(
+        { view: 'services', service: '', env: 'production', folder: '' },
+        ctx,
+        prefs
+      )
+    ).toEqual({
+      view: 'services',
+      service: 'billing',
+      env: 'production',
+      folder: ''
     });
   });
 
@@ -312,6 +471,57 @@ describe('validate', () => {
   });
 });
 
+describe('validate in the Environments view', () => {
+  const envPrefs = { ...prefs, defaultView: 'environments' as const };
+
+  it('keeps a valid location as it is', () => {
+    const location = devEnv('compass', 'A/');
+    expect(validate(location, ctx, envPrefs)).toBe(location);
+    expect(validate(devEnv(), ctx, envPrefs)).toEqual(devEnv());
+  });
+
+  it('opens on the last environment, else the first', () => {
+    expect(validate(null, ctx, { ...envPrefs, lastEnv: 'production' })).toEqual(
+      { ...devEnv(), env: 'production' }
+    );
+  });
+
+  it('shows the whole environment when the service was removed or is not in it', () => {
+    expect(validate(devEnv('gone', 'A/'), ctx, envPrefs)).toEqual(devEnv());
+    expect(validate(devEnv('billing', 'A/'), ctx, envPrefs)).toEqual(devEnv());
+  });
+
+  it('picks an environment the service is in when there is none', () => {
+    expect(
+      validate(
+        { view: 'environments', env: '', service: 'billing', folder: '' },
+        ctx,
+        envPrefs
+      )
+    ).toEqual({
+      view: 'environments',
+      env: 'staging',
+      service: 'billing',
+      folder: ''
+    });
+    expect(
+      validate({ ...devEnv(), env: 'gone' }, ctx, {
+        ...envPrefs,
+        lastEnv: 'staging'
+      })
+    ).toEqual({ ...devEnv(), env: 'staging' });
+  });
+
+  it('moves to Other paths when no environment is left', () => {
+    const none = { ...ctx, structure: { ...structure, environments: [] } };
+    expect(validate(devEnv(), none, envPrefs)).toEqual({
+      view: 'environments',
+      other: true,
+      folder: ''
+    });
+  });
+});
+
 describe('tree keys', () => {
   it('names the node of a location and the nodes above it', () => {
     expect(treeKeyOf(compassDev('A/'))).toBe(serviceNodeKey('compass', 'A/'));
@@ -326,6 +536,15 @@ describe('tree keys', () => {
     expect(treeKeysTo({ view: 'paths', scope: '/a/b/' }, ctx)).toEqual([
       '/a/',
       '/a/b/'
+    ]);
+    expect(treeKeyOf(devEnv())).toBe(environmentNodeKey('development'));
+    expect(treeKeysTo(devEnv(), ctx)).toEqual([
+      environmentNodeKey('development')
+    ]);
+    expect(treeKeysTo(devEnv('compass', 'A/'), ctx)).toEqual([
+      environmentNodeKey('development'),
+      environmentNodeKey('development', 'compass'),
+      environmentNodeKey('development', 'compass', 'A/')
     ]);
   });
 });
