@@ -185,4 +185,31 @@ describe('Environments view', () => {
       folder: ''
     });
   });
+
+  it('opens the parameter in another environment from its chip', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Port');
+
+    await user.click(within(table()).getByText('Port'));
+    await user.click(
+      within(screen.getByRole('complementary', { name: 'Details' })).getByRole(
+        'button',
+        { name: 'staging' }
+      )
+    );
+    expect(useUiStore.getState().selectedName).toBe(
+      '/staging/compass/AppServer/Port'
+    );
+    expect(getLocation()).toEqual({
+      view: 'environments',
+      env: 'staging',
+      service: null,
+      folder: ''
+    });
+    expect(rowKeys()).toEqual([
+      JSON.stringify(['group', 'compass']),
+      '/staging/compass/AppServer/Port'
+    ]);
+  });
 });

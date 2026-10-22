@@ -15,7 +15,7 @@ import {
   buildEnvironmentsTree,
   buildServicesTree
 } from '../utils/servicesTree';
-import { structureNames } from '../utils/structure';
+import { parse, pathOf, structureNames } from '../utils/structure';
 import type { StructuredNames } from '../utils/structure';
 import type { Structure } from '../../shared/structure';
 import { useParameters } from './parameters';
@@ -211,4 +211,41 @@ export const useSelectedParameter = () => {
   const name = useUiStore(state => state.selectedName);
   const { byName } = useParameters();
   return (name && byName.get(name)) || null;
+};
+
+// 'current' is the parameter's own environment; 'missing' has no parameter
+// with its key.
+export type EnvironmentState = 'current' | 'exists' | 'missing';
+
+// Where the parameter `name` is in the structure: its service, environment
+// and key, and the parameter with its key in each environment of the
+// service. Null with the structure off or for a name under Other paths.
+export const useParameterPlace = (name: string) => {
+  const { byName } = useParameters();
+  const context = useLocationContext();
+  return useMemo(() => {
+    const { structure, delimiter } = context;
+    const match = parse(name, structure, delimiter);
+    const service =
+      match && structure.services.find(s => s.segment === match.service);
+    if (!match || !service) return null;
+    const environments = serviceEnvironments(service, structure).map(env => {
+      const path = pathOf(
+        env.segment,
+        match.service,
+        match.key,
+        structure,
+        delimiter
+      );
+      const state: EnvironmentState =
+        env.segment === match.env
+          ? 'current'
+          : byName.has(path)
+            ? 'exists'
+            : 'missing';
+      return { ...env, name: path, state };
+    });
+    const color = environments.find(e => e.state === 'current')!.color;
+    return { ...match, color, environments };
+  }, [name, byName, context]);
 };

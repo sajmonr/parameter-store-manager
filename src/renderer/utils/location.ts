@@ -296,6 +296,26 @@ export const relativeFolder = (
   );
 };
 
+// Where to list `name`, the same key in another environment of the service,
+// from `location` in the same view: `location` if it lists the name already,
+// otherwise the same place in that environment when that lists it, otherwise
+// the name's own place.
+export const locationInEnv = (
+  location: Location,
+  name: string,
+  ctx: LocationContext
+): Location => {
+  if (contains(location, name, ctx)) return location;
+  const match = parse(name, ctx.structure, ctx.delimiter);
+  const grouped =
+    location.view === 'paths' ? convert(location, 'services', ctx) : location;
+  if (match && (isServiceLocation(grouped) || isEnvironmentLocation(grouped))) {
+    const moved = convert({ ...grouped, env: match.env }, location.view, ctx);
+    if (contains(moved, name, ctx)) return moved;
+  }
+  return locationOf(name, location.view, ctx);
+};
+
 interface Preferences {
   defaultView: ParameterView;
   // The environment last picked in a grouped view.
