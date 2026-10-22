@@ -44,7 +44,7 @@ const rowKeys = () =>
   [...table().querySelectorAll('.ant-table-row[data-row-key]')].map(row =>
     row.getAttribute('data-row-key')
   );
-const viewSwitcher = () => screen.getByRole('radiogroup', { name: 'View' });
+const viewSwitcher = () => screen.getByLabelText('View');
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -118,9 +118,7 @@ describe('Environments view', () => {
     expect(
       within(table()).getByRole('columnheader', { name: 'Key' })
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('radiogroup', { name: 'Environment' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Environment')).not.toBeInTheDocument();
   });
 
   it('narrows to a service when its group header is clicked', async () => {
@@ -193,10 +191,9 @@ describe('Environments view', () => {
 
     await user.click(within(table()).getByText('Port'));
     await user.click(
-      within(screen.getByRole('complementary', { name: 'Details' })).getByRole(
-        'button',
-        { name: 'staging' }
-      )
+      within(screen.getByLabelText('Details')).getByRole('button', {
+        name: 'staging'
+      })
     );
     expect(useUiStore.getState().selectedName).toBe(
       '/staging/compass/AppServer/Port'

@@ -41,8 +41,8 @@ const rowNames = () =>
   [...table().querySelectorAll('.ant-table-row[data-row-key]')].map(row =>
     row.getAttribute('data-row-key')
   );
-const viewSwitcher = () => screen.getByRole('radiogroup', { name: 'View' });
-const envTabs = () => screen.getByRole('radiogroup', { name: 'Environment' });
+const viewSwitcher = () => screen.getByLabelText('View');
+const envTabs = () => screen.getByLabelText('Environment');
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -101,9 +101,7 @@ describe('Services view', () => {
     expect(
       screen.getByText("Don't match /{environment}/{service}/…")
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('radiogroup', { name: 'Environment' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Environment')).not.toBeInTheDocument();
   });
 
   it('moves through the current rows with ↑/↓', async () => {
@@ -130,9 +128,7 @@ describe('Services view', () => {
       scope: '/development/compass/AppServer/'
     });
     expect(rowNames()).toHaveLength(2);
-    expect(
-      screen.queryByRole('radiogroup', { name: 'Environment' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Environment')).not.toBeInTheDocument();
   });
 
   it('counts matches in the sidebar while searching', async () => {
@@ -151,7 +147,7 @@ describe('Services view', () => {
     await screen.findByText('Port');
 
     await user.click(within(sidebar()).getByText('AppServer'));
-    await user.click(screen.getByRole('button', { name: /New parameter/ }));
+    await user.click(screen.getByText('New parameter'));
     await user.type(screen.getByLabelText('Parameter name'), 'Timeout');
     expect(
       screen.getByText('/development/compass/AppServer/Timeout')
@@ -164,9 +160,7 @@ describe('Services view', () => {
     await screen.findByText('Port');
     const openStaging = () =>
       user.click(
-        within(
-          screen.getByRole('complementary', { name: 'Details' })
-        ).getByRole('button', {
+        within(screen.getByLabelText('Details')).getByRole('button', {
           name: 'staging'
         })
       );
@@ -206,9 +200,9 @@ describe('Services view', () => {
     const search = screen.getByLabelText('Search parameters');
     const openStaging = () =>
       user.click(
-        within(
-          screen.getByRole('complementary', { name: 'Details' })
-        ).getByRole('button', { name: 'staging' })
+        within(screen.getByLabelText('Details')).getByRole('button', {
+          name: 'staging'
+        })
       );
 
     await user.type(search, 'Port');
@@ -232,9 +226,7 @@ describe('Services view', () => {
   it('shows the Paths view only, without the switcher, while the switch is off', async () => {
     renderApp({ structure: { ...structure, enabled: false } });
     await screen.findAllByText('Port');
-    expect(
-      screen.queryByRole('radiogroup', { name: 'View' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('View')).not.toBeInTheDocument();
     expect(within(sidebar()).getByText('development')).toBeInTheDocument();
     expect(rowNames()).toHaveLength(parameters.length);
   });

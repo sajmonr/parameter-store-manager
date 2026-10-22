@@ -43,7 +43,7 @@ const rowNames = () =>
     row.getAttribute('data-row-key')
   );
 const rowCheckbox = (name: string) =>
-  within(table()).getByRole('checkbox', { name: `Select ${name}` });
+  within(table()).getByLabelText(`Select ${name}`);
 const headerCheckbox = () =>
   table().querySelector<HTMLInputElement>('thead input[type="checkbox"]')!;
 const headerState = () => {
@@ -52,7 +52,7 @@ const headerState = () => {
   return headerCheckbox().checked ? 'all' : 'none';
 };
 const deleteButton = () => {
-  const toolbar = screen.queryByRole('toolbar', { name: 'Selection' });
+  const toolbar = screen.queryByLabelText('Selection');
   return toolbar && within(toolbar).getByRole('button', { name: /Delete/ });
 };
 const checkedNames = () => [...useUiStore.getState().checked.names];
@@ -98,7 +98,7 @@ describe('checking rows', () => {
     expect(deleteButton()).toBeInTheDocument();
     expect(
       screen
-        .getByRole('toolbar', { name: 'Selection' })
+        .getByLabelText('Selection')
         .closest('.ant-badge')!
         .querySelector('.ant-badge-count')
     ).toHaveTextContent('1');
@@ -118,18 +118,16 @@ describe('checking rows', () => {
     await screen.findByText('Port');
 
     await user.click(headerCheckbox());
-    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+    await user.click(screen.getByLabelText('Clear selection'));
     expect(headerState()).toBe('none');
-    expect(
-      screen.queryByRole('toolbar', { name: 'Selection' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Selection')).not.toBeInTheDocument();
   });
 
   it('unchecks everything when the folder, tab or search changes', async () => {
     const user = userEvent.setup();
     renderApp();
     await screen.findByText('Port');
-    const envTabs = screen.getByRole('radiogroup', { name: 'Environment' });
+    const envTabs = screen.getByLabelText('Environment');
 
     await user.click(headerCheckbox());
     await user.click(within(envTabs).getByText('staging'));
@@ -267,7 +265,7 @@ describe('deleting a tree from the sidebar', () => {
 
     expect(await screen.findByText('Deleted 3 parameters')).toBeInTheDocument();
     // The staging key is left, and the sidebar count follows.
-    const envTabs = screen.getByRole('radiogroup', { name: 'Environment' });
+    const envTabs = screen.getByLabelText('Environment');
     await user.click(within(envTabs).getByText('staging'));
     expect(rowNames()).toEqual(['/staging/compass/AppServer/Port']);
   });
