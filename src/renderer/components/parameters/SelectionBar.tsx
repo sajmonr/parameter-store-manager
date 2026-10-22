@@ -9,12 +9,7 @@ import styles from './SelectionBar.module.css';
 const SelectionBar = ({ checked }: { checked: string[] }) => {
   if (!checked.length) return null;
   return (
-    <Badge
-      count={checked.length}
-      size="small"
-      overflowCount={9999}
-      className={styles.count}
-    >
+    <Badge count={checked.length} overflowCount={9999} className={styles.count}>
       <div role="toolbar" aria-label="Selection" className={styles.bar}>
         <Tooltip title="Clear selection">
           <Button
