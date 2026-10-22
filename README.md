@@ -109,9 +109,12 @@ This produces packages for the machine's architecture. On x64: `release/paramete
 ## Development
 
 ```bash
-$ npm run dev        # starts the app with hot reloading (electron-vite)
+$ npm run dev        # starts the app with hot reloading, on fake data
+$ npm run dev:aws    # the same, on real AWS data
+$ npm run dev:reset-data  # puts the fake parameters back to the fixture
 $ npm run build      # builds main, preload and renderer into out/
-$ npm start          # runs the built app from out/
+$ npm start          # runs the built app from out/, on fake data
+$ npm run start:aws  # the same, on real AWS data
 $ npm test           # unit tests (Vitest)
 $ npm run lint       # ESLint
 $ npm run typecheck  # TypeScript (main/preload and renderer)
@@ -120,6 +123,23 @@ $ npm run format:check  # Prettier (CI check, no writes)
 ```
 
 Set `START_MINIMIZED=true` to keep the window from taking focus when it starts.
+
+### Fake data
+
+Running from source reads a fake, local dataset by default, so you can create, edit and delete freely without touching AWS. Real data needs an explicit `npm run dev:aws` or `npm run start:aws` (or `PSM_SOURCE=aws`). The packaged app always reads AWS. While fake data is in use, the profile chip and the window title say **FAKE**, and the menu bar has a **Fake Data** menu.
+
+- `dev/fixtures/parameters.json` is the checked-in dataset: about 240 parameters across several services and environments, names that fall under Other paths, SecureStrings and StringLists. `dev/fixtures/settings.json` seeds the settings, with grouping already set up for it.
+- The first start copies them into the git-ignored `.dev-data/` folder: `.dev-data/parameters.json` for the parameters, `.dev-data/userData/` for the settings. Changes are written there, last across restarts, and never show up in git. Your real settings are not read or changed.
+- **Fake Data → Reset Fake Data** (or `npm run dev:reset-data` while the app is closed) puts the parameters back to the fixture. Delete `.dev-data/` to reset the settings too.
+- Nothing calls AWS: the app keeps its real SDK clients, and a middleware in `src/main/fake/fakeAws.ts` answers each command from the dataset. A command the fake doesn't know fails with `UnsupportedFakeCommand`; add it there when a new AWS call is added.
+
+These environment variables tune the fake source:
+
+| Variable             | Default | Effect                                                                                 |
+| -------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `PSM_FAKE_DELAY_MS`  | `150`   | How long each fake AWS call takes, so loading states are visible.                      |
+| `PSM_FAKE_PAGE_SIZE` | `25`    | The most parameters a page returns, so the list fills in page by page.                 |
+| `PSM_FAKE_ERROR`     | –       | `expired`, `denied` or `generic`: every call fails that way, to try the error screens. |
 
 ### Project layout
 

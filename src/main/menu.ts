@@ -1,5 +1,7 @@
 import { app, Menu } from 'electron';
 import type { BrowserWindow, MenuItemConstructorOptions } from 'electron';
+import { resetFakeData } from './fake/fakeAws';
+import { isFakeSource } from './source';
 import { checkInteractively } from './updates';
 
 export default class MenuBuilder {
@@ -17,6 +19,9 @@ export default class MenuBuilder {
       process.platform === 'darwin'
         ? this.buildDarwinTemplate()
         : this.buildDefaultTemplate();
+
+    // Before the last menu: Window on macOS, Help elsewhere.
+    if (isFakeSource()) template.splice(-1, 0, this.buildFakeDataMenu());
 
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
@@ -44,6 +49,23 @@ export default class MenuBuilder {
   // The renderer opens the Settings page.
   openSettings() {
     this.mainWindow.webContents.send('menu.openSettings');
+  }
+
+  // Only with the fake source. A reset puts the fixture's parameters back
+  // and reloads them; the fake settings are kept.
+  buildFakeDataMenu(): MenuItemConstructorOptions {
+    return {
+      label: 'Fake Data',
+      submenu: [
+        {
+          label: 'Reset Fake Data',
+          click: () => {
+            resetFakeData();
+            this.mainWindow.webContents.reload();
+          }
+        }
+      ]
+    };
   }
 
   buildDarwinTemplate(): MenuItemConstructorOptions[] {

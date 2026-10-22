@@ -5,8 +5,11 @@
   "description": "AWS Parameter store manager application that allows easy viewing and managing of parameters.",
   "scripts": {
     "dev": "electron-vite dev",
+    "dev:aws": "electron-vite dev -- --aws",
+    "dev:reset-data": "node -e \"require('fs').rmSync('.dev-data/parameters.json', { force: true })\"",
     "build": "electron-vite build",
     "start": "electron-vite preview",
+    "start:aws": "electron-vite preview -- --aws",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.node.json --composite false && tsc --noEmit -p tsconfig.web.json --composite false",
     "format": "prettier --write .",

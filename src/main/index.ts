@@ -9,6 +9,7 @@ import type { LoadExtensionOptions, Session } from 'electron';
 import MenuBuilder from './menu';
 import { registerEndpoints } from './endpoints';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
+import { isFakeSource } from './source';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -44,6 +45,9 @@ const windowBackground = () =>
 const createWindow = () => {
   const win = new BrowserWindow({
     show: false,
+    title: isFakeSource()
+      ? 'Parameter Store Manager — FAKE'
+      : 'Parameter Store Manager',
     width: 1280,
     height: 800,
     // Below 1100px the detail pane becomes a drawer; below this the table
@@ -60,6 +64,11 @@ const createWindow = () => {
   });
 
   mainWindow = win;
+
+  // The page's <title> would replace the FAKE marker.
+  if (isFakeSource()) {
+    win.on('page-title-updated', event => event.preventDefault());
+  }
 
   // The app never opens other windows.
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));

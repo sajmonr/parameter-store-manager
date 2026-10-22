@@ -21,6 +21,18 @@ beforeEach(() => {
 });
 
 describe('AppHeader', () => {
+  it('marks the profile chip FAKE with the fake development data', async () => {
+    api.sourceService.get.mockResolvedValueOnce('fake');
+    setup();
+    expect(await screen.findByText('FAKE')).toBeInTheDocument();
+  });
+
+  it('has no FAKE mark with AWS data', async () => {
+    setup();
+    await waitFor(() => expect(api.sourceService.get).toHaveBeenCalled());
+    expect(screen.queryByText('FAKE')).not.toBeInTheDocument();
+  });
+
   it('has New parameter and Refresh, and no More menu', () => {
     setup();
     expect(
