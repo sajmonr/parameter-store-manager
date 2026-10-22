@@ -65,7 +65,11 @@ const saved = () => useSettingsStore.getState().structure;
 const lastSaved = () =>
   api.settingsService.set.mock.lastCall?.[0].structure as Structure;
 
-const row = (name: RegExp | string) => screen.getByRole('row', { name });
+// The services grid's row, found by its remove button. Matching rows by
+// their accessible name reads every checkbox in the grid, which is slow
+// enough to time out on CI's Windows runners.
+const row = (service: string) =>
+  screen.getByRole('button', { name: `Remove ${service}` }).closest('tr')!;
 
 // The environments table's row, found by its segment input.
 const envRow = (segment: string) =>
@@ -376,7 +380,7 @@ describe('Environments', () => {
 describe('Services', () => {
   it('counts each combination, with unchecked ones in Other', () => {
     setup();
-    const compass = row(/compass/);
+    const compass = row('compass');
     expect(
       within(compass).getByRole('checkbox', { name: 'compass in development' })
     ).toBeChecked();
@@ -384,7 +388,7 @@ describe('Services', () => {
     expect(within(compass).getByText('2')).toBeInTheDocument();
     expect(within(compass).getByText('4')).toBeInTheDocument();
 
-    const assessment = row(/assessment/);
+    const assessment = row('assessment');
     expect(
       within(assessment).getByRole('checkbox', {
         name: 'assessment in production'
@@ -416,7 +420,7 @@ describe('Services', () => {
         'production'
       ])
     );
-    expect(within(row(/compass/)).getByText('1 in Other')).toBeInTheDocument();
+    expect(within(row('compass')).getByText('1 in Other')).toBeInTheDocument();
     expect(
       screen.getByText('4 of 7 parameters match. 3 appear under Other paths.')
     ).toBeInTheDocument();
@@ -469,13 +473,13 @@ describe('Services', () => {
       })
     );
     expect(input).toHaveValue('');
-    expect(within(row(/notifications/)).getByText('new')).toBeInTheDocument();
+    expect(within(row('notifications')).getByText('new')).toBeInTheDocument();
 
     await user.click(screen.getByRole('menuitem', { name: /Display/ }));
     await user.click(
       screen.getByRole('menuitem', { name: /Services & environments/ })
     );
-    expect(within(row(/notifications/)).queryByText('new')).toBeNull();
+    expect(within(row('notifications')).queryByText('new')).toBeNull();
   });
 
   it('also adds with the button', async () => {
