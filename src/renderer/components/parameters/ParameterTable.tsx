@@ -92,11 +92,14 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
   const toggleReveal = (name: string) =>
     setRevealed(prev => ({ ...prev, [name]: !prev[name] }));
 
+  // Also when the location changes, such as on a view switch: the selection
+  // is kept but sits elsewhere in the new rows. Not on every row change, so
+  // a refresh doesn't pull the table back to it.
   useEffect(() => {
     if (selectedName && tableRef.current) {
       tableRef.current.scrollTo({ key: selectedName });
     }
-  }, [selectedName]);
+  }, [selectedName, location]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

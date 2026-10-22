@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
@@ -51,7 +51,55 @@ beforeEach(() => {
   api.serveParameters(parameters);
 });
 
+const keys = (service: string) =>
+  Array.from(
+    { length: 150 },
+    (_, i) => `/development/${service}/Key${String(i).padStart(3, '0')}`
+  );
+
 describe('Environments view', () => {
+  it('scrolls the selected row into view after switching views', async () => {
+    // jsdom has no layout and measures everything as 0; the virtual table
+    // scrolls by the row and viewport heights.
+    const sizes = {
+      offsetHeight: [56, '.ant-table-row'],
+      clientHeight: [561, '.ant-table-tbody-virtual-holder']
+    } as const;
+    Object.entries(sizes).forEach(([property, [size, selector]]) => {
+      Object.defineProperty(HTMLElement.prototype, property, {
+        configurable: true,
+        get(this: HTMLElement) {
+          return this.matches(selector) ? size : 0;
+        }
+      });
+    });
+    onTestFinished(() =>
+      Object.keys(sizes).forEach(property => {
+        delete (HTMLElement.prototype as unknown as Record<string, unknown>)[
+          property
+        ];
+      })
+    );
+    const user = userEvent.setup();
+    api.serveParameters(
+      [...keys('compass'), ...keys('billing')].map(name => makeParameter(name))
+    );
+    renderApp();
+    await screen.findAllByText('Key000');
+
+    // Near the end of the whole environment, near the top of its service.
+    const name = '/development/billing/Key005';
+    act(() => uiActions.selectParameter(name));
+    await waitFor(() => expect(rowKeys()).toContain(name));
+
+    await user.click(within(viewSwitcher()).getByText('Services'));
+    expect(getLocation()).toMatchObject({
+      view: 'services',
+      service: 'billing'
+    });
+    await waitFor(() => expect(rowKeys()).toContain(name));
+  });
+
   it('shows a whole environment grouped by service, in the configured order', async () => {
     renderApp();
     await screen.findByText('Port');
