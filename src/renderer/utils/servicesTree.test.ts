@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
-import { buildServicesTree } from './servicesTree';
+import { buildEnvironmentsTree, buildServicesTree } from './servicesTree';
 import type { SidebarNode } from './servicesTree';
 
 const structure: Structure = {
@@ -97,5 +97,53 @@ describe('buildServicesTree', () => {
     expect(tree.keys).toHaveLength(3);
     expect(tree.keys).toContain(tree.services[0]!.key);
     expect(tree.keys).not.toContain(tree.services[1]!.key);
+  });
+});
+
+describe('buildEnvironmentsTree', () => {
+  it('lists each environment with the services in it and their folders', () => {
+    const tree = buildEnvironmentsTree(names, ctx, false);
+    expect(tree.environments.map(summary)).toEqual([
+      ['development', 2, [['compass', 2, [['AppServer', 1]]]]],
+      [
+        'staging',
+        2,
+        [
+          [
+            'compass',
+            2,
+            [
+              ['AppServer', 1],
+              ['Workers', 1]
+            ]
+          ]
+        ]
+      ],
+      ['production', 0, [['billing', 0]]]
+    ]);
+    expect(summary(tree.other!)).toEqual([
+      'Other paths',
+      1,
+      [['random', 1, [['a', 1]]]]
+    ]);
+    expect(tree.environments[1]!.children[0]!.children[1]!.location).toEqual({
+      view: 'environments',
+      env: 'staging',
+      service: 'compass',
+      folder: 'Workers/'
+    });
+    expect(tree.other!.location).toEqual({
+      view: 'environments',
+      other: true,
+      folder: ''
+    });
+  });
+
+  it('leaves out what has no matches while searching', () => {
+    const tree = buildEnvironmentsTree(names.slice(0, 1), ctx, true);
+    expect(tree.environments.map(summary)).toEqual([
+      ['development', 1, [['compass', 1, [['AppServer', 1]]]]]
+    ]);
+    expect(tree.other).toBeNull();
   });
 });

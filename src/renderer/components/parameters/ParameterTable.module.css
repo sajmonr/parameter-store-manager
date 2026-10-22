@@ -38,3 +38,29 @@
 .lock {
   color: var(--ant-color-warning);
 }
+
+.table .groupRow > :global(.ant-table-cell),
+.table .groupRow:hover > :global(.ant-table-cell) {
+  background: var(--ant-color-fill-quaternary);
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.groupName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.groupCount {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--ant-color-text-tertiary);
+}
