@@ -4,6 +4,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
+import type { Settings } from '../../shared/availableSettings';
 import * as api from '../test/mockServices';
 import { useUiStore } from '../state/ui';
 import { renderWithProviders } from '../test/render';
@@ -30,7 +31,7 @@ const parameters = [
   makeParameter('/random/Thing')
 ];
 
-const renderApp = (settings: Partial<{ structure: Structure }> = {}) =>
+const renderApp = (settings: Partial<Settings> = {}) =>
   renderWithProviders(<AppShell />, {
     queryClient: createTestState({ settings: { structure, ...settings } })
   });
@@ -326,5 +327,45 @@ describe('deleting a tree from the sidebar', () => {
     );
     expect(await screen.findByText('Deleted 1 parameter')).toBeInTheDocument();
     expect(rowNames()).not.toContain('/random/Thing');
+  });
+});
+
+describe('the Environments view', () => {
+  const renderEnvironments = () => renderApp({ defaultView: 'environments' });
+
+  it('gives the service group rows no checkbox and leaves them out of Select all', async () => {
+    const user = userEvent.setup();
+    renderEnvironments();
+    await screen.findByText('Port');
+
+    const group = table().querySelector(
+      `.ant-table-row[data-row-key='${JSON.stringify(['group', 'compass'])}']`
+    )!;
+    expect(group.querySelector('input[type="checkbox"]')).toBe(null);
+
+    await user.click(headerCheckbox());
+    expect(headerState()).toBe('all');
+    expect(checkedNames().sort()).toEqual([
+      '/development/compass/AppServer/Port',
+      '/development/compass/AppServer/Title',
+      '/development/compass/Flag'
+    ]);
+  });
+
+  it('deletes an environment, or a service in it, from the sidebar', async () => {
+    renderEnvironments();
+    await screen.findByText('Port');
+    const menuFor = async (label: string, path: string) => {
+      fireEvent.contextMenu(within(sidebar()).getAllByText(label)[0]!);
+      const menus = await screen.findAllByRole('menu');
+      return menus.find(menu => menu.textContent?.startsWith(path));
+    };
+
+    expect(await menuFor('development', '/development/')).toHaveTextContent(
+      'Delete tree…3'
+    );
+    expect(await menuFor('compass', '/development/compass/')).toHaveTextContent(
+      'Delete tree…3'
+    );
   });
 });
