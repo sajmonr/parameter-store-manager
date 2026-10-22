@@ -1,21 +1,34 @@
-import { Badge, Button } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { Badge, Button, Tooltip } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
-import styles from './ParameterBreadcrumb.module.css';
+import styles from './SelectionBar.module.css';
 
-// The actions for the checked rows, shown while there are any. Move and Copy
-// to environment will join Delete here.
+// The actions for the checked rows, in a small card at the end of the
+// breadcrumb row while there are any. Move and Copy to environment will join
+// Delete here.
 const SelectionBar = ({ checked }: { checked: string[] }) => {
   if (!checked.length) return null;
   return (
-    <div role="toolbar" aria-label="Selection" className={styles.selection}>
-      <Button type="text" onClick={uiActions.clearChecked}>
-        Clear
-      </Button>
-      <Badge count={checked.length} size="small" overflowCount={9999}>
+    <Badge
+      count={checked.length}
+      size="small"
+      overflowCount={9999}
+      className={styles.count}
+    >
+      <div role="toolbar" aria-label="Selection" className={styles.bar}>
+        <Tooltip title="Clear selection">
+          <Button
+            type="text"
+            size="small"
+            icon={<CloseOutlined />}
+            aria-label="Clear selection"
+            onClick={uiActions.clearChecked}
+          />
+        </Tooltip>
         <Button
+          type="text"
           danger
-          icon={<DeleteOutlined />}
+          size="small"
           onClick={() =>
             uiActions.requestDelete({
               kind: 'selection',
@@ -26,8 +39,8 @@ const SelectionBar = ({ checked }: { checked: string[] }) => {
         >
           Delete
         </Button>
-      </Badge>
-    </div>
+      </div>
+    </Badge>
   );
 };
 

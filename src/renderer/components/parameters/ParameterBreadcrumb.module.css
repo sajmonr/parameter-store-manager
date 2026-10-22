@@ -1,26 +1,27 @@
-/* A fixed height, so checking rows never moves the table. */
+/* Fixed heights, so checking rows never moves the table. */
 .header {
   flex: none;
+  padding: 0 16px;
+}
+
+.row {
   height: 52px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
   min-width: 0;
 }
 
-/* Only the breadcrumb and the hint shrink, and in a very narrow window the
-   environment tabs last (see below). */
-.header > * {
+/* Only the breadcrumb and the hint shrink (see below). */
+.row > * {
   flex: none;
 }
 
 .breadcrumb {
   font-size: 13px;
   min-width: 0;
-  /* Shrinks far ahead of the tabs. */
-  flex: 0 1000 auto;
+  flex: 0 1 auto;
   overflow: hidden;
 }
 
@@ -62,11 +63,11 @@
 
 .end {
   flex: 0 1 auto;
+  min-width: 0;
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 0;
 }
 
 .hint {
@@ -74,18 +75,10 @@
   font-size: 12px;
 }
 
-.selection {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Scroll sideways only when nothing else is left to shrink, so the selection
-   bar stays reachable. */
+/* Scrolls sideways when the tabs don't fit. */
 .tabs {
-  flex: 0 1 auto;
-  min-width: 0;
+  max-width: 100%;
+  padding-bottom: 12px;
   overflow-x: auto;
   scrollbar-width: none;
 }

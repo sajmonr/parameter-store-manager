@@ -1,0 +1,19 @@
+.bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius-lg);
+  background: var(--ant-color-bg-elevated);
+  box-shadow: var(--ant-box-shadow-tertiary);
+}
+
+/* Neutral, not red: the count isn't something to act on. Solid tokens, so
+   the card's border doesn't show through. */
+.count :global(.ant-badge-count) {
+  background: var(--ant-color-border);
+  color: var(--ant-color-text);
+  box-shadow: none;
+}

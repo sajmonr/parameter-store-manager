@@ -96,7 +96,10 @@ describe('checking rows', () => {
     expect(headerState()).toBe('some');
     expect(deleteButton()).toBeInTheDocument();
     expect(
-      deleteButton()!.closest('.ant-badge')!.querySelector('.ant-badge-count')
+      screen
+        .getByRole('toolbar', { name: 'Selection' })
+        .closest('.ant-badge')!
+        .querySelector('.ant-badge-count')
     ).toHaveTextContent('1');
 
     await user.click(headerCheckbox());
@@ -106,6 +109,19 @@ describe('checking rows', () => {
     await user.click(headerCheckbox());
     expect(headerState()).toBe('none');
     expect(deleteButton()).not.toBeInTheDocument();
+  });
+
+  it('clears the selection from the selection bar', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Port');
+
+    await user.click(headerCheckbox());
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+    expect(headerState()).toBe('none');
+    expect(
+      screen.queryByRole('toolbar', { name: 'Selection' })
+    ).not.toBeInTheDocument();
   });
 
   it('unchecks everything when the folder, tab or search changes', async () => {
