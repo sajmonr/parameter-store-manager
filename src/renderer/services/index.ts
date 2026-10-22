@@ -10,3 +10,4 @@ export { updatesService } from './updatesService';
 export { filesService } from './filesService';
 export { accountService } from './accountService';
 export { menuService } from './menuService';
+export { sourceService } from './sourceService';

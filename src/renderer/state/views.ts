@@ -1,14 +1,27 @@
 // What the components show, derived from the parameters, the settings and the
 // UI state.
 import { useMemo } from 'react';
+import {
+  isServiceLocation,
+  pathFolderOf,
+  relativeFolder,
+  rowsFor,
+  serviceEnvironments,
+  validate
+} from '../utils/location';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
+import { buildServicesTree } from '../utils/servicesTree';
 import { structureNames } from '../utils/structure';
 import type { StructuredNames } from '../utils/structure';
 import type { Structure } from '../../shared/structure';
 import { useParameters } from './parameters';
 import type { ParameterEntry } from './parameters';
-import { usePathDelimiter, useSettingsStore } from './settings';
+import {
+  useLocationContext,
+  usePathDelimiter,
+  useSettingsStore
+} from './settings';
 import { useUiStore } from './ui';
 
 export const useMatcher = () => {
@@ -27,13 +40,82 @@ export const useMatchedParameters = () => {
   );
 };
 
-// Parameters that match the search and sit in the scoped folder.
+// The location, made valid for the current settings (see ui.getLocation).
+export const useLocation = () => {
+  const location = useUiStore(state => state.location);
+  const lastEnv = useUiStore(state => state.lastEnv);
+  const defaultView = useSettingsStore(settings => settings.defaultView);
+  const context = useLocationContext();
+  return useMemo(
+    () => validate(location, context, { defaultView, lastEnv }),
+    [location, context, defaultView, lastEnv]
+  );
+};
+
+// The full folder of the location: '' for all parameters.
+export const useLocationPath = () => {
+  const location = useLocation();
+  const context = useLocationContext();
+  return pathFolderOf(location, context);
+};
+
+// Parameters that match the search and are at the location: the table rows.
 export const useVisibleParameters = () => {
   const matched = useMatchedParameters();
-  const scope = useUiStore(state => state.scope);
+  const location = useLocation();
+  const context = useLocationContext();
   return useMemo(
-    () => (scope ? matched.filter(p => p.Name.startsWith(scope)) : matched),
-    [matched, scope]
+    () => rowsFor(location, matched, context),
+    [matched, location, context]
+  );
+};
+
+// The folder a row shows below its name, relative to the location's folder.
+export const useRelativeFolder = (name: string) => {
+  const location = useLocation();
+  const context = useLocationContext();
+  return relativeFolder(location, name, context);
+};
+
+// The environment tabs of the selected service, with the matching
+// parameters in each at the selected folder. Empty outside a service.
+export const useEnvironmentTabs = () => {
+  const matched = useMatchedParameters();
+  const location = useLocation();
+  const context = useLocationContext();
+  return useMemo(() => {
+    if (!isServiceLocation(location)) return [];
+    const service = context.structure.services.find(
+      s => s.segment === location.service
+    );
+    if (!service) return [];
+    return serviceEnvironments(service, context.structure).map(env => ({
+      ...env,
+      count: rowsFor({ ...location, env: env.segment }, matched, context).length
+    }));
+  }, [matched, location, context]);
+};
+
+// The Services view's sidebar. The selected service is counted in the
+// environment on screen, the others in the one each would open on.
+export const useServicesTree = () => {
+  const matched = useMatchedParameters();
+  const { query } = useMatcher();
+  const location = useLocation();
+  const lastEnv = useUiStore(state => state.lastEnv);
+  const context = useLocationContext();
+  const active = isServiceLocation(location) ? location : null;
+  const preferredEnv = lastEnv ?? active?.env ?? null;
+  return useMemo(
+    () =>
+      buildServicesTree(
+        matched.map(p => p.Name),
+        context,
+        preferredEnv,
+        !!query,
+        active
+      ),
+    [matched, context, preferredEnv, query, active]
   );
 };
 

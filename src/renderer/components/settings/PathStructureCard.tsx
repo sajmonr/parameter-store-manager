@@ -5,6 +5,7 @@ import { useParameters } from '../../state/parameters';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
 import { useStructuredParameters } from '../../state/views';
 import { rootFolder } from '../../utils/paths';
+import { layoutPattern } from '../../utils/structure';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
@@ -62,14 +63,6 @@ const PathStructureCard = () => {
   const { matches } = useStructuredParameters();
   const total = parameters.length;
 
-  const pattern = (layout: Layout) => {
-    const segments =
-      layout === 'env-first'
-        ? ['{environment}', '{service}']
-        : ['{service}', '{environment}'];
-    return `${rootFolder(delimiter)}${segments.join(delimiter)}${delimiter}…`;
-  };
-
   return (
     <SettingsCard
       title="Path structure"
@@ -93,7 +86,9 @@ const PathStructureCard = () => {
               label: styles.layoutLabel
             }}
           >
-            <div className={styles.layoutPattern}>{pattern(value)}</div>
+            <div className={styles.layoutPattern}>
+              {layoutPattern(value, delimiter)}
+            </div>
             <LayoutExample
               layout={value}
               structure={structure}

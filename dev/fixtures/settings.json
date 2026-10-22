@@ -1,0 +1,48 @@
+{
+  "pathDelimiter": "/",
+  "ssmRegion": "us-east-1",
+  "kmsRegion": "us-east-1",
+  "profile": "",
+  "theme": "system",
+  "defaultView": "services",
+  "structure": {
+    "enabled": true,
+    "layout": "env-first",
+    "environments": [
+      {
+        "segment": "development",
+        "color": "#52c41a"
+      },
+      {
+        "segment": "staging",
+        "color": "#faad14"
+      },
+      {
+        "segment": "production",
+        "color": "#f5222d"
+      }
+    ],
+    "services": [
+      {
+        "segment": "compass",
+        "environments": ["development", "staging", "production"]
+      },
+      {
+        "segment": "assessment",
+        "environments": ["development", "staging", "production"]
+      },
+      {
+        "segment": "notifications",
+        "environments": ["development", "staging", "production"]
+      },
+      {
+        "segment": "pricingterm",
+        "environments": ["development", "staging"]
+      },
+      {
+        "segment": "billing",
+        "environments": ["staging", "production"]
+      }
+    ]
+  }
+}

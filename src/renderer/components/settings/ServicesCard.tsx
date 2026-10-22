@@ -28,7 +28,7 @@ import {
   removeService,
   setServiceEnvironment
 } from '../../utils/structureEdits';
-import { EnvironmentDot } from './EnvironmentColor';
+import EnvironmentDot from '../common/EnvironmentDot';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';

@@ -1,15 +1,16 @@
-import { useState } from 'react';
-import type { Key } from 'react';
-import { Empty, Skeleton, Tree } from 'antd';
+import { Empty, Tree } from 'antd';
 import { FolderOpenOutlined, FolderOutlined } from '@ant-design/icons';
-import { useParameters } from '../../state/parameters';
-import { uiActions, useUiStore } from '../../state/ui';
-import { useMatchedFolderTree, useMatcher } from '../../state/views';
+import { useLocationContext } from '../../state/settings';
+import { uiActions } from '../../state/ui';
+import { useLocation, useMatchedFolderTree } from '../../state/views';
 import useElementSize from '../../hooks/useElementSize';
+import { environmentColorOf } from '../../utils/structure';
+import EnvironmentDot from '../common/EnvironmentDot';
 import HighlightText from '../common/HighlightText';
+import useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
 
-const folderIcon = ({
+export const folderIcon = ({
   expanded,
   isLeaf
 }: {
@@ -17,84 +18,53 @@ const folderIcon = ({
   isLeaf?: boolean;
 }) => (expanded && !isLeaf ? <FolderOpenOutlined /> : <FolderOutlined />);
 
-// Folders of the parameters that match the search, with match counts.
-// Selecting a folder scopes the table to it; selecting it again unscopes.
+// The Paths view: folders of the parameters that match the search, with
+// match counts. Selecting a folder scopes the table to it; selecting it again
+// unscopes. With grouping on, environment folders get their colour.
 const FolderTree = () => {
-  const { loadState } = useParameters();
   const tree = useMatchedFolderTree();
-  const matcher = useMatcher();
-  const scope = useUiStore(state => state.scope);
-  const expandedFolders = useUiStore(state => state.expandedFolders);
+  const location = useLocation();
+  const { structure, delimiter } = useLocationContext();
+  const scope = location.view === 'paths' ? location.scope : '';
+  const { expandedKeys, onExpand, highlight } = useTreeExpansion(
+    'paths',
+    tree.keys
+  );
   const [ref, { height }] = useElementSize();
-
-  // While searching, every matching branch starts expanded. Expanding or
-  // collapsing during a search lasts until the query changes.
-  const [searchExpansion, setSearchExpansion] = useState<{
-    query: string;
-    keys: string[];
-  }>({
-    query: '',
-    keys: []
-  });
-  const searching = !!matcher.query;
-  let expandedKeys = expandedFolders;
-  if (searching) {
-    expandedKeys =
-      searchExpansion.query === matcher.query
-        ? searchExpansion.keys
-        : tree.keys;
-  }
-  const onExpand = (expanded: Key[]) => {
-    const keys = expanded.map(String);
-    if (searching) setSearchExpansion({ query: matcher.query, keys });
-    else uiActions.setExpandedFolders(keys);
-  };
-
-  const highlight = searching && !matcher.isGlob ? matcher.query : '';
-
-  let content;
-  if (loadState === 'loading') {
-    content = (
-      <Skeleton
-        active
-        title={false}
-        paragraph={{ rows: 8 }}
-        className={styles.skeleton}
-      />
-    );
-  } else if (!tree.roots.length) {
-    content = (
-      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No folders" />
-    );
-  } else {
-    content = (
-      <Tree
-        blockNode
-        showIcon
-        icon={folderIcon}
-        treeData={tree.roots}
-        height={height || undefined}
-        expandedKeys={expandedKeys}
-        onExpand={onExpand}
-        selectedKeys={[scope]}
-        onSelect={(_keys, { node }) =>
-          uiActions.setScope(node.key === scope ? '' : node.key)
-        }
-        titleRender={node => (
-          <span className={styles.title}>
-            <span className={styles.label} title={node.label}>
-              <HighlightText text={node.label} highlight={highlight} />
-            </span>
-            <span className={styles.count}>{node.count}</span>
-          </span>
-        )}
-      />
-    );
-  }
 
   return (
     <div ref={ref} className={styles.container}>
-      {content}
+      {tree.roots.length ? (
+        <Tree
+          blockNode
+          showIcon
+          icon={folderIcon}
+          treeData={tree.roots}
+          height={height || undefined}
+          expandedKeys={expandedKeys}
+          onExpand={onExpand}
+          selectedKeys={[scope]}
+          onSelect={(_keys, { node }) =>
+            uiActions.setScope(node.key === scope ? '' : node.key)
+          }
+          titleRender={node => {
+            const color = environmentColorOf(node.key, structure, delimiter);
+            return (
+              <span className={styles.title}>
+                {color && (
+                  <EnvironmentDot color={color} className={styles.dot} />
+                )}
+                <span className={styles.label} title={node.label}>
+                  <HighlightText text={node.label} highlight={highlight} />
+                </span>
+                <span className={styles.count}>{node.count}</span>
+              </span>
+            );
+          }}
+        />
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No folders" />
+      )}
     </div>
   );
 };

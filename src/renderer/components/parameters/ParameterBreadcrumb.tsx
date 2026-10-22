@@ -1,50 +1,122 @@
-import { Badge, Breadcrumb, Spin } from 'antd';
+import { Badge, Breadcrumb, Spin, Typography } from 'antd';
+import type { ReactNode } from 'react';
 import { useParameters } from '../../state/parameters';
-import { usePathDelimiter } from '../../state/settings';
-import { uiActions, useUiStore } from '../../state/ui';
+import { useLocationContext } from '../../state/settings';
+import { uiActions } from '../../state/ui';
+import { useLocation } from '../../state/views';
+import { isOtherLocation } from '../../utils/location';
+import type { Location, LocationContext } from '../../utils/location';
 import { folderChain } from '../../utils/paths';
+import { environmentColorOf, layoutPattern } from '../../utils/structure';
+import EnvironmentDot from '../common/EnvironmentDot';
+import EnvironmentTabs from './EnvironmentTabs';
 import styles from './ParameterBreadcrumb.module.css';
 
-// "All parameters / seg / seg" for the scope; each item changes the scope.
+interface Crumb {
+  key: string;
+  label: ReactNode;
+  location: Location;
+}
+
+// The location and each place above it, outermost first.
+const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
+  const { structure, delimiter } = context;
+  if (location.view === 'paths') {
+    return [
+      {
+        key: '',
+        label: 'All parameters',
+        location: { view: 'paths', scope: '' }
+      },
+      ...folderChain(location.scope, delimiter).map(({ key, label }) => {
+        const color = environmentColorOf(key, structure, delimiter);
+        return {
+          key,
+          label: color ? (
+            <span className={styles.env}>
+              <EnvironmentDot color={color} />
+              {label}
+            </span>
+          ) : (
+            label
+          ),
+          location: { view: 'paths', scope: key } as const
+        };
+      })
+    ];
+  }
+  const folders = folderChain(location.folder, delimiter);
+  if (isOtherLocation(location)) {
+    return [
+      { key: '', label: 'Other paths', location: { ...location, folder: '' } },
+      ...folders.map(({ key, label }) => ({
+        key,
+        label,
+        location: { ...location, folder: key }
+      }))
+    ];
+  }
+  return [
+    {
+      key: '',
+      label: location.service,
+      location: { ...location, folder: '' }
+    },
+    ...folders.map(({ key, label }) => ({
+      key,
+      label,
+      location: { ...location, folder: key }
+    }))
+  ];
+};
+
+// The location as a breadcrumb, each item going there, and the row count.
+// A service adds its environment tabs; Other paths says why names are there.
 const ParameterBreadcrumb = ({ count }: { count: number }) => {
-  const scope = useUiStore(state => state.scope);
-  const delimiter = usePathDelimiter();
+  const location = useLocation();
+  const context = useLocationContext();
   // Pages arrive one by one, so the count would keep rolling until done.
   const { loading } = useParameters();
 
-  const items = [
-    { key: '', label: 'All parameters' },
-    ...folderChain(scope, delimiter)
-  ].map(({ key, label }) => ({
-    key,
+  const items = crumbsOf(location, context).map(crumb => ({
+    key: crumb.key,
     title: (
       <span
         role="link"
         tabIndex={0}
         className={styles.item}
-        onClick={() => uiActions.setScope(key)}
+        onClick={() => uiActions.setLocation(crumb.location)}
         onKeyDown={event => {
-          if (event.key === 'Enter') uiActions.setScope(key);
+          if (event.key === 'Enter') uiActions.setLocation(crumb.location);
         }}
       >
-        {label}
+        {crumb.label}
       </span>
     )
   }));
 
   return (
-    <div className={styles.bar}>
-      <Breadcrumb items={items} className={styles.breadcrumb} />
-      {loading ? (
-        <Spin size="small" aria-label="Counting parameters" />
-      ) : (
-        <Badge
-          count={count}
-          showZero
-          overflowCount={99999}
-          className={styles.count}
-        />
-      )}
+    <div className={styles.header}>
+      <div className={styles.bar}>
+        <Breadcrumb items={items} className={styles.breadcrumb} />
+        {loading ? (
+          <Spin size="small" aria-label="Counting parameters" />
+        ) : (
+          <Badge
+            count={count}
+            showZero
+            overflowCount={99999}
+            className={styles.count}
+          />
+        )}
+        {isOtherLocation(location) && (
+          <Typography.Text type="secondary" className={styles.hint}>
+            Don&apos;t match{' '}
+            {layoutPattern(context.structure.layout, context.delimiter)}
+          </Typography.Text>
+        )}
+      </div>
+      <EnvironmentTabs />
     </div>
   );
 };

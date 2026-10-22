@@ -15,9 +15,9 @@ import type { ReactNode } from 'react';
 import type { EditableParameterType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { usePutParameter } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
-import { uiActions, useUiStore } from '../../state/ui';
+import { uiActions } from '../../state/ui';
 import type { NewParameterPrefill } from '../../state/ui';
-import { useNameSet } from '../../state/views';
+import { useLocationPath, useNameSet } from '../../state/views';
 import { rootFolder } from '../../utils/paths';
 import {
   checkNewParameter,
@@ -58,7 +58,7 @@ const optional = (label: ReactNode) => (
 );
 
 // Creates one parameter. `prefill` comes from Duplicate; without it the form
-// starts empty in the scoped folder.
+// starts empty in the location's folder.
 const ParameterForm = ({
   prefill
 }: {
@@ -67,13 +67,13 @@ const ParameterForm = ({
   const { notification } = App.useApp();
   const [form] = Form.useForm<FormValues>();
   const delimiter = usePathDelimiter();
-  const scope = useUiStore(state => state.scope);
+  const locationPath = useLocationPath();
   const existingNames = useNameSet();
   const putParameter = usePutParameter();
   const submitting = putParameter.isPending;
 
   const [initialValues] = useState<FormValues>(() => ({
-    folder: scope || rootFolder(delimiter),
+    folder: locationPath || rootFolder(delimiter),
     name: '',
     description: '',
     type: 'String',

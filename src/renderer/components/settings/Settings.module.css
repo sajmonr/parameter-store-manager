@@ -119,14 +119,6 @@
 }
 
 /* Environments and services tables. */
-.dot {
-  display: inline-block;
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
 .swatch.swatch {
   width: 28px;
 }

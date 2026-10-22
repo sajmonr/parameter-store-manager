@@ -1,0 +1,9 @@
+.switcher {
+  flex: none;
+  padding: 12px 12px 4px;
+}
+
+.skeleton {
+  flex: 1;
+  padding: 12px 16px;
+}

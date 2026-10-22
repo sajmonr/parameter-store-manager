@@ -58,6 +58,10 @@ export const accountService = {
   )
 };
 
+export const sourceService = {
+  get: vi.fn<Service<'sourceService'>['get']>(() => Promise.resolve('aws'))
+};
+
 export const menuService = {
   onOpenSettings: vi.fn<Service<'menuService'>['onOpenSettings']>(
     () => () => {}

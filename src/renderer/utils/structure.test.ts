@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
-import { countAt, parse, pathOf, structureNames } from './structure';
+import {
+  countAt,
+  environmentColorOf,
+  layoutPattern,
+  parse,
+  pathOf,
+  structureNames
+} from './structure';
 
 const structure: Structure = {
   ...DEFAULT_STRUCTURE,
@@ -174,5 +181,37 @@ describe('structureNames', () => {
     expect(result.matches.size).toBe(0);
     expect(result.other).toEqual(names);
     expect(result.inOther.size).toBe(0);
+  });
+});
+
+describe('layoutPattern', () => {
+  it('shows the layout as a path', () => {
+    expect(layoutPattern('env-first', '/')).toBe('/{environment}/{service}/…');
+    expect(layoutPattern('svc-first', '.')).toBe('{service}.{environment}.…');
+  });
+});
+
+describe('environmentColorOf', () => {
+  const green = structure.environments[0]!.color;
+  it('colours top-level environment folders with the environment convention', () => {
+    expect(environmentColorOf('/development/', structure, '/')).toBe(green);
+    expect(environmentColorOf('/development/compass/', structure, '/')).toBe(
+      null
+    );
+    expect(environmentColorOf('/qa/', structure, '/')).toBe(null);
+  });
+
+  it("colours environment folders in a service's folder with the services convention", () => {
+    expect(environmentColorOf('/compass/development/', svcFirst, '/')).toBe(
+      green
+    );
+    expect(environmentColorOf('/development/', svcFirst, '/')).toBe(null);
+    expect(environmentColorOf('/other/development/', svcFirst, '/')).toBe(null);
+  });
+
+  it('colours nothing with the switch off', () => {
+    expect(
+      environmentColorOf('/development/', { ...structure, enabled: false }, '/')
+    ).toBe(null);
   });
 });

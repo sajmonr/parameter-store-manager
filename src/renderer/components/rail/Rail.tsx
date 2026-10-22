@@ -59,7 +59,7 @@ const ImportExportItem = () => {
       page="importExport"
       label={label}
       tooltip={progress ? `${label}: ${describeProgress(progress)}` : undefined}
-      icon={<SwapOutlined rotate={90} />}
+      icon={<SwapOutlined />}
       busy={running}
       onClick={() => uiActions.showPage('importExport')}
     />

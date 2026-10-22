@@ -1,13 +1,14 @@
 import { Typography } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
-import { useUiStore } from '../../state/ui';
-import { folderOf, leafOf } from '../../utils/paths';
+import { useRelativeFolder } from '../../state/views';
+import { leafOf } from '../../utils/paths';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
 import styles from './NameCell.module.css';
 
-// The leaf name, and below it the folder relative to the scope and the age.
+// The leaf name, and below it the folder relative to the location's folder
+// and the age.
 interface NameCellProps {
   parameter: ParameterEntry;
   selected: boolean;
@@ -15,9 +16,8 @@ interface NameCellProps {
 
 const NameCell = ({ parameter, selected }: NameCellProps) => {
   const delimiter = usePathDelimiter();
-  const scope = useUiStore(state => state.scope);
   const { Name, LastModifiedDate } = parameter;
-  const relativeFolder = folderOf(Name, delimiter).slice(scope.length);
+  const relativeFolder = useRelativeFolder(Name);
 
   return (
     <div className={styles.cell}>

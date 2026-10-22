@@ -8,7 +8,9 @@ import {
   fromIni,
   fromProcess
 } from '@aws-sdk/credential-providers';
+import { withFakeSource } from './fake/fakeAws';
 import { availableSettings, getSetting } from './settings';
+import { isFakeSource } from './source';
 
 // Order: env AWS_* -> shared ini profile (which also covers SSO, assumed
 // roles and credential_process) -> credential_process.
@@ -21,9 +23,16 @@ export const createCredentialProvider = (profile: string) => {
   );
 };
 
+// Never sent anywhere: the fake source answers before credentials are used.
+const fakeCredentials = async () => ({
+  accessKeyId: 'FAKE',
+  secretAccessKey: 'FAKE'
+});
+
 interface ClientConfig {
   region: string;
-  credentials: ReturnType<typeof createCredentialProvider>;
+  credentials:
+    ReturnType<typeof createCredentialProvider> | typeof fakeCredentials;
   retryMode: string;
   maxAttempts: number;
 }
@@ -43,14 +52,16 @@ const getClient = <T extends AwsClient>(
   const key = `${service}|${region}|${profile}`;
   let client = clients.get(key) as T | undefined;
   if (!client) {
+    const fake = isFakeSource();
     client = new Client({
       region,
-      credentials: createCredentialProvider(profile),
+      credentials: fake ? fakeCredentials : createCredentialProvider(profile),
       // Loading all parameters makes many SSM calls in a row; adaptive mode
       // slows down client-side when AWS starts throttling instead of failing.
       retryMode: 'adaptive',
       maxAttempts: 8
     });
+    if (fake) withFakeSource(client);
     clients.set(key, client);
   }
   return client;
