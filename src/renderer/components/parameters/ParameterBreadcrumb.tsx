@@ -10,6 +10,7 @@ import { folderChain } from '../../utils/paths';
 import { environmentColorOf, layoutPattern } from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import EnvironmentTabs from './EnvironmentTabs';
+import SelectionBar from './SelectionBar';
 import styles from './ParameterBreadcrumb.module.css';
 
 interface Crumb {
@@ -100,7 +101,15 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
 
 // The location as a breadcrumb, each item going there, and the row count.
 // A service adds its environment tabs; Other paths says why names are there.
-const ParameterBreadcrumb = ({ count }: { count: number }) => {
+// Checked rows add their actions at the end of the first row, which never
+// wraps: the breadcrumb and the hint shrink first. The tabs get a second row.
+const ParameterBreadcrumb = ({
+  count,
+  checked
+}: {
+  count: number;
+  checked: string[];
+}) => {
   const location = useLocation();
   const context = useLocationContext();
   // Pages arrive one by one, so the count would keep rolling until done.
@@ -125,7 +134,7 @@ const ParameterBreadcrumb = ({ count }: { count: number }) => {
 
   return (
     <div className={styles.header}>
-      <div className={styles.bar}>
+      <div className={styles.row}>
         <Breadcrumb items={items} className={styles.breadcrumb} />
         {loading ? (
           <Spin size="small" aria-label="Counting parameters" />
@@ -137,12 +146,15 @@ const ParameterBreadcrumb = ({ count }: { count: number }) => {
             className={styles.count}
           />
         )}
-        {isOtherLocation(location) && (
-          <Typography.Text type="secondary" className={styles.hint}>
-            Don&apos;t match{' '}
-            {layoutPattern(context.structure.layout, context.delimiter)}
-          </Typography.Text>
-        )}
+        <div className={styles.end}>
+          {isOtherLocation(location) && (
+            <Typography.Text type="secondary" className={styles.hint} ellipsis>
+              Don&apos;t match{' '}
+              {layoutPattern(context.structure.layout, context.delimiter)}
+            </Typography.Text>
+          )}
+          <SelectionBar checked={checked} />
+        </div>
       </div>
       <EnvironmentTabs />
     </div>

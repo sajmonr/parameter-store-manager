@@ -33,10 +33,7 @@ const handlers: Record<string, (input: any) => unknown> = {
   DescribeParametersCommand: input => fakeStore().describe(input),
   GetParametersCommand: input => fakeStore().get(input),
   PutParameterCommand: input => ({ ...fakeStore().put(input), ...metadata }),
-  DeleteParameterCommand: input => {
-    fakeStore().delete(input);
-    return metadata;
-  },
+  DeleteParametersCommand: input => fakeStore().delete(input),
   ListAliasesCommand: () => {
     const { accountId, aliases } = fakeStore();
     return {

@@ -2,19 +2,20 @@ import { Button, Flex, Layout, Tooltip } from 'antd';
 import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
 import { uiActions } from '../../state/ui';
-import ProfileChip from './ProfileChip';
 import SearchInput from './SearchInput';
 import styles from './AppHeader.module.css';
 
-// Settings and the export live in the rail.
+// The search, centred, and the actions on the right. Settings, including the
+// AWS profile and region, and the export live in the rail.
 const AppHeader = () => {
   const { loading, refresh } = useParameters();
 
   return (
     <Layout.Header className={styles.header}>
-      <Flex align="center" gap={12} className={styles.row}>
-        <ProfileChip />
-        <SearchInput />
+      <div className={styles.row}>
+        <div className={styles.center}>
+          <SearchInput />
+        </div>
         <Flex align="center" gap={8} className={styles.end}>
           <Button
             type="primary"
@@ -32,7 +33,7 @@ const AppHeader = () => {
             />
           </Tooltip>
         </Flex>
-      </Flex>
+      </div>
     </Layout.Header>
   );
 };

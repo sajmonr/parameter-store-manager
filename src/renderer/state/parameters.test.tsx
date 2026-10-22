@@ -7,7 +7,7 @@ import { feedback } from '../feedback';
 import { createWrapper } from '../test/render';
 import { createTestState, makeParameter } from '../test/testState';
 import {
-  useDeleteParameter,
+  useDeleteParameters,
   useParameters,
   usePutParameter
 } from './parameters';
@@ -39,7 +39,7 @@ const renderParameters = (queryClient: QueryClient) =>
     () => ({
       ...useParameters(),
       put: usePutParameter(),
-      remove: useDeleteParameter(),
+      remove: useDeleteParameters(),
       selected: useSelectedParameter()
     }),
     { wrapper: createWrapper(queryClient) }
@@ -207,7 +207,10 @@ describe('useParameters', () => {
         parameters: [makeParameter('/a'), makeParameter('/b')]
       })
     );
-    api.parametersService.delete.mockResolvedValue({ name: '/a' });
+    api.parametersService.delete.mockResolvedValue({
+      deleted: ['/a'],
+      invalid: []
+    });
     api.parametersService.put.mockResolvedValue({ version: 1 });
     const page = pending();
     api.parametersService.describe.mockReturnValue(page.promise);
@@ -215,7 +218,7 @@ describe('useParameters', () => {
     act(() => {
       void result.current.refresh();
     });
-    await act(() => result.current.remove.mutateAsync('/a'));
+    await act(() => result.current.remove.mutateAsync(['/a']));
     await act(() =>
       result.current.put.mutateAsync({
         name: '/c',
@@ -354,12 +357,41 @@ describe('useParameters', () => {
     expect(result.current.loadState).toBe('expired');
   });
 
+  it('deletes in batches of 10 and reports what was not deleted', async () => {
+    const all = Array.from({ length: 25 }, (_, i) =>
+      makeParameter(`/p${String(i).padStart(2, '0')}`)
+    );
+    const { result } = renderParameters(createTestState({ parameters: all }));
+    api.parametersService.delete.mockImplementation(async batch => {
+      if (batch.includes('/p10')) throw awsError('ThrottlingException');
+      // /p01 is already gone.
+      return {
+        deleted: batch.filter(name => name !== '/p01'),
+        invalid: batch.filter(name => name === '/p01')
+      };
+    });
+
+    let outcome!: Awaited<ReturnType<typeof result.current.remove.mutateAsync>>;
+    await act(async () => {
+      outcome = await result.current.remove.mutateAsync(all.map(p => p.Name));
+    });
+
+    expect(
+      api.parametersService.delete.mock.calls.map(([batch]) => batch.length)
+    ).toEqual([10, 10, 5]);
+    const second = all.slice(10, 20).map(p => p.Name);
+    expect(outcome.failed.sort()).toEqual(['/p01', ...second]);
+    expect(outcome.deleted).toHaveLength(14);
+    expect(outcome.error?.name).toBe('ThrottlingException');
+    await waitFor(() => expect(names(result)).toEqual(['/p01', ...second]));
+  });
+
   it('applies a deletion only to the profile it was made in', async () => {
     const queryClient = createTestState({
       parameters: [makeParameter('/shared')]
     });
     const { result } = renderParameters(queryClient);
-    const deletion = pending<{ name: string }>();
+    const deletion = pending<{ deleted: string[]; invalid: string[] }>();
     api.parametersService.delete.mockReturnValue(deletion.promise);
     const otherProfile = pending();
     api.parametersService.describe.mockReturnValue(otherProfile.promise);
@@ -367,7 +399,7 @@ describe('useParameters', () => {
     // Delete in the default profile, then switch before AWS answers.
     let removed!: Promise<unknown>;
     await act(async () => {
-      removed = result.current.remove.mutateAsync('/shared');
+      removed = result.current.remove.mutateAsync(['/shared']);
     });
     await waitFor(() =>
       expect(api.parametersService.delete).toHaveBeenCalled()
@@ -377,7 +409,7 @@ describe('useParameters', () => {
       expect(api.parametersService.describe).toHaveBeenCalledTimes(1)
     );
     await act(async () => {
-      deletion.resolve({ name: '/shared' });
+      deletion.resolve({ deleted: ['/shared'], invalid: [] });
       await removed;
     });
 

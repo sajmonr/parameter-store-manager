@@ -1,18 +1,44 @@
+/* Fixed heights, so checking rows never moves the table. */
 .header {
   flex: none;
-  padding: 12px 16px;
+  padding: 0 16px;
 }
 
-.bar {
+.row {
+  height: 52px;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
 
+/* Only the breadcrumb and the hint shrink (see below). */
+.row > * {
+  flex: none;
+}
+
 .breadcrumb {
   font-size: 13px;
   min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+/* Items truncate instead of wrapping onto a second line. */
+.breadcrumb ol {
+  flex-wrap: nowrap;
+}
+
+.breadcrumb :global(.ant-breadcrumb-item) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breadcrumb :global(.ant-breadcrumb-separator) {
+  flex: none;
 }
 
 .item {
@@ -35,16 +61,26 @@
   box-shadow: none;
 }
 
-.hint {
+.end {
+  flex: 0 1 auto;
+  min-width: 0;
   margin-left: auto;
-  font-size: 12px;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
+.hint {
+  min-width: 0;
+  font-size: 12px;
+}
+
+/* Scrolls sideways when the tabs don't fit. */
 .tabs {
-  margin-top: 10px;
   max-width: 100%;
+  padding-bottom: 12px;
   overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .tabCount {

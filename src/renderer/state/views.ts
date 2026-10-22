@@ -1,6 +1,6 @@
 // What the components show, derived from the parameters, the settings and the
 // UI state.
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   isServiceLocation,
   pathFolderOf,
@@ -17,6 +17,7 @@ import {
 } from '../utils/servicesTree';
 import { parse, pathOf, structureNames } from '../utils/structure';
 import type { StructuredNames } from '../utils/structure';
+import type { Location } from '../utils/location';
 import type { Structure } from '../../shared/structure';
 import { useParameters } from './parameters';
 import type { ParameterEntry } from './parameters';
@@ -25,7 +26,7 @@ import {
   usePathDelimiter,
   useSettingsStore
 } from './settings';
-import { useUiStore } from './ui';
+import { uiActions, useUiStore } from './ui';
 
 export const useMatcher = () => {
   const query = useUiStore(state => state.query);
@@ -70,6 +71,50 @@ export const useVisibleParameters = () => {
   return useMemo(
     () => rowsFor(location, matched, context),
     [matched, location, context]
+  );
+};
+
+// What the table shows: the location and the search, in this profile and
+// region. Checked rows belong to the context they were checked in, so
+// changing any of these unchecks them.
+export const useCheckContext = () => {
+  const location = useLocation();
+  const query = useUiStore(state => state.query);
+  const profile = useSettingsStore(settings => settings.profile);
+  const region = useSettingsStore(settings => settings.ssmRegion);
+  return JSON.stringify([profile, region, location, query]);
+};
+
+// The checked rows' names, in table order. Use it once, in the component
+// that owns the table: it also drops the checked rows of an old context, so
+// they don't come back when the user returns to it.
+export const useCheckedNames = () => {
+  const context = useCheckContext();
+  const checked = useUiStore(state => state.checked);
+  const visible = useVisibleParameters();
+  useEffect(() => {
+    if (useUiStore.getState().checked.context !== context) {
+      uiActions.clearChecked();
+    }
+  }, [context]);
+  return useMemo(
+    () =>
+      checked.context === context
+        ? visible.flatMap(p => (checked.names.has(p.Name) ? [p.Name] : []))
+        : [],
+    [checked, context, visible]
+  );
+};
+
+// The names of every loaded parameter at a location, ignoring the search:
+// what deleting a sidebar node's tree deletes.
+export const useTreeNames = () => {
+  const { parameters } = useParameters();
+  const context = useLocationContext();
+  return useCallback(
+    (location: Location) =>
+      rowsFor(location, parameters, context).map(p => p.Name),
+    [parameters, context]
   );
 };
 

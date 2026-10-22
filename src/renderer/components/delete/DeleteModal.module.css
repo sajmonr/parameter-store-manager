@@ -1,0 +1,20 @@
+.icon {
+  color: var(--ant-color-warning);
+}
+
+.title {
+  min-width: 0;
+  word-break: break-all;
+}
+
+.list {
+  max-height: 280px;
+  margin: 0;
+  padding: 8px 12px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-fill-quaternary);
+  word-break: break-all;
+}

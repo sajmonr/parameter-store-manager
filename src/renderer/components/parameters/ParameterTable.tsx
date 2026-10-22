@@ -5,7 +5,7 @@ import { AppstoreOutlined, LockOutlined } from '@ant-design/icons';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
-import { useLocation } from '../../state/views';
+import { useCheckContext, useLocation } from '../../state/views';
 import {
   groupByService,
   isEnvironmentLocation,
@@ -22,6 +22,7 @@ import styles from './ParameterTable.module.css';
 // Height of the small table's header row; the rest of the space scrolls.
 const HEADER_HEIGHT = 39;
 const LOCK_COLUMN_WIDTH = 40;
+const CHECKBOX_COLUMN_WIDTH = 28;
 
 // A whole environment's rows come under a header row per service.
 interface GroupRow {
@@ -71,7 +72,16 @@ const isArrowNavigationTarget = (target: EventTarget | null) =>
     'input, textarea, select, [contenteditable], [role="tree"], .ant-modal, .ant-popover, .ant-drawer'
   );
 
-const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
+interface ParameterTableProps {
+  parameters: ParameterEntry[];
+  // The checked rows' names (see views.useCheckedNames).
+  checked: string[];
+}
+
+// A row's checkbox checks it for bulk actions; clicking anywhere else on the
+// row opens it in the detail pane. Group rows have no checkbox.
+const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
+  const checkContext = useCheckContext();
   const selectedName = useUiStore(state => state.selectedName);
   const location = useLocation();
   const context = useLocationContext();
@@ -127,7 +137,9 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
       {
         title: nameTitle,
         key: 'name',
-        width: Math.round((width - LOCK_COLUMN_WIDTH) * 0.45),
+        width: Math.round(
+          (width - CHECKBOX_COLUMN_WIDTH - LOCK_COLUMN_WIDTH) * 0.45
+        ),
         onCell: spanGroupRow(3),
         render: (_, row) =>
           isGroupRow(row) ? (
@@ -180,6 +192,31 @@ const ParameterTable = ({ parameters }: { parameters: ParameterEntry[] }) => {
           virtual
           pagination={false}
           rowKey="Name"
+          rowSelection={{
+            columnWidth: CHECKBOX_COLUMN_WIDTH,
+            selectedRowKeys: checked,
+            onChange: keys =>
+              uiActions.setChecked(checkContext, keys.map(String)),
+            // Disabled also leaves group rows out of Select all.
+            getCheckboxProps: row =>
+              isGroupRow(row)
+                ? { disabled: true }
+                : { 'aria-label': `Select ${row.Name}` },
+            renderCell: (_checked, row, _index, checkbox) =>
+              !isGroupRow(row) && checkbox,
+            // The header checks every row shown, or clears them all.
+            columnTitle: checkbox => (
+              <Tooltip
+                title={
+                  checked.length === parameters.length
+                    ? 'Clear selection'
+                    : 'Select all'
+                }
+              >
+                <span>{checkbox}</span>
+              </Tooltip>
+            )
+          }}
           columns={columns}
           dataSource={rows}
           scroll={{ x: width, y: height - HEADER_HEIGHT }}

@@ -1,11 +1,10 @@
 import { Button, Flex, Tooltip } from 'antd';
-import { CopyOutlined, EditOutlined } from '@ant-design/icons';
+import { CopyOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import { folderOf, leafOf } from '../../utils/paths';
-import DeleteConfirm from './DeleteConfirm';
 
 interface DetailActionsProps {
   parameter: ParameterEntry;
@@ -48,7 +47,19 @@ const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
         </Flex>
       </Tooltip>
       <div style={{ marginLeft: 'auto' }}>
-        <DeleteConfirm name={parameter.Name} />
+        <Button
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() =>
+            uiActions.requestDelete({
+              kind: 'parameter',
+              label: parameter.Name,
+              names: [parameter.Name]
+            })
+          }
+        >
+          Delete
+        </Button>
       </div>
     </Flex>
   );

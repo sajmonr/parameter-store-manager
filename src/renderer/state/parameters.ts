@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { MAX_DELETES_PER_REQUEST } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
 import type { ApiError } from '../clients/call';
 import { parametersService } from '../services';
 import type { Parameter, ParameterMetadata } from '../services';
@@ -284,9 +285,9 @@ const withPut = (
   return { ...list, byName };
 };
 
-const without = (list: ParameterList, name: string): ParameterList => {
+const without = (list: ParameterList, names: string[]): ParameterList => {
   const byName = new Map(list.byName);
-  byName.delete(name);
+  names.forEach(name => byName.delete(name));
   return { ...list, byName };
 };
 
@@ -307,16 +308,39 @@ export const usePutParameter = () => {
   });
 };
 
-export const useDeleteParameter = () => {
+export interface DeleteResult {
+  deleted: string[];
+  // Names SSM didn't delete, or that were in a call that failed.
+  failed: string[];
+  // The first call that failed, if one did.
+  error: ApiError | null;
+}
+
+// Deletes the parameters, 10 per call. A failed call doesn't stop the
+// others; what it held is reported as failed.
+export const useDeleteParameters = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (names: string[]): Promise<DeleteResult> => {
       const key = currentKey();
-      const result = await parametersService.delete(name);
-      recordChange(key, name, 'deleted');
-      client.setQueryData<ParameterList>(
-        key,
-        list => list && without(list, name)
+      const result: DeleteResult = { deleted: [], failed: [], error: null };
+      await pAll(
+        chunk(names, MAX_DELETES_PER_REQUEST).map(batch => async () => {
+          try {
+            const { deleted, invalid } = await parametersService.delete(batch);
+            deleted.forEach(name => recordChange(key, name, 'deleted'));
+            client.setQueryData<ParameterList>(
+              key,
+              list => list && without(list, deleted)
+            );
+            result.deleted.push(...deleted);
+            result.failed.push(...invalid);
+          } catch (error) {
+            result.failed.push(...batch);
+            result.error ??= error as ApiError;
+          }
+        }),
+        { concurrency: 2 }
       );
       return result;
     }

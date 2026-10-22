@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import type { IpcMainInvokeEvent } from 'electron';
 import type { Contract } from '../../shared/contract';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type * as Aws from '../aws';
+import { setSource } from '../source';
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
 
@@ -93,6 +94,20 @@ describe('invokeEndpoint', () => {
     expect(sentInput()).toMatchObject({ WithDecryption: false });
   });
 
+  it('deletes up to 10 names and lists the ones that were not deleted', async () => {
+    send.mockResolvedValue({
+      DeletedParameters: ['/a'],
+      InvalidParameters: ['/missing']
+    });
+    await expect(
+      invoke('parameters.delete', { names: ['/a', '/missing'] })
+    ).resolves.toEqual({
+      ok: true,
+      result: { deleted: ['/a'], invalid: ['/missing'] }
+    });
+    expect(sentInput()).toEqual({ Names: ['/a', '/missing'] });
+  });
+
   it('filters parameters by the start of their name', async () => {
     send.mockResolvedValue({ Parameters: [] });
     await invoke('parameters.describe', { beginsWith: '/app/' });
@@ -110,7 +125,9 @@ describe('invokeEndpoint', () => {
       })
     );
 
-    await expect(invoke('parameters.delete', { name: '/a' })).resolves.toEqual({
+    await expect(
+      invoke('parameters.delete', { names: ['/a'] })
+    ).resolves.toEqual({
       ok: false,
       error: {
         name: 'ParameterNotFound',
@@ -137,6 +154,12 @@ describe('invokeEndpoint', () => {
       { name: '/a', type: 'String', value: 'x', overwrite: 'yes' }
     ],
     ['parameters.delete', {}],
+    ['parameters.delete', { names: [] }],
+    ['parameters.delete', { names: [''] }],
+    [
+      'parameters.delete',
+      { names: Array.from({ length: 11 }, (_, i) => `/p${i}`) }
+    ],
     ['settings.set', { unknown: 'x' }],
     ['settings.set', { theme: 'blue' }],
     ['settings.set', { defaultView: 'table' }],
@@ -243,6 +266,9 @@ describe('invokeEndpoint', () => {
   });
 
   it('lists the AWS profiles', async () => {
+    // The real list; the fake source, the default, lists made-up ones.
+    setSource('aws');
+    onTestFinished(() => setSource('fake'));
     await expect(invoke('aws.listProfiles')).resolves.toEqual({
       ok: true,
       result: {
@@ -291,7 +317,7 @@ describe('registerEndpoints', () => {
       senderFrame: { url: 'https://evil.example' }
     } as IpcMainInvokeEvent;
     const response = (await registered['parameters.delete']!(event, {
-      name: '/a'
+      names: ['/a']
     })) as { ok: boolean };
     expect(response.ok).toBe(false);
     expect(send).not.toHaveBeenCalled();
