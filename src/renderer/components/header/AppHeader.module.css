@@ -6,11 +6,23 @@
   border-bottom: 1px solid var(--ant-color-border-secondary);
 }
 
+/* Equal side columns keep the search centred; the right one never gets
+   narrower than the actions. */
 .row {
   height: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(200px, 540px) 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.center {
+  grid-column: 2;
+  display: flex;
+  min-width: 0;
 }
 
 .end {
-  margin-left: auto;
-  flex: none;
+  grid-column: 3;
+  justify-self: end;
 }
