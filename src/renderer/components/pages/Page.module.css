@@ -8,3 +8,8 @@
 .content {
   padding: 28px 40px;
 }
+
+/* Full width, with room below the last card. */
+.wide {
+  padding-bottom: 48px;
+}

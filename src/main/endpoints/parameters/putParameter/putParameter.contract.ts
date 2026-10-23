@@ -6,6 +6,9 @@ import { defineContract } from '../../../../shared/contract';
 export const PARAMETER_TYPES = ['String', 'SecureString'] as const;
 export type EditableParameterType = (typeof PARAMETER_TYPES)[number];
 
+// The key SSM encrypts a SecureString with when none is given.
+export const DEFAULT_KMS_KEY = 'alias/aws/ssm';
+
 export const isEditableType = (type: unknown): type is EditableParameterType =>
   (PARAMETER_TYPES as readonly unknown[]).includes(type);
 

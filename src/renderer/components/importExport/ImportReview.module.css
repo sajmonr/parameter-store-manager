@@ -1,0 +1,63 @@
+.fileIcon {
+  font-size: 20px;
+  color: var(--ant-color-primary);
+}
+
+/* Lets the file name shrink and truncate in the card header. */
+.fileTitle {
+  min-width: 0;
+  font-weight: normal;
+}
+
+.meta,
+.hint {
+  font-size: 12px;
+}
+
+.stat.stat {
+  margin: 0;
+  border-radius: 999px;
+}
+
+.list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px;
+}
+
+.dimmed {
+  opacity: 0.5;
+}
+
+.statusColumn {
+  flex: 0 0 84px;
+}
+
+.statusColumn :global(.ant-tag) {
+  margin: 0;
+}
+
+.name.name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.lock {
+  color: var(--ant-color-text-secondary);
+}
+
+.status {
+  margin-inline-end: auto;
+}

@@ -1,4 +1,4 @@
-// CSV export of parameters, fetched from AWS when it runs: the loaded list
+// Export of parameters to a file, fetched from AWS when it runs: the loaded list
 // may be out of date and may miss values whose load failed. It runs outside
 // any component, so it carries on whichever page is shown.
 import { create } from 'zustand';
@@ -8,10 +8,15 @@ import { feedback } from '../feedback';
 import { accountService, filesService, parametersService } from '../services';
 import type { ParameterMetadata } from '../services';
 import { describeError } from '../utils/awsErrors';
-import { exportFileName, parametersToCsv } from '../utils/csv';
+import { parametersToCsv } from '../utils/csv';
 import type { CsvParameter } from '../utils/csv';
+import { exportFileName } from '../utils/exportFileName';
+import { fileKeyId } from '../utils/importFile';
+import { toJsonExport } from '../utils/jsonExport';
+import type { ExportedParameter } from '../utils/jsonExport';
+import { isEditableType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { plural } from '../utils/plural';
-import { createPrefixMatcher, literalPrefix } from '../utils/search';
+import { createPathMatcher, literalPrefix } from '../utils/search';
 import { chunk, VALUES_BATCH_SIZE } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
 
@@ -20,9 +25,17 @@ export type ExportProgress =
   | { phase: 'values'; done: number; total: number }
   | { phase: 'saving' };
 
+export type FormatId = 'csv' | 'json';
+
+// The file a format writes. JSON leaves out StringLists, which Import can't
+// create yet.
+export const exportsType = (format: FormatId, type: string | undefined) =>
+  format === 'csv' || isEditableType(type);
+
 export interface ExportOptions {
-  // '' exports every parameter; otherwise the names that start with it,
-  // with the same wildcards as the search.
+  format: FormatId;
+  // '' exports every parameter; otherwise those under the path, or those a
+  // glob matches (see createPathMatcher).
   path: string;
   // Without them nothing is decrypted, so kms:Decrypt isn't needed.
   includeSecureValues: boolean;
@@ -65,7 +78,7 @@ const listParameters = async (
   { path, onProgress }: ExportRequest,
   check: Check
 ) => {
-  const matcher = createPrefixMatcher(path, getPathDelimiter());
+  const matcher = createPathMatcher(path, getPathDelimiter());
   const beginsWith = literalPrefix(path) || undefined;
   const listed: Listed[] = [];
   let nextToken: string | undefined;
@@ -114,6 +127,15 @@ const loadValues = async (
   return { fetched, deleted };
 };
 
+// A row as the JSON file holds it; only Strings and SecureStrings get here.
+const toExported = (row: CsvParameter): ExportedParameter => ({
+  name: row.Name,
+  type: row.Type as ExportedParameter['type'],
+  value: row.Value ?? null,
+  description: row.Description ?? '',
+  keyId: fileKeyId(row.KeyId)
+});
+
 // The account ID, or the profile name when it can't be read.
 const accountLabel = async () => {
   const id = await accountService.getId().catch(() => null);
@@ -123,7 +145,7 @@ const accountLabel = async () => {
 const exportParameters = async (
   request: ExportRequest
 ): Promise<ExportResult> => {
-  const { includeSecureValues, signal, onProgress } = request;
+  const { format, includeSecureValues, signal, onProgress } = request;
   const check = sourceCheck(signal);
   const region = getSettings().ssmRegion;
   const account = accountLabel();
@@ -149,17 +171,29 @@ const exportParameters = async (
         Description: p.Description,
         KeyId: secure ? p.KeyId : undefined
       };
-    });
+    })
+    .filter(row => exportsType(format, row.Type));
 
   onProgress({ phase: 'saving' });
+  const date = new Date();
   const fileName = exportFileName({
     account: await account,
     region,
     path: request.path,
-    date: new Date()
+    date,
+    extension: format
   });
+  const content =
+    format === 'csv'
+      ? parametersToCsv(rows)
+      : toJsonExport({
+          region,
+          decrypted: includeSecureValues,
+          date,
+          parameters: rows.map(toExported)
+        });
   check();
-  const filePath = await filesService.saveCsv(fileName, parametersToCsv(rows));
+  const filePath = await filesService.save(fileName, content);
   return { filePath, count: rows.length };
 };
 
@@ -172,6 +206,9 @@ export const describeProgress = (progress: ExportProgress) => {
   }
   return 'Saving…';
 };
+
+// The file name of a path from the save dialog, on any platform.
+const baseName = (filePath: string) => filePath.split(/[/\\]/).pop();
 
 export interface ExportState {
   running: boolean;
@@ -209,7 +246,9 @@ const start = async (options: ExportOptions) => {
     });
     // null when the save dialog was cancelled.
     if (filePath) {
-      feedback.message?.success(`Exported ${plural(count, 'parameter')}`);
+      feedback.notification?.success({
+        title: `Saved ${baseName(filePath)} (${plural(count, 'parameter')})`
+      });
     }
   } catch (error) {
     if (!current.signal.aborted) {

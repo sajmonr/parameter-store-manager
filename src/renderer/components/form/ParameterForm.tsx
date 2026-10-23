@@ -12,6 +12,7 @@ import {
 } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
+import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { EditableParameterType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { usePutParameter } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
@@ -29,7 +30,7 @@ import BreakablePath from '../common/BreakablePath';
 import Mono from '../common/Mono';
 import PaneHeader from '../detail/PaneHeader';
 import FolderPicker from './FolderPicker';
-import KmsKeySelect, { DEFAULT_KMS_KEY } from './KmsKeySelect';
+import KmsKeySelect from './KmsKeySelect';
 import styles from './ParameterForm.module.css';
 
 const typeOptions = [
