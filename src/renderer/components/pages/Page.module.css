@@ -13,3 +13,8 @@
 .wide {
   padding-bottom: 48px;
 }
+
+/* The Export / Import cards, above the panel they pick. */
+.modes {
+  margin-bottom: 16px;
+}
