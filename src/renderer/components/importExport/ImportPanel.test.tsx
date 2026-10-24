@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import * as api from '../../test/mockServices';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
+import { useUiStore } from '../../state/ui';
 import { NOT_AN_EXPORT } from '../../utils/importFile';
 import ImportPanel from './ImportPanel';
 
@@ -165,6 +166,20 @@ describe('ImportPanel', () => {
     expect(
       screen.queryByText(/This file was exported from/)
     ).not.toBeInTheDocument();
+  });
+
+  it('says which region parameters are imported into, and links to change it', async () => {
+    const user = userEvent.setup();
+    setup();
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Parameters are imported into us-east-1.'
+    );
+    await user.click(screen.getByRole('button', { name: 'Change region' }));
+    expect(useUiStore.getState()).toMatchObject({
+      page: 'settings',
+      settingsSection: 'aws'
+    });
   });
 
   it('narrows the list to a status when its count is clicked', async () => {

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Flex, Typography, Upload } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { GlobalOutlined, InboxOutlined } from '@ant-design/icons';
 import type { FormatId } from '../../state/export';
 import { useImportStore } from '../../state/import';
+import { useSettingsStore } from '../../state/settings';
+import { uiActions } from '../../state/ui';
 import type { ImportFile } from '../../utils/importFile';
 import FormatCards from './FormatCards';
 import { FORMATS, formatById } from './formats';
@@ -38,6 +40,7 @@ const ImportPanel = () => {
   const [file, setFile] = useState<LoadedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const importing = useImportStore(state => state.running);
+  const region = useSettingsStore(settings => settings.ssmRegion);
   const format = formatById(formatId);
   const extension = `.${format.id}`;
 
@@ -100,6 +103,27 @@ const ImportPanel = () => {
 
   return (
     <Flex vertical gap={16}>
+      {/* Where the parameters go: the region in Settings, never the file's. */}
+      <Alert
+        type="info"
+        showIcon
+        icon={<GlobalOutlined />}
+        title={
+          <span role="status">
+            Parameters are imported into <strong>{region}</strong>.
+          </span>
+        }
+        action={
+          <Button
+            type="link"
+            size="small"
+            disabled={importing}
+            onClick={() => uiActions.openSettings('aws')}
+          >
+            Change region
+          </Button>
+        }
+      />
       <Card
         title={
           <Flex vertical>
