@@ -6,11 +6,12 @@ import { uiActions } from '../../state/ui';
 import { useLocation } from '../../state/views';
 import { isEnvironmentLocation, isOtherLocation } from '../../utils/location';
 import type { Location, LocationContext } from '../../utils/location';
+import type { Comparison } from '../../utils/compare';
 import { folderChain } from '../../utils/paths';
 import { environmentColorOf, layoutPattern } from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
-import EnvironmentTabs from './EnvironmentTabs';
 import SelectionBar from './SelectionBar';
+import ServiceBar from './ServiceBar';
 import styles from './ParameterBreadcrumb.module.css';
 
 interface Crumb {
@@ -100,15 +101,18 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
 };
 
 // The location as a breadcrumb, each item going there, and the row count.
-// A service adds its environment tabs; Other paths says why names are there.
+// A service adds its environment tabs, or the compare filter with
+// `comparison`; Other paths says why names are there.
 // Checked rows add their actions at the end of the first row, which never
 // wraps: the breadcrumb and the hint shrink first. The tabs get a second row.
 const ParameterBreadcrumb = ({
   count,
-  checked
+  checked,
+  comparison = null
 }: {
   count: number;
   checked: string[];
+  comparison?: Comparison | null;
 }) => {
   const location = useLocation();
   const context = useLocationContext();
@@ -156,7 +160,7 @@ const ParameterBreadcrumb = ({
           <SelectionBar checked={checked} />
         </div>
       </div>
-      <EnvironmentTabs />
+      <ServiceBar comparison={comparison} />
     </div>
   );
 };

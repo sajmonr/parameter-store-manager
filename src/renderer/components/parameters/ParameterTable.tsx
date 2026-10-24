@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { GetRef, TableColumnsType } from 'antd';
 import { AppstoreOutlined, LockOutlined } from '@ant-design/icons';
@@ -95,12 +95,9 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
     [parameters, location, context]
   );
   const pageVisible = usePageVisible();
-  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const revealed = useUiStore(state => state.revealed);
   const [ref, { width, height }] = useElementSize();
   const tableRef = useRef<GetRef<typeof Table>>(null);
-
-  const toggleReveal = (name: string) =>
-    setRevealed(prev => ({ ...prev, [name]: !prev[name] }));
 
   // Also when the location changes, such as on a view switch: the selection
   // is kept but sits elsewhere in the new rows. Not on every row change, so
@@ -160,8 +157,8 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
           !isGroupRow(parameter) && (
             <ValueCell
               parameter={parameter}
-              revealed={!!revealed[parameter.Name]}
-              onToggleReveal={() => toggleReveal(parameter.Name)}
+              revealed={revealed.has(parameter.Name)}
+              onToggleReveal={() => uiActions.toggleReveal(parameter.Name)}
             />
           )
       },
