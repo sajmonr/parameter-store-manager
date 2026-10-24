@@ -5,6 +5,7 @@ import type { ExportedParameter } from '../utils/jsonExport';
 import {
   IMPORT_CONCURRENCY,
   IMPORT_SOURCE_CHANGED,
+  importDuration,
   importActions,
   useImportStore
 } from './import';
@@ -210,5 +211,15 @@ describe('importActions.run', () => {
     await running;
     uiActions.showPage('parameters');
     expect(useUiStore.getState().page).toBe('parameters');
+  });
+});
+
+describe('importDuration', () => {
+  it('estimates the time at 3 writes per second', () => {
+    expect(importDuration(1)).toBe('about 5 seconds');
+    expect(importDuration(100)).toBe('about 35 seconds');
+    expect(importDuration(180)).toBe('about 1 minute');
+    expect(importDuration(312)).toBe('about 2 minutes');
+    expect(importDuration(781)).toBe('about 4 minutes');
   });
 });

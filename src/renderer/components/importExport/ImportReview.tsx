@@ -12,7 +12,12 @@ import {
   Typography
 } from 'antd';
 import { CloseOutlined, LockOutlined } from '@ant-design/icons';
-import { importActions, useImportStore } from '../../state/import';
+import {
+  importActions,
+  importDuration,
+  SLOW_IMPORT_WRITES,
+  useImportStore
+} from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
 import { countStatuses, isWritten, planImport } from '../../utils/importPlan';
@@ -242,6 +247,14 @@ const ImportReview = ({
             skipped.
           </Typography.Text>
         </Flex>
+        {toWrite.length >= SLOW_IMPORT_WRITES && !importing && (
+          <Alert
+            type="warning"
+            showIcon
+            title={`This import writes ${plural(toWrite.length, 'parameter')}, which takes ${importDuration(toWrite.length)}.`}
+            description="AWS limits writes to 3 per second for the whole account, and you can't leave this page until it finishes."
+          />
+        )}
         {lastRun && failed.size > 0 && !importing && (
           <Alert
             type="error"

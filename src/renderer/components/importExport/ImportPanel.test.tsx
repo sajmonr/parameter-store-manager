@@ -208,6 +208,34 @@ describe('ImportPanel', () => {
     expect(list().getAllByRole('listitem')).toHaveLength(5);
   });
 
+  it('says how long a large import takes, counting what Overwrite adds', async () => {
+    const user = userEvent.setup();
+    setup();
+    const many = Array.from({ length: 99 }, (_, i) => ({
+      name: `/bulk/p${i}`,
+      type: 'String',
+      value: 'v'
+    }));
+    await upload(
+      user,
+      exportFile({
+        parameters: [
+          ...many,
+          { name: '/app/Changed', type: 'String', value: 'new' }
+        ]
+      })
+    );
+    await screen.findByText('backup.json');
+    const warning = () => screen.queryByText(/^This import writes/);
+
+    expect(warning()).not.toBeInTheDocument();
+    await user.click(screen.getByRole('switch', { name: /^Overwrite/ }));
+
+    expect(warning()).toHaveTextContent(
+      'This import writes 100 parameters, which takes about 35 seconds.'
+    );
+  });
+
   it('notes a file from another region', async () => {
     const user = userEvent.setup();
     setup();
