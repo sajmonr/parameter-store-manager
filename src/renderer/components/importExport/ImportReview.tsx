@@ -214,10 +214,10 @@ const ImportReview = ({
           />
         )}
         <ul className={styles.list} aria-label="Parameters in the file">
-          {!listed.length && (
+          {shown && !listed.length && (
             <li className={styles.empty}>
               <Typography.Text type="secondary">
-                No parameters are {STATUSES[shown!].label} now.
+                No parameters are {STATUSES[shown].label} now.
               </Typography.Text>
             </li>
           )}

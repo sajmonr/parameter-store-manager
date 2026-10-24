@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fromCsv, parametersToCsv, parseCsvExport, toCsv } from './csv';
-import { NOT_AN_EXPORT } from './importFile';
+import { NO_PARAMETERS, NOT_AN_EXPORT } from './importFile';
 
 describe('toCsv', () => {
   it('quotes fields with commas, quotes or line breaks', () => {
@@ -39,18 +39,33 @@ describe('fromCsv', () => {
       ['a', 'b,c', 'say "hi"', 'one\ntwo', 'x\r\ny', ''],
       ['', ' padded ']
     ];
-    expect(fromCsv(toCsv(rows))).toEqual(rows);
+    expect(fromCsv(toCsv(rows))).toEqual({ ok: true, rows });
   });
 
   it('takes LF line endings, a byte-order mark and no final line break', () => {
-    expect(fromCsv('\uFEFFa,b\nc,"d"')).toEqual([
-      ['a', 'b'],
-      ['c', 'd']
-    ]);
+    expect(fromCsv('\uFEFFa,b\nc,"d"')).toEqual({
+      ok: true,
+      rows: [
+        ['a', 'b'],
+        ['c', 'd']
+      ]
+    });
   });
 
-  it('fails on a quote that is never closed', () => {
-    expect(fromCsv('a,"b\n')).toBeNull();
+  it('reads an empty quoted field', () => {
+    expect(fromCsv('a,"",b\n""')).toEqual({
+      ok: true,
+      rows: [['a', '', 'b'], ['']]
+    });
+  });
+
+  it.each([
+    ['inside an unquoted field', 'a,b\nc,ab"cd"ef,g\n'],
+    ['after a closing quote', 'a,b\nc,"ab"cd\n'],
+    ['after leading spaces', 'a,b\nc, "d"\n'],
+    ['that is never closed', 'a,b\nc,"d\n']
+  ])('fails on a quote %s, naming its row', (_, text) => {
+    expect(fromCsv(text)).toEqual({ ok: false, row: 2 });
   });
 });
 
@@ -140,10 +155,26 @@ describe('parseCsvExport', () => {
   it.each([
     ['an empty file', ''],
     ['another header', 'name,value\r\n/a,x\r\n'],
-    ['a quote that is never closed', `${header}/a,"x,String,,\r\n`],
     ['JSON', '{"format": "parameter-store-manager"}']
   ])('rejects %s', (_, text) => {
     expect(errorOf(text)).toBe(NOT_AN_EXPORT);
+  });
+
+  it.each([
+    [
+      'a quote inside a value',
+      `${header}/app/Secret,ab"cd"ef,SecureString,,\r\n`
+    ],
+    ['a quote that is never closed', `${header}/a,"x,String,,\r\n`]
+  ])('rejects %s instead of changing the value', (_, text) => {
+    expect(errorOf(text)).toBe(
+      "Row 2 has a quote in the wrong place, so its values can't be read safely."
+    );
+  });
+
+  it('rejects a file with only the header', () => {
+    expect(errorOf(header)).toBe(NO_PARAMETERS);
+    expect(errorOf(`${header}\r\n\r\n`)).toBe(NO_PARAMETERS);
   });
 
   it('lists the invalid rows, numbered as a spreadsheet numbers them', () => {

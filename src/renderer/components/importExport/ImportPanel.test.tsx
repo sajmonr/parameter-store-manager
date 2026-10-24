@@ -6,7 +6,7 @@ import * as api from '../../test/mockServices';
 import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import { useUiStore } from '../../state/ui';
-import { NOT_AN_EXPORT } from '../../utils/importFile';
+import { NO_PARAMETERS, NOT_AN_EXPORT } from '../../utils/importFile';
 import ImportPanel from './ImportPanel';
 
 vi.mock('../../services', () => import('../../test/mockServices'));
@@ -114,6 +114,11 @@ describe('ImportPanel', () => {
   it.each([
     ['a file that isn’t JSON', 'name,value', NOT_AN_EXPORT],
     ['another app’s JSON', '{"parameters": []}', NOT_AN_EXPORT],
+    [
+      'an export with no parameters',
+      exportFile({ parameters: [] }),
+      NO_PARAMETERS
+    ],
     [
       'invalid entries',
       exportFile({

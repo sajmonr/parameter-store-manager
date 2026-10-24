@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NOT_AN_EXPORT } from './importFile';
+import { NO_PARAMETERS, NOT_AN_EXPORT } from './importFile';
 import { parseJsonExport, toJsonExport } from './jsonExport';
 import type { ExportedParameter } from './jsonExport';
 
@@ -122,6 +122,10 @@ describe('parseJsonExport', () => {
     ['an array', '[]']
   ])('rejects %s', (_, text) => {
     expect(errorOf(text)).toBe(NOT_AN_EXPORT);
+  });
+
+  it('rejects a file with no parameters', () => {
+    expect(errorOf(file([]))).toBe(NO_PARAMETERS);
   });
 
   it('rejects a version it can’t read', () => {

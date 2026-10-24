@@ -6,6 +6,7 @@ import {
   fileKeyId,
   invalidEntries,
   nameProblem,
+  NO_PARAMETERS,
   NOT_AN_EXPORT
 } from './importFile';
 import type { ImportEntry, ParseResult } from './importFile';
@@ -111,6 +112,7 @@ export const parseJsonExport = (text: string): ParseResult => {
     return problem ? [`entry ${index + 1}: ${problem}`] : [];
   });
   if (problems.length) return invalidEntries(problems);
+  if (!data.parameters.length) return { ok: false, error: NO_PARAMETERS };
 
   const parameters = (data.parameters as Record<string, unknown>[]).map(
     (entry): ImportEntry => ({

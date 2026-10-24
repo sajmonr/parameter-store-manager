@@ -30,6 +30,8 @@ export type ParseResult =
 export const NOT_AN_EXPORT =
   "This file isn't a Parameter Store Manager export.";
 
+export const NO_PARAMETERS = 'This file has no parameters to import.';
+
 // The key as a file stores it: null when SSM would pick the same one.
 export const fileKeyId = (keyId: string | null | undefined) =>
   !keyId || keyId === DEFAULT_KMS_KEY ? null : keyId;
