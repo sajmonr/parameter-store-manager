@@ -21,6 +21,7 @@ import type {
   Comparison
 } from '../../utils/compare';
 import { leafOf } from '../../utils/paths';
+import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
@@ -97,7 +98,15 @@ const ValueCell = ({
     <div
       role="cell"
       className={cx(styles.cell, styles.present, selected && styles.selected)}
+      tabIndex={0}
       onClick={() => uiActions.selectParameter(Name)}
+      onKeyDown={event => {
+        // Not from the reveal button inside.
+        if (event.target !== event.currentTarget) return;
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        uiActions.selectParameter(Name);
+      }}
     >
       {value}
       {secure && (
@@ -211,14 +220,28 @@ const emptyStateOf = (comparison: Comparison, filter: CompareFilter) => {
       <EmptyState icon={<SearchOutlined />} text="No keys match the search" />
     );
   }
+  if (filter === 'missing') {
+    return (
+      <EmptyState
+        icon={<CheckCircleOutlined />}
+        text="Every key is set in each environment"
+      />
+    );
+  }
+  // Values that didn't load weren't compared, so they may differ.
+  const uncompared = comparison.keys.filter(k => k.unreadable.length).length;
+  if (uncompared) {
+    return (
+      <EmptyState
+        icon={<WarningOutlined />}
+        text={`No differences in the values that loaded. ${plural(uncompared, 'key')} couldn't be compared.`}
+      />
+    );
+  }
   return (
     <EmptyState
       icon={<CheckCircleOutlined />}
-      text={
-        filter === 'differs'
-          ? 'Every key has the same value in each environment'
-          : 'Every key is set in each environment'
-      }
+      text="Every key has the same value in each environment"
     />
   );
 };

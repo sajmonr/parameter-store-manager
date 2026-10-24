@@ -63,10 +63,10 @@ const rowOf = (key: string) =>
 const modeSwitch = () => screen.getByLabelText('Mode');
 const filter = () => screen.getByLabelText('Compare filter');
 
-const startComparing = async () => {
+const startComparing = async (loaded = 'Port') => {
   const user = userEvent.setup();
   renderApp();
-  await screen.findByText('Port');
+  await screen.findByText(loaded);
   await user.click(within(modeSwitch()).getByText('Compare'));
   await screen.findByRole('table', { name: 'Compare environments' });
   return user;
@@ -187,6 +187,61 @@ describe('Compare mode', () => {
     expect(
       screen.queryByRole('table', { name: 'Compare environments' })
     ).toBeNull();
+  });
+
+  it('opens a value from the keyboard', async () => {
+    const user = await startComparing();
+
+    const cell = within(rowOf('Flag'))
+      .getByText('off')
+      .closest<HTMLElement>('[role="cell"]')!;
+    act(() => cell.focus());
+    await user.keyboard('{Enter}');
+    expect(useUiStore.getState().selectedName).toBe('/production/compass/Flag');
+
+    // The reveal button inside a cell only reveals.
+    act(() => uiActions.closePane());
+    const reveal = within(rowOf('Secret')).getAllByLabelText('Reveal')[0]!;
+    act(() => reveal.focus());
+    await user.keyboard('{Enter}');
+    expect(useUiStore.getState().selectedName).toBeNull();
+    expect(useUiStore.getState().revealed.size).toBe(1);
+  });
+
+  it("doesn't claim equal values when some weren't compared", async () => {
+    api.serveParameters([
+      makeParameter('/development/compass/Secret', {
+        Value: 'a',
+        Type: 'SecureString'
+      }),
+      makeParameter('/staging/compass/Secret', {
+        Value: undefined,
+        Type: 'SecureString'
+      }),
+      makeParameter('/production/compass/Secret', {
+        Value: 'a',
+        Type: 'SecureString'
+      })
+    ]);
+    const user = await startComparing('Secret');
+
+    expect(
+      within(rowOf('Secret')).getByText("Can't decrypt")
+    ).toBeInTheDocument();
+    await user.click(within(filter()).getByText('Differs'));
+    expect(
+      screen.getByText(
+        "No differences in the values that loaded. 1 key couldn't be compared."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('masks revealed values again in another profile or region', async () => {
+    await startComparing();
+
+    act(() => uiActions.toggleReveal('/development/compass/Secret'));
+    await act(() => saveSettingsAndApply({ ssmRegion: 'eu-west-1' }));
+    expect(useUiStore.getState().revealed.size).toBe(0);
   });
 
   it('goes back to the table when grouping is turned off', async () => {

@@ -200,6 +200,10 @@ const setCompare = (compare: boolean) => {
 const setCompareFilter = (compareFilter: CompareFilter) =>
   set({ compareFilter });
 
+// Masks every SecureString again: another profile or region can have a
+// parameter with the same name.
+const clearRevealed = () => set({ revealed: initialUiState.revealed });
+
 const toggleReveal = (name: string) =>
   set(state => {
     const revealed = new Set(state.revealed);
@@ -279,6 +283,7 @@ export const uiActions = {
   setCompare,
   setCompareFilter,
   toggleReveal,
+  clearRevealed,
   requestDelete,
   cancelDelete,
   finishDelete,

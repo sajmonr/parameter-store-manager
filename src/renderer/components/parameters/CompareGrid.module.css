@@ -87,6 +87,11 @@
   cursor: pointer;
 }
 
+.present:focus-visible {
+  outline: 2px solid var(--ant-color-primary);
+  outline-offset: -2px;
+}
+
 .present:hover {
   background: var(--ant-color-fill-quaternary);
 }

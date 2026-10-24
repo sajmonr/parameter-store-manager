@@ -7,7 +7,7 @@ import { uiActions } from './ui';
 
 // Parameters and KMS keys are loaded per profile and region, so a change
 // there loads them again by itself. The open pane and the folder don't carry
-// over (the view and service do), and a new delimiter makes the expanded
+// over (the view and service do), nor do revealed values, and a new delimiter makes the expanded
 // folders meaningless. Turning grouping off goes back to the table. A removed
 // service or environment needs nothing here: the location is validated
 // whenever it is read.
@@ -21,6 +21,7 @@ export const saveSettingsAndApply = async (values: Partial<Settings>) => {
   if (delimiterChanged) uiActions.collapseAll();
   // Only a service compares environments.
   if (!after.structure.enabled) uiActions.setCompare(false);
+  if (sourceChanged) uiActions.clearRevealed();
   if (sourceChanged || delimiterChanged) {
     uiActions.closePane();
     uiActions.resetLocation();
