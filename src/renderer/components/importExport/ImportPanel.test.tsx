@@ -7,6 +7,7 @@ import { renderWithProviders } from '../../test/render';
 import { createTestState, makeParameter } from '../../test/testState';
 import { useUiStore } from '../../state/ui';
 import { NO_PARAMETERS, NOT_AN_EXPORT } from '../../utils/importFile';
+import { MASK } from '../common/MaskedValue';
 import ImportPanel from './ImportPanel';
 
 vi.mock('../../services', () => import('../../test/mockServices'));
@@ -14,7 +15,12 @@ vi.mock('../../services', () => import('../../test/mockServices'));
 const loaded = [
   makeParameter('/app/Same', { Value: 'same' }),
   makeParameter('/app/Changed', { Value: 'old' }),
-  makeParameter('/app/Typed', { Value: 'x' })
+  makeParameter('/app/Typed', { Value: 'x' }),
+  makeParameter('/app/Token', {
+    Type: 'SecureString',
+    Value: 'old-secret',
+    KeyId: 'alias/aws/ssm'
+  })
 ];
 
 const exportFile = (extra: object = {}) =>
@@ -241,6 +247,56 @@ describe('ImportPanel', () => {
     );
   });
 
+  it('shows the values that change, with SecureStrings masked until revealed', async () => {
+    const user = userEvent.setup();
+    setup();
+    await upload(
+      user,
+      exportFile({
+        parameters: [
+          { name: '/app/New', type: 'String', value: 'fresh' },
+          {
+            name: '/app/Changed',
+            type: 'String',
+            value: 'new',
+            description: 'Now described'
+          },
+          {
+            name: '/app/Token',
+            type: 'SecureString',
+            value: 'new-secret',
+            keyId: 'alias/app'
+          },
+          { name: '/app/Same', type: 'String', value: 'same' }
+        ]
+      })
+    );
+    await screen.findByText('backup.json');
+
+    // A new parameter shows its value.
+    expect(within(rowOf('/app/New')).getByText('fresh')).toBeVisible();
+    // A changed one shows each field that changes, old then new.
+    const changed = within(rowOf('/app/Changed'));
+    expect(changed.getByText('old')).toBeVisible();
+    expect(changed.getByText('new')).toBeVisible();
+    expect(changed.getByText('none')).toBeVisible();
+    expect(changed.getByText('Now described')).toBeVisible();
+    // An unchanged one shows nothing more.
+    expect(within(rowOf('/app/Same')).queryByText('same')).toBeNull();
+
+    // SecureString values stay masked until revealed; the key isn't secret.
+    const token = within(rowOf('/app/Token'));
+    expect(token.getAllByText(MASK)).toHaveLength(2);
+    expect(token.queryByText('old-secret')).toBeNull();
+    expect(token.getByText('alias/aws/ssm')).toBeVisible();
+    expect(token.getByText('alias/app')).toBeVisible();
+    await user.click(token.getByRole('button', { name: 'Reveal' }));
+    expect(token.getByText('old-secret')).toBeVisible();
+    expect(token.getByText('new-secret')).toBeVisible();
+    await user.click(token.getByRole('button', { name: 'Hide' }));
+    expect(token.queryByText('new-secret')).toBeNull();
+  });
+
   it('notes a file from another region', async () => {
     const user = userEvent.setup();
     setup();
@@ -335,7 +391,7 @@ describe('ImportPanel', () => {
 
     expect(await screen.findByText('Imported 1 of 2. 1 failed.')).toBeVisible();
     expect(within(rowOf('/app/Changed')).getByText('failed')).toBeVisible();
-    await user.hover(rowOf('/app/Changed'));
+    await user.hover(within(rowOf('/app/Changed')).getByText('/app/Changed'));
     expect(
       await screen.findByText('AccessDeniedException: Not allowed')
     ).toBeInTheDocument();

@@ -56,7 +56,7 @@
   margin: 0;
   padding: 4px 0;
   list-style: none;
-  max-height: 260px;
+  max-height: 360px;
   overflow-y: auto;
   border: 1px solid var(--ant-color-border-secondary);
   border-radius: var(--ant-border-radius);
@@ -64,9 +64,51 @@
 
 .row {
   display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 12px;
+}
+
+.rowMain {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 12px;
+  min-width: 0;
+}
+
+/* What a new or changed row writes, under its name. */
+.details {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  /* Lines up with the name, after the status column. */
+  padding-inline-start: 92px;
+  padding-bottom: 4px;
+  font-size: 12px;
+}
+
+.fieldLabel.fieldLabel {
+  font-size: 12px;
+}
+
+.change {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.value.value {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.arrow {
+  flex: none;
+  font-size: 10px;
+  color: var(--ant-color-text-tertiary);
 }
 
 .dimmed {

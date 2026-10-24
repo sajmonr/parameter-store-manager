@@ -10,11 +10,6 @@ import type { ImportEntry } from './importFile';
 export type ImportStatus =
   'new' | 'changed' | 'unchanged' | 'skipped' | 'typeChange' | 'unsupported';
 
-export interface ImportRow {
-  entry: ImportEntry;
-  status: ImportStatus;
-}
-
 // The fields of a loaded parameter the import compares.
 export interface Existing {
   Type?: string;
@@ -23,30 +18,52 @@ export interface Existing {
   KeyId?: string;
 }
 
-const statusOf = (
-  entry: ImportEntry,
-  existing: Existing | undefined
-): ImportStatus => {
-  if (entry.type === 'StringList') return 'unsupported';
-  if (entry.value === null) return 'skipped';
-  if (!existing) return 'new';
-  if (existing.Type !== entry.type) return 'typeChange';
-  const same =
-    existing.Value === entry.value &&
-    (existing.Description ?? '') === entry.description &&
-    (entry.type !== 'SecureString' ||
-      fileKeyId(existing.KeyId) === entry.keyId);
-  return same ? 'unchanged' : 'changed';
+// The fields that differ between a changed entry and its parameter.
+export type ChangedField = 'value' | 'description' | 'keyId';
+
+export interface ImportRow {
+  entry: ImportEntry;
+  status: ImportStatus;
+  // The loaded parameter of the same name, if there is one.
+  existing?: Existing;
+  // Set for changed entries only.
+  changes: ChangedField[];
+}
+
+const changesOf = (entry: ImportEntry, existing: Existing): ChangedField[] => {
+  const changes: ChangedField[] = [];
+  if (existing.Value !== entry.value) changes.push('value');
+  if ((existing.Description ?? '') !== entry.description) {
+    changes.push('description');
+  }
+  if (
+    entry.type === 'SecureString' &&
+    fileKeyId(existing.KeyId) !== entry.keyId
+  ) {
+    changes.push('keyId');
+  }
+  return changes;
+};
+
+const rowOf = (entry: ImportEntry, existing?: Existing): ImportRow => {
+  const row = (status: ImportStatus, changes: ChangedField[] = []) => ({
+    entry,
+    status,
+    existing,
+    changes
+  });
+  if (entry.type === 'StringList') return row('unsupported');
+  if (entry.value === null) return row('skipped');
+  if (!existing) return row('new');
+  if (existing.Type !== entry.type) return row('typeChange');
+  const changes = changesOf(entry, existing);
+  return changes.length ? row('changed', changes) : row('unchanged');
 };
 
 export const planImport = (
   entries: ImportEntry[],
   byName: ReadonlyMap<string, Existing>
-): ImportRow[] =>
-  entries.map(entry => ({
-    entry,
-    status: statusOf(entry, byName.get(entry.name))
-  }));
+): ImportRow[] => entries.map(entry => rowOf(entry, byName.get(entry.name)));
 
 // New parameters are always written; changed ones only with Overwrite.
 export const isWritten = (status: ImportStatus, overwrite: boolean) =>

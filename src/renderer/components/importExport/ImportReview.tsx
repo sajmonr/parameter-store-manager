@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
@@ -11,7 +12,12 @@ import {
   Tooltip,
   Typography
 } from 'antd';
-import { CloseOutlined, LockOutlined } from '@ant-design/icons';
+import {
+  ArrowRightOutlined,
+  CloseOutlined,
+  LockOutlined
+} from '@ant-design/icons';
+import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import {
   importActions,
   importDuration,
@@ -20,10 +26,13 @@ import {
 } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
+import { fileKeyId } from '../../utils/importFile';
 import { countStatuses, isWritten, planImport } from '../../utils/importPlan';
 import type { ImportRow, ImportStatus } from '../../utils/importPlan';
 import { plural } from '../../utils/plural';
+import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
+import RevealButton from '../common/RevealButton';
 import { formatById } from './formats';
 import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
@@ -296,8 +305,130 @@ const ImportReview = ({
 
 // One entry of the file. Entries that won't be written are dimmed; failed
 // ones show the AWS error on hover.
+const KEY_LABEL = 'KMS key';
+
+// A KMS key as SSM shows it: null is the default key.
+const keyName = (keyId: string | null | undefined) =>
+  fileKeyId(keyId) ?? DEFAULT_KMS_KEY;
+
+// One field of a row: its new value, after the old one when it changes.
+// An empty value shows as "none"; an old value that didn't load (null)
+// shows as "…", as in the table.
+const FieldChange = ({
+  label,
+  from,
+  to,
+  secure = false,
+  revealed = false,
+  action
+}: {
+  label: string;
+  from?: string | null;
+  to: string;
+  secure?: boolean;
+  revealed?: boolean;
+  action?: ReactNode;
+}) => {
+  const show = (text: string | null, old: boolean) =>
+    text === null || text ? (
+      // MaskedValue shows "…" for undefined.
+      <MaskedValue
+        value={text ?? undefined}
+        secure={secure}
+        revealed={revealed}
+        ellipsis={{
+          tooltip: (secure && !revealed) || text === null ? undefined : text
+        }}
+        type={old ? 'secondary' : undefined}
+        delete={old}
+        className={styles.value}
+      />
+    ) : (
+      <Typography.Text type="secondary" italic className={styles.value}>
+        none
+      </Typography.Text>
+    );
+  return (
+    <>
+      <Typography.Text type="secondary" className={styles.fieldLabel}>
+        {label}
+      </Typography.Text>
+      <span className={styles.change}>
+        {from !== undefined && (
+          <>
+            {show(from, true)}
+            <ArrowRightOutlined className={styles.arrow} aria-label="to" />
+          </>
+        )}
+        {show(to, false)}
+        {action}
+      </span>
+    </>
+  );
+};
+
+// What a new or changed entry would write: the value of a new one, and the
+// fields that change of a changed one.
+const RowDetails = ({ row }: { row: ImportRow }) => {
+  const [revealed, setRevealed] = useState(false);
+  const { entry, status, existing, changes } = row;
+  const secure = entry.type === 'SecureString';
+  const reveal = secure ? (
+    <RevealButton
+      revealed={revealed}
+      onToggle={() => setRevealed(shown => !shown)}
+    />
+  ) : undefined;
+
+  if (status === 'new') {
+    return (
+      <div className={styles.details}>
+        <FieldChange
+          label="Value"
+          to={entry.value!}
+          secure={secure}
+          revealed={revealed}
+          action={reveal}
+        />
+      </div>
+    );
+  }
+  if (status !== 'changed' || !existing) return null;
+  return (
+    <div className={styles.details}>
+      {changes.includes('value') && (
+        <FieldChange
+          label="Value"
+          // Missing when its value failed to load.
+          from={existing.Value ?? null}
+          to={entry.value!}
+          secure={secure}
+          revealed={revealed}
+          action={reveal}
+        />
+      )}
+      {changes.includes('description') && (
+        <FieldChange
+          label="Description"
+          from={existing.Description ?? ''}
+          to={entry.description}
+        />
+      )}
+      {changes.includes('keyId') && (
+        <FieldChange
+          label={KEY_LABEL}
+          from={keyName(existing.KeyId)}
+          to={keyName(entry.keyId)}
+        />
+      )}
+    </div>
+  );
+};
+
+// One entry of the file. Entries that won't be written are dimmed; failed
+// ones show the AWS error on hover.
 const ReviewRow = ({
-  row: { entry, status },
+  row,
   written,
   error
 }: {
@@ -305,11 +436,12 @@ const ReviewRow = ({
   written: boolean;
   error?: string;
 }) => {
+  const { entry, status } = row;
   const { label, color, tooltip } = STATUSES[status];
   const classes = [styles.row];
   if (!written) classes.push(styles.dimmed);
-  const content = (
-    <li className={classes.join(' ')}>
+  const main = (
+    <div className={styles.rowMain}>
       <span className={styles.statusColumn}>
         {error ? (
           <Tag color="red">failed</Tag>
@@ -329,9 +461,14 @@ const ReviewRow = ({
       {entry.type === 'SecureString' && (
         <LockOutlined aria-label="SecureString" className={styles.lock} />
       )}
+    </div>
+  );
+  return (
+    <li className={classes.join(' ')}>
+      {error ? <Tooltip title={error}>{main}</Tooltip> : main}
+      <RowDetails row={row} />
     </li>
   );
-  return error ? <Tooltip title={error}>{content}</Tooltip> : content;
 };
 
 export default ImportReview;

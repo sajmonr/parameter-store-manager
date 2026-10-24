@@ -83,6 +83,42 @@ describe('planImport', () => {
   });
 });
 
+describe('planImport changes', () => {
+  it('lists the fields a changed entry changes, with the loaded parameter', () => {
+    const existing = {
+      Type: 'SecureString',
+      Value: 'old',
+      Description: 'd',
+      KeyId: 'alias/aws/ssm'
+    };
+    const [row] = planImport(
+      [
+        entry('/s', {
+          type: 'SecureString',
+          value: 'new',
+          description: 'd',
+          keyId: 'alias/app'
+        })
+      ],
+      new Map([['/s', existing]])
+    );
+    expect(row).toMatchObject({
+      status: 'changed',
+      existing,
+      changes: ['value', 'keyId']
+    });
+  });
+
+  it('lists no changes for other statuses', () => {
+    const [created, same] = planImport(
+      [entry('/new'), entry('/same')],
+      new Map([['/same', { Type: 'String', Value: 'v' }]])
+    );
+    expect(created).toMatchObject({ status: 'new', changes: [] });
+    expect(same).toMatchObject({ status: 'unchanged', changes: [] });
+  });
+});
+
 describe('isWritten', () => {
   it('writes new parameters, and changed ones only with Overwrite', () => {
     expect(isWritten('new', false)).toBe(true);
