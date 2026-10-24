@@ -167,6 +167,32 @@ describe('ImportPanel', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('narrows the list to a status when its count is clicked', async () => {
+    const user = userEvent.setup();
+    setup();
+    await upload(user, exportFile());
+    await screen.findByText('backup.json');
+    const list = () =>
+      within(screen.getByRole('list', { name: 'Parameters in the file' }));
+    const pill = (name: string) =>
+      screen.getByRole('button', { name: new RegExp(`^${name}$`) });
+
+    await user.click(pill('1 changed'));
+
+    expect(pill('1 changed')).toHaveAttribute('aria-pressed', 'true');
+    expect(list().getAllByRole('listitem')).toHaveLength(1);
+    expect(list().getByText('/app/Changed')).toBeVisible();
+    // Only what is shown changes, not what is imported.
+    expect(importButton()).toHaveTextContent('Import 1 parameter');
+
+    await user.click(pill('1 new'));
+    expect(list().getByText('/app/New')).toBeVisible();
+    expect(list().queryByText('/app/Changed')).not.toBeInTheDocument();
+
+    await user.click(pill('1 new'));
+    expect(list().getAllByRole('listitem')).toHaveLength(5);
+  });
+
   it('notes a file from another region', async () => {
     const user = userEvent.setup();
     setup();

@@ -36,7 +36,7 @@ export const FORMATS: Format[] = [
     id: 'json',
     label: 'JSON',
     icon: <CodeOutlined />,
-    description: 'Every field, with the region and time of the export.',
+    description: 'For structured backups and restores.',
     canExport: true,
     canImport: true,
     parse: parseJsonExport,
@@ -46,12 +46,6 @@ export const FORMATS: Format[] = [
 
 export const formatById = (id: FormatId) =>
   FORMATS.find(format => format.id === id)!;
-
-// "Export only", "Import only" or "Export · Import".
-export const formatTag = ({ canExport, canImport }: Format) => {
-  if (canExport && canImport) return 'Export · Import';
-  return canExport ? 'Export only' : 'Import only';
-};
 
 export type Mode = 'export' | 'import';
 

@@ -18,20 +18,6 @@ const exportOnly: Format = {
 const formats = [exportOnly, FORMATS[1]!];
 
 describe('FormatCards', () => {
-  it('tags each format with what it can do', () => {
-    render(
-      <FormatCards
-        mode="export"
-        value="json"
-        onChange={vi.fn()}
-        formats={formats}
-      />
-    );
-
-    expect(screen.getByText('Export only')).toBeVisible();
-    expect(screen.getByText('Export · Import')).toBeVisible();
-  });
-
   it('shows a format Import can’t read, dimmed and not selectable', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

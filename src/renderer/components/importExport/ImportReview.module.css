@@ -19,6 +19,39 @@
   border-radius: 999px;
 }
 
+/* A count that narrows the list to its status. */
+.statButton {
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.statButton:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: 1px;
+}
+
+.statButton[aria-pressed='true'] .stat {
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.statButton:disabled {
+  cursor: default;
+}
+
+/* While one status is picked, the others step back. */
+.statInactive {
+  opacity: 0.5;
+}
+
+.empty {
+  padding: 8px 12px;
+}
+
 .list {
   margin: 0;
   padding: 4px 0;

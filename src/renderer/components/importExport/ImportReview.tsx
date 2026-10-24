@@ -98,6 +98,9 @@ const ImportReview = ({
   // The AWS error of each entry the last run failed to write, by name.
   const [failed, setFailed] = useState<ReadonlyMap<string, string>>(new Map());
   const [lastRun, setLastRun] = useState<RunResult | null>(null);
+  // The status the list is narrowed to, picked by clicking its count. Only
+  // what is shown changes, not what is imported.
+  const [shown, setShown] = useState<ImportStatus | null>(null);
 
   const { parameters, exportedAt } = file.data;
   // Written entries show as unchanged once the run has saved them.
@@ -108,6 +111,7 @@ const ImportReview = ({
   const counts = countStatuses(rows);
   const toWrite = rows.filter(row => isWritten(row.status, overwrite));
   const retryable = toWrite.filter(row => failed.has(row.entry.name));
+  const listed = shown ? rows.filter(row => row.status === shown) : rows;
   const fileRegion = file.data.region;
   const meta = [
     plural(parameters.length, 'parameter'),
@@ -172,16 +176,30 @@ const ImportReview = ({
       }
     >
       <Flex vertical gap={16}>
-        <Flex gap={8} wrap aria-label="Summary">
+        <Flex gap={8} wrap role="group" aria-label="Summary">
           {STAT_ORDER.filter(
             status => ALWAYS_COUNTED.has(status) || counts[status]
-          ).map(status => (
-            <Tooltip key={status} title={STATUSES[status].tooltip}>
-              <Tag color={STATUSES[status].color} className={styles.stat}>
-                {counts[status].toLocaleString()} {STATUSES[status].label}
-              </Tag>
-            </Tooltip>
-          ))}
+          ).map(status => {
+            const active = shown === status;
+            const classes = [styles.statButton];
+            if (shown && !active) classes.push(styles.statInactive);
+            return (
+              <Tooltip key={status} title={STATUSES[status].tooltip}>
+                <button
+                  type="button"
+                  className={classes.join(' ')}
+                  aria-pressed={active}
+                  // A status that has gone to 0 can still be turned off.
+                  disabled={!counts[status] && !active}
+                  onClick={() => setShown(active ? null : status)}
+                >
+                  <Tag color={STATUSES[status].color} className={styles.stat}>
+                    {counts[status].toLocaleString()} {STATUSES[status].label}
+                  </Tag>
+                </button>
+              </Tooltip>
+            );
+          })}
         </Flex>
         {fileRegion && fileRegion !== region && (
           <Alert
@@ -191,7 +209,14 @@ const ImportReview = ({
           />
         )}
         <ul className={styles.list} aria-label="Parameters in the file">
-          {rows.map(row => (
+          {!listed.length && (
+            <li className={styles.empty}>
+              <Typography.Text type="secondary">
+                No parameters are {STATUSES[shown!].label} now.
+              </Typography.Text>
+            </li>
+          )}
+          {listed.map(row => (
             <ReviewRow
               key={row.entry.name}
               row={row}

@@ -1,6 +1,6 @@
-import { Tag, Tooltip, Typography } from 'antd';
+import { Tooltip, Typography } from 'antd';
 import type { FormatId } from '../../state/export';
-import { FORMATS, formatTag, isAvailable } from './formats';
+import { FORMATS, isAvailable } from './formats';
 import type { Format, Mode } from './formats';
 import styles from './FormatCards.module.css';
 
@@ -45,7 +45,6 @@ const FormatCards = ({
           <span className={styles.header}>
             <span className={styles.icon}>{format.icon}</span>
             <Typography.Text strong>{format.label}</Typography.Text>
-            <Tag className={styles.tag}>{formatTag(format)}</Tag>
           </span>
           <Typography.Text type="secondary" className={styles.description}>
             {format.description}
