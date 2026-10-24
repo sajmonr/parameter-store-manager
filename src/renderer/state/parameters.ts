@@ -2,7 +2,7 @@
 // Query. A load streams its pages and values into the query cache, so the
 // table fills in while it runs.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryFunctionContext } from '@tanstack/react-query';
+import type { QueryClient, QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { MAX_DELETES_PER_REQUEST } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
@@ -291,20 +291,30 @@ const without = (list: ParameterList, names: string[]): ParameterList => {
   return { ...list, byName };
 };
 
-// Creates a parameter, or with `overwrite` saves a new version of one.
+// Creates a parameter, or with `overwrite` saves a new version of one, and
+// shows it in the loaded list. Every save in the app goes through here.
+export const putParameter = async (
+  client: QueryClient,
+  request: PutParameterRequest
+) => {
+  const key = currentKey();
+  const result = await parametersService.put(request);
+  recordChange(key, request.name, 'created');
+  client.setQueryData<ParameterList>(
+    key,
+    list => list && withPut(list, request, result.version)
+  );
+  return result;
+};
+
+// Loads the current profile and region again, for code outside components.
+export const refreshParameters = (client: QueryClient) =>
+  client.refetchQueries({ queryKey: currentKey() });
+
 export const usePutParameter = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (request: PutParameterRequest) => {
-      const key = currentKey();
-      const result = await parametersService.put(request);
-      recordChange(key, request.name, 'created');
-      client.setQueryData<ParameterList>(
-        key,
-        list => list && withPut(list, request, result.version)
-      );
-      return result;
-    }
+    mutationFn: (request: PutParameterRequest) => putParameter(client, request)
   });
 };
 

@@ -1,9 +1,8 @@
 import { Flex, Select, Typography } from 'antd';
 import type { SelectProps } from 'antd';
 import { useKmsAliases } from '../../state/kms';
+import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import Mono from '../common/Mono';
-
-export const DEFAULT_KMS_KEY = 'alias/aws/ssm';
 
 const isAwsManaged = (alias: string) => alias.startsWith('alias/aws/');
 

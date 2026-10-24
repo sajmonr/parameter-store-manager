@@ -313,7 +313,7 @@ describe('pages', () => {
 
   it('keeps exporting on another page, showing it in the rail', async () => {
     const user = userEvent.setup();
-    api.filesService.saveCsv.mockResolvedValue('/Downloads/export.csv');
+    api.filesService.save.mockResolvedValue('/Downloads/export.csv');
     renderApp();
     await screen.findByText('Password');
     let lastPage!: (page: { parameters: typeof parameters }) => void;
@@ -324,7 +324,9 @@ describe('pages', () => {
     );
 
     await user.click(railButton('Import & export'));
-    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(
+      screen.getByRole('button', { name: /^Export .* as CSV$/ })
+    );
     await user.click(railButton('Parameters'));
     // It fades out, but stops showing at once.
     const busyDot = () =>
@@ -335,7 +337,7 @@ describe('pages', () => {
 
     lastPage({ parameters });
     expect(
-      await screen.findByText('Exported 4 parameters')
+      await screen.findByText('Saved export.csv (4 parameters)')
     ).toBeInTheDocument();
     expect(page()).toBe('parameters');
     expect(busyDot()).not.toBeInTheDocument();

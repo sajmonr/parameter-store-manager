@@ -7,12 +7,18 @@ import { writeFile } from 'fs/promises';
 import { app, BrowserWindow, dialog } from 'electron';
 import type { SaveDialogOptions } from 'electron';
 
-// Asks where to save `content`, starting in Downloads with `fileName`.
-// Returns the chosen path, or null when the dialog was cancelled.
-export const saveCsvFile = async (fileName: string, content: string) => {
+const FILTERS: Record<string, SaveDialogOptions['filters']> = {
+  '.csv': [{ name: 'CSV', extensions: ['csv'] }],
+  '.json': [{ name: 'JSON', extensions: ['json'] }]
+};
+
+// Asks where to save `content`, starting in Downloads with `fileName`; the
+// dialog offers files of the same kind. Returns the chosen path, or null when
+// the dialog was cancelled.
+export const saveFile = async (fileName: string, content: string) => {
   const options: SaveDialogOptions = {
     defaultPath: path.join(app.getPath('downloads'), path.basename(fileName)),
-    filters: [{ name: 'CSV', extensions: ['csv'] }]
+    filters: FILTERS[path.extname(fileName).toLowerCase()]
   };
   const window = BrowserWindow.getFocusedWindow();
   const { canceled, filePath } = window
