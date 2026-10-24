@@ -1,7 +1,7 @@
 {
   "name": "parameter-store-manager",
   "productName": "Parameter Store Manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AWS Parameter store manager application that allows easy viewing and managing of parameters.",
   "scripts": {
     "dev": "electron-vite dev",
