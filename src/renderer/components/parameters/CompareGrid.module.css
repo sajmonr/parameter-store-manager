@@ -1,0 +1,192 @@
+/* Scrolls both ways; the header row and the key column are sticky in it. */
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+
+/* --compare-columns and min-width are set per environment count. */
+.grid {
+  font-size: 13px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: var(--compare-columns);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.headerRow {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ant-color-bg-container);
+  font-weight: 600;
+}
+
+/* Solid, so the values scroll underneath it. */
+.keyCell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 12px 9px 16px;
+  background: var(--ant-color-bg-container);
+  box-shadow: inset -1px 0 0 var(--ant-color-border-secondary);
+}
+
+.indented {
+  padding-left: 36px;
+}
+
+.keyName {
+  min-width: 0;
+}
+
+/* On the right of the key, so they stay visible while scrolling sideways. */
+.tags {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.tag {
+  margin: 0;
+}
+
+.warning {
+  color: var(--ant-color-warning);
+}
+
+.selectedKey {
+  background: var(--ant-control-item-bg-active);
+  box-shadow:
+    inset 2px 0 0 var(--ant-color-primary),
+    inset -1px 0 0 var(--ant-color-border-secondary);
+}
+
+.selectedKey .keyName {
+  color: var(--ant-color-primary);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px 12px;
+}
+
+.present {
+  cursor: pointer;
+}
+
+.present:focus-visible {
+  outline: 2px solid var(--ant-color-primary);
+  outline-offset: -2px;
+}
+
+.present:hover {
+  background: var(--ant-color-fill-quaternary);
+}
+
+.value {
+  min-width: 0;
+}
+
+.selected,
+.selected:hover {
+  background: var(--ant-control-item-bg-active);
+}
+
+.selected .value {
+  color: var(--ant-color-primary);
+}
+
+/* The padlock and the reveal button, at the cell's right edge. */
+.secure {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.lock {
+  color: var(--ant-color-warning);
+}
+
+.chip {
+  flex: none;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 20px;
+  border-radius: var(--ant-border-radius-sm);
+  white-space: nowrap;
+}
+
+.notSet {
+  composes: chip;
+  color: var(--ant-color-error);
+  border: 1px dashed var(--ant-color-error-border);
+}
+
+.unreadable {
+  composes: chip;
+  color: var(--ant-color-text-secondary);
+  border: 1px solid var(--ant-color-border);
+}
+
+.envName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.envCount {
+  flex: none;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--ant-color-text-tertiary);
+}
+
+.folderRow {
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-fill-quaternary);
+}
+
+/* Stays in view while the row scrolls sideways. */
+.folderLabel {
+  position: sticky;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  margin-left: 16px;
+  font-weight: 600;
+}
+
+.empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  color: var(--ant-color-text-tertiary);
+}

@@ -75,12 +75,35 @@
   font-size: 12px;
 }
 
-/* Scrolls sideways when the tabs don't fit. */
-.tabs {
-  max-width: 100%;
+/* The tabs scroll sideways when they don't fit; the mode switch never does. */
+.serviceBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding-bottom: 12px;
+}
+
+.serviceBar > * {
+  flex: none;
+}
+
+.tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   overflow-x: auto;
   scrollbar-width: none;
+}
+
+.tabs > * {
+  flex: none;
+}
+
+.comparing {
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .tabCount {

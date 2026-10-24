@@ -9,6 +9,7 @@ import {
   serviceEnvironments,
   validate
 } from '../utils/location';
+import { compare } from '../utils/compare';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
 import {
@@ -142,6 +143,32 @@ export const useEnvironmentTabs = () => {
       count: rowsFor({ ...location, env: env.segment }, matched, context).length
     }));
   }, [matched, location, context]);
+};
+
+// Whether the main area compares the service's environments: only a
+// service in the Services view does.
+export const useCompareMode = () => {
+  const compareOn = useUiStore(state => state.compare);
+  const location = useLocation();
+  return compareOn && isServiceLocation(location);
+};
+
+// The selected service's keys under the selected folder in each of its
+// environments while comparing, otherwise null. Use it once, in the
+// component that owns the main area: it compares every loaded parameter.
+export const useComparison = () => {
+  const { parameters, loading } = useParameters();
+  const matcher = useMatcher();
+  const location = useLocation();
+  const context = useLocationContext();
+  const compareMode = useCompareMode();
+  return useMemo(
+    () =>
+      compareMode && isServiceLocation(location)
+        ? compare(location, parameters, matcher, context, loading)
+        : null,
+    [compareMode, parameters, matcher, location, context, loading]
+  );
 };
 
 // The Services view's sidebar. The selected service is counted in the
