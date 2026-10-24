@@ -11,11 +11,10 @@ import type { ImportEntry } from '../utils/importFile';
 import { putParameter } from './parameters';
 import { getSettings } from './settings';
 
-export const IMPORT_CONCURRENCY = 5;
-// A throttled write is tried this many times in all, waiting twice as long
-// before each retry.
-export const MAX_ATTEMPTS = 5;
-const FIRST_RETRY_DELAY_MS = 500;
+// SSM allows 3 PutParameter calls per second per account and region, shared
+// with every other writer, so a large import stays under it. A throttled
+// write is retried by the SDK client (adaptive mode, see main/aws.ts).
+export const IMPORT_CONCURRENCY = 2;
 
 export const IMPORT_SOURCE_CHANGED =
   'The profile or region changed during the import.';
@@ -49,38 +48,17 @@ export const useImportStore = create<ImportState>()(() => initialImportState);
 
 const set = useImportStore.setState;
 
-const wait = (ms: number) =>
-  new Promise<void>(resolve => {
-    setTimeout(resolve, ms);
+const write = (client: QueryClient, { entry, overwrite }: ImportWrite) =>
+  putParameter(client, {
+    name: entry.name,
+    // Unsupported and skipped entries, StringLists and the ones without a
+    // value, are never written.
+    type: entry.type as EditableParameterType,
+    value: entry.value!,
+    description: entry.description,
+    kmsKey: entry.keyId ?? undefined,
+    overwrite
   });
-
-const isThrottled = (error: unknown) => {
-  const { code, name } = error as ApiError;
-  return code === 'ThrottlingException' || name === 'ThrottlingException';
-};
-
-const write = async (
-  client: QueryClient,
-  { entry, overwrite }: ImportWrite
-) => {
-  for (let attempt = 1; ; attempt += 1) {
-    try {
-      return await putParameter(client, {
-        name: entry.name,
-        // Unsupported and skipped entries, StringLists and the ones without
-        // a value, are never written.
-        type: entry.type as EditableParameterType,
-        value: entry.value!,
-        description: entry.description,
-        kmsKey: entry.keyId ?? undefined,
-        overwrite
-      });
-    } catch (error) {
-      if (!isThrottled(error) || attempt >= MAX_ATTEMPTS) throw error;
-      await wait(FIRST_RETRY_DELAY_MS * 2 ** (attempt - 1));
-    }
-  }
-};
 
 // Writes every entry; a failed one doesn't stop the others. Once the profile
 // or region changes, the rest fail: they would go to another account or

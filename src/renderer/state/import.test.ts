@@ -1,11 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '../test/mockServices';
 import { createTestState, makeParameter } from '../test/testState';
 import type { ExportedParameter } from '../utils/jsonExport';
 import {
   IMPORT_CONCURRENCY,
   IMPORT_SOURCE_CHANGED,
-  MAX_ATTEMPTS,
   importActions,
   useImportStore
 } from './import';
@@ -41,10 +40,6 @@ const putNames = () =>
 beforeEach(() => {
   vi.clearAllMocks();
   api.parametersService.put.mockResolvedValue({ version: 1 });
-});
-
-afterEach(() => {
-  vi.useRealTimers();
 });
 
 describe('importActions.run', () => {
@@ -138,39 +133,15 @@ describe('importActions.run', () => {
     });
   });
 
-  it('backs off and retries a throttled write', async () => {
-    vi.useFakeTimers();
-    const client = createTestState();
-    api.parametersService.put
-      .mockRejectedValueOnce(awsError('ThrottlingException'))
-      .mockRejectedValueOnce(awsError('ThrottlingException'))
-      .mockResolvedValue({ version: 1 });
-
-    const running = importActions.run(client, writes(['/a']));
-    await vi.advanceTimersByTimeAsync(500);
-    expect(api.parametersService.put).toHaveBeenCalledTimes(2);
-    // Twice as long before the next retry.
-    await vi.advanceTimersByTimeAsync(999);
-    expect(api.parametersService.put).toHaveBeenCalledTimes(2);
-    await vi.advanceTimersByTimeAsync(1);
-    const result = await running;
-
-    expect(api.parametersService.put).toHaveBeenCalledTimes(3);
-    expect(result.written).toEqual(['/a']);
-  });
-
-  it(`gives up on a write throttled ${MAX_ATTEMPTS} times`, async () => {
-    vi.useFakeTimers();
+  it('reports a write still throttled after the SDK’s retries, without retrying it again', async () => {
     const client = createTestState();
     api.parametersService.put.mockRejectedValue(
       awsError('ThrottlingException', 'Rate exceeded')
     );
 
-    const running = importActions.run(client, writes(['/a']));
-    await vi.runAllTimersAsync();
-    const result = await running;
+    const result = await importActions.run(client, writes(['/a']));
 
-    expect(api.parametersService.put).toHaveBeenCalledTimes(MAX_ATTEMPTS);
+    expect(api.parametersService.put).toHaveBeenCalledTimes(1);
     expect(result.failed.get('/a')).toBe('ThrottlingException: Rate exceeded');
   });
 
