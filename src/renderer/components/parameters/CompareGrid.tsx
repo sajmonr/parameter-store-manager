@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Tag, Tooltip, Typography } from 'antd';
+import { Spin, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   FolderOpenOutlined,
@@ -226,6 +226,12 @@ const emptyStateOf = (comparison: Comparison, filter: CompareFilter) => {
         icon={<CheckCircleOutlined />}
         text="Every key is set in each environment"
       />
+    );
+  }
+  // Values still loading may differ once they arrive.
+  if (comparison.pending) {
+    return (
+      <EmptyState icon={<Spin />} text="Comparing… values are still loading" />
     );
   }
   // Values that didn't load weren't compared, so they may differ.

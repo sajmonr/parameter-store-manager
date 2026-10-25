@@ -208,6 +208,38 @@ describe('Compare mode', () => {
     expect(useUiStore.getState().revealed.size).toBe(1);
   });
 
+  it("doesn't claim equal values while values are loading", async () => {
+    api.serveParameters(parameters);
+    // Values stay loading until the test lets them through.
+    let release = () => {};
+    const released = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const serve = api.parametersService.getValues.getMockImplementation()!;
+    api.parametersService.getValues.mockImplementation(async names => {
+      await released;
+      return serve(names);
+    });
+    const user = await startComparing();
+
+    await user.click(within(filter()).getByText('Differs'));
+    expect(
+      screen.getByText('Comparing… values are still loading')
+    ).toBeInTheDocument();
+    expect(
+      within(filter()).getByLabelText('Values still loading')
+    ).toBeTruthy();
+    expect(
+      screen.queryByText('Every key has the same value in each environment')
+    ).toBeNull();
+
+    await act(async () => release());
+    await waitFor(() => expect(keyNames()).toEqual(['Flag']));
+    expect(
+      within(filter()).queryByLabelText('Values still loading')
+    ).toBeNull();
+  });
+
   it("doesn't claim equal values when some weren't compared", async () => {
     api.serveParameters([
       makeParameter('/development/compass/Secret', {
