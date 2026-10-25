@@ -125,6 +125,29 @@ describe('useParameters', () => {
     expect(result.current.loadState).toBe('loading');
   });
 
+  it("doesn't send the queued value batches of a load for another profile", async () => {
+    const many = Array.from({ length: 60 }, (_, i) => makeParameter(`/p${i}`));
+    api.parametersService.describe.mockResolvedValueOnce({ parameters: many });
+    const inFlight: (() => void)[] = [];
+    api.parametersService.getValues.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          inFlight.push(() =>
+            resolve({ parameters: [], invalidParameters: [] })
+          );
+        })
+    );
+    renderParameters(createTestState());
+    // 6 batches; the read limit lets 4 run at once.
+    await waitFor(() => expect(inFlight).toHaveLength(4));
+
+    api.parametersService.describe.mockReturnValue(new Promise(() => {}));
+    act(() => useSettingsStore.setState({ profile: 'other' }));
+    await act(async () => inFlight.forEach(resolve => resolve()));
+
+    expect(api.parametersService.getValues).toHaveBeenCalledTimes(4);
+  });
+
   it('shows the expired and denied screens without a notification', async () => {
     const { result } = renderParameters(
       createTestState({ parameters: [makeParameter('/a')] })
