@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
+import { create } from 'zustand';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { MAX_DELETES_PER_REQUEST } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
 import type { ApiError } from '../clients/call';
@@ -112,9 +113,27 @@ const withValues = (
   return { ...list, byName };
 };
 
+// How far the latest load has got, for a progress message on slow loads.
+export interface LoadProgress {
+  // The names listed so far.
+  found: number;
+  // Whether every page is in, so `found` is the total.
+  listed: boolean;
+  // The values requested so far, loaded or failed.
+  valuesDone: number;
+}
+
+const NO_PROGRESS: LoadProgress = { found: 0, listed: false, valuesDone: 0 };
+
+export const useLoadProgress = create<LoadProgress>()(() => NO_PROGRESS);
+
 type Update = (change: (list: ParameterList) => ParameterList) => void;
 
-const loadValues = (names: string[], update: Update) =>
+const loadValues = (
+  names: string[],
+  update: Update,
+  onBatchDone: (size: number) => void
+) =>
   pAll(
     chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
       try {
@@ -122,6 +141,8 @@ const loadValues = (names: string[], update: Update) =>
         update(list => withValues(list, parameters));
       } catch (error) {
         console.error('Something went wrong while fetching parameters', error);
+      } finally {
+        onBatchDone(batch.length);
       }
     }),
     { concurrency: 2 }
@@ -156,6 +177,14 @@ const loadParameters = async ({
       );
     }
   };
+  const progress = (
+    change: (current: LoadProgress) => Partial<LoadProgress>
+  ) => {
+    if (isCurrent()) useLoadProgress.setState(change);
+  };
+  useLoadProgress.setState(NO_PROGRESS, true);
+  const onBatchDone = (size: number) =>
+    progress(({ valuesDone }) => ({ valuesDone: valuesDone + size }));
 
   const seen = new Set<string>();
   const valueLoads: Promise<unknown>[] = [];
@@ -170,10 +199,12 @@ const loadParameters = async ({
       const names = page.parameters.flatMap(p => (p.Name ? [p.Name] : []));
       names.forEach(name => seen.add(name));
       update(list => withMetadata(list, page.parameters, changes.deleted));
-      valueLoads.push(loadValues(names, update));
+      progress(() => ({ found: seen.size }));
+      valueLoads.push(loadValues(names, update, onBatchDone));
 
       ({ nextToken } = page);
     } while (nextToken);
+    progress(() => ({ listed: true }));
   } catch (error) {
     // Value batches of earlier pages may still be running. Writing to the
     // cache marks the query successful and would clear this error, so they

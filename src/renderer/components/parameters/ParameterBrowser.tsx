@@ -5,12 +5,14 @@ import { useUiStore } from '../../state/ui';
 import {
   useCheckedNames,
   useComparison,
+  useComparisonReady,
   useMatcher,
   useVisibleParameters
 } from '../../state/views';
 import { filterKeys } from '../../utils/compare';
 import type { CompareKey, Comparison } from '../../utils/compare';
 import CompareGrid from './CompareGrid';
+import CompareLoading from './CompareLoading';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
 import StatusBar from './StatusBar';
@@ -20,10 +22,12 @@ import EmptyFolder from '../states/EmptyFolder';
 import EmptyAccount from '../states/EmptyAccount';
 import ConnectionError from '../states/ConnectionError';
 
-// What compare mode lists: the comparison and the keys its filter keeps.
+// What compare mode lists: the comparison and the keys its filter keeps,
+// which aren't shown until the first load is `ready`.
 export interface Compared {
   comparison: Comparison;
   keys: CompareKey[];
+  ready: boolean;
 }
 
 const renderContent = (
@@ -52,7 +56,7 @@ const renderContent = (
           checked={[]}
           comparison={compared.comparison}
         />
-        <CompareGrid {...compared} />
+        {compared.ready ? <CompareGrid {...compared} /> : <CompareLoading />}
       </>
     );
   }
@@ -75,11 +79,16 @@ const ParameterBrowser = () => {
   const checked = useCheckedNames();
   const { query } = useMatcher();
   const comparison = useComparison();
+  const ready = useComparisonReady();
   const filter = useUiStore(state => state.compareFilter);
   const compared = useMemo(
     () =>
-      comparison && { comparison, keys: filterKeys(comparison.keys, filter) },
-    [comparison, filter]
+      comparison && {
+        comparison,
+        keys: filterKeys(comparison.keys, filter),
+        ready
+      },
+    [comparison, filter, ready]
   );
 
   return (

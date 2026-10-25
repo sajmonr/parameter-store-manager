@@ -21,14 +21,14 @@ const Bar = ({ width, height }: { width: number; height: number }) => (
   />
 );
 
-const TableSkeleton = () => (
+const TableSkeleton = ({ nameTitle = 'Name' }: { nameTitle?: string }) => (
   <div
     className={styles.skeleton}
     aria-busy="true"
     aria-label="Loading parameters"
   >
     <div className={styles.skeletonHeader}>
-      <span className={styles.skeletonName}>Name</span>
+      <span className={styles.skeletonName}>{nameTitle}</span>
       <span>Value</span>
     </div>
     {ROWS.map(([name, value], index) => (

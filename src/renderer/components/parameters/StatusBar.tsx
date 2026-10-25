@@ -12,7 +12,9 @@ const statusText = (
   total: number,
   compared: Compared | null
 ) => {
-  if (loadState === 'loading') return 'Loading…';
+  if (loadState === 'loading' || (compared && !compared.ready)) {
+    return 'Loading…';
+  }
   if (loadState !== 'ready') return '—';
   if (!compared) return `${visible} of ${total} parameters`;
   const { comparison, keys } = compared;

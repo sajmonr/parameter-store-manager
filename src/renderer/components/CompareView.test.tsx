@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
@@ -251,5 +251,108 @@ describe('Compare mode', () => {
       saveSettingsAndApply({ structure: { ...structure, enabled: false } })
     );
     expect(useUiStore.getState().compare).toBe(false);
+  });
+});
+
+// A promise the test resolves when it lets a request finish.
+const gate = () => {
+  let open = () => {};
+  const opened = new Promise<void>(resolve => {
+    open = resolve;
+  });
+  return { open, opened };
+};
+
+// Holds the value requests until the returned gate opens.
+const holdValues = () => {
+  const values = gate();
+  const serve = api.parametersService.getValues.getMockImplementation()!;
+  api.parametersService.getValues.mockImplementation(async names => {
+    await values.opened;
+    return serve(names);
+  });
+  return values;
+};
+
+const skeleton = () => screen.queryByLabelText('Loading parameters');
+
+describe('Compare mode while loading', () => {
+  it('waits for the first load, then shows the comparison', async () => {
+    const values = holdValues();
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Port');
+    await user.click(within(modeSwitch()).getByText('Compare'));
+
+    expect(
+      screen.queryByRole('table', { name: 'Compare environments' })
+    ).toBeNull();
+    expect(skeleton()).toBeInTheDocument();
+    // No counts from names still arriving.
+    expect(within(filter()).getAllByText('–')).toHaveLength(3);
+    expect(within(filter()).queryByText('3')).toBeNull();
+    await user.click(within(filter()).getByText('Missing'));
+    expect(skeleton()).toBeInTheDocument();
+
+    await act(async () => values.open());
+    await waitFor(() => expect(keyNames()).toEqual(['Secret']));
+    expect(skeleton()).toBeNull();
+  });
+
+  it('says how far a slow load has got', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    // Two pages: the second waits, then the values do.
+    const [first, second] = [parameters.slice(0, 4), parameters.slice(4)];
+    const page = gate();
+    api.parametersService.describe.mockImplementation(async nextToken => {
+      if (!nextToken) {
+        return {
+          parameters: first.map(api.metadataOf),
+          nextToken: 'page-2'
+        };
+      }
+      await page.opened;
+      return { parameters: second.map(api.metadataOf) };
+    });
+    const values = holdValues();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    renderApp();
+    await screen.findByText('Flag');
+    await user.click(within(modeSwitch()).getByText('Compare'));
+
+    expect(screen.queryByText(/Loading parameters…/)).toBeNull();
+    act(() => vi.advanceTimersByTime(3000));
+    expect(screen.getByText('Loading parameters… 4 found')).toBeInTheDocument();
+
+    await act(async () => page.open());
+    expect(
+      await screen.findByText('Loading values… 0% (0 of 10)')
+    ).toBeInTheDocument();
+
+    await act(async () => values.open());
+    await screen.findByRole('table', { name: 'Compare environments' });
+    expect(screen.queryByText(/Loading values…/)).toBeNull();
+  });
+
+  it('keeps the comparison on screen during a refresh', async () => {
+    const user = userEvent.setup();
+    const { queryClient } = renderApp();
+    await screen.findByText('Port');
+    await user.click(within(modeSwitch()).getByText('Compare'));
+    await screen.findByRole('table', { name: 'Compare environments' });
+
+    holdValues();
+    act(() => {
+      void queryClient.refetchQueries();
+    });
+    await waitFor(() =>
+      expect(api.parametersService.getValues).toHaveBeenCalledTimes(2)
+    );
+    expect(grid()).toBeInTheDocument();
+    expect(skeleton()).toBeNull();
+    expect(within(rowOf('Flag')).getByText('Differs')).toBeInTheDocument();
   });
 });

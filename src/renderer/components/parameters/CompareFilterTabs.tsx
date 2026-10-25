@@ -1,5 +1,6 @@
 import { Segmented, Typography } from 'antd';
 import { uiActions, useUiStore } from '../../state/ui';
+import { useComparisonReady } from '../../state/views';
 import type { CompareFilter, Comparison } from '../../utils/compare';
 import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
@@ -12,9 +13,11 @@ const FILTERS: { value: CompareFilter; label: string; color?: string }[] = [
 ];
 
 // In place of the environment tabs while comparing: which keys to list, with
-// the keys matching the search in each.
+// the keys matching the search in each. Like the grid, the counts wait for
+// the first load: a dash until then.
 const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
   const filter = useUiStore(state => state.compareFilter);
+  const ready = useComparisonReady();
   return (
     <>
       <Segmented
@@ -28,7 +31,7 @@ const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
               {color && <EnvironmentDot color={color} />}
               {label}
               <span className={styles.tabCount}>
-                {comparison.counts[value]}
+                {ready ? comparison.counts[value] : '–'}
               </span>
             </span>
           )

@@ -153,6 +153,14 @@ export const useCompareMode = () => {
   return compareOn && isServiceLocation(location);
 };
 
+// Whether a comparison can be trusted: a load has finished for this profile
+// and region. During the first one, names and values are still arriving, so
+// keys would look missing or equal. A refresh keeps the previous list.
+export const useComparisonReady = () => {
+  const { syncedAt, loading } = useParameters();
+  return !!syncedAt || !loading;
+};
+
 // The selected service's keys under the selected folder in each of its
 // environments while comparing, otherwise null. Use it once, in the
 // component that owns the main area: it compares every loaded parameter.
