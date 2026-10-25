@@ -9,6 +9,7 @@ import {
   serviceEnvironments,
   validate
 } from '../utils/location';
+import { folderSet } from '../utils/newParameter';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
 import {
@@ -208,6 +209,17 @@ export const useAllFolderTree = () => {
         delimiter
       ),
     [parameters, delimiter]
+  );
+};
+
+// Every folder of the loaded parameters, for completing the new-parameter
+// form's key or path.
+export const useFolderSet = () => {
+  const { byName } = useParameters();
+  const delimiter = usePathDelimiter();
+  return useMemo(
+    () => folderSet(byName.keys(), delimiter),
+    [byName, delimiter]
   );
 };
 

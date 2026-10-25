@@ -2,9 +2,7 @@ import { Button, Flex, Tooltip } from 'antd';
 import { CopyOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
-import { usePathDelimiter } from '../../state/settings';
 import { uiActions } from '../../state/ui';
-import { folderOf, leafOf } from '../../utils/paths';
 
 interface DetailActionsProps {
   parameter: ParameterEntry;
@@ -12,7 +10,6 @@ interface DetailActionsProps {
 }
 
 const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
-  const delimiter = usePathDelimiter();
   const { Type: type } = parameter;
   // StringList parameters can't be saved yet.
   const editable = isEditableType(type);
@@ -21,8 +18,7 @@ const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
   const duplicate = () => {
     if (!editable) return;
     uiActions.openNewParameter({
-      folder: folderOf(parameter.Name, delimiter),
-      name: `${leafOf(parameter.Name, delimiter)}Copy`,
+      source: parameter.Name,
       description: parameter.Description || '',
       type,
       kmsKey: parameter.KeyId,

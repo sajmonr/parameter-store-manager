@@ -148,10 +148,14 @@ describe('Services view', () => {
 
     await user.click(within(sidebar()).getByText('AppServer'));
     await user.click(screen.getByText('New parameter'));
-    await user.type(screen.getByLabelText('Parameter name'), 'Timeout');
+    const key = screen.getByRole('combobox', { name: 'Key' });
+    expect(key).toHaveValue('AppServer/');
+    await user.type(key, 'Timeout');
     expect(
-      screen.getByText('/development/compass/AppServer/Timeout')
-    ).toBeInTheDocument();
+      screen
+        .getByText('Creates')
+        .nextElementSibling!.textContent!.replace(/\u200b/g, '')
+    ).toBe('/development/compass/AppServer/Timeout');
   });
 
   it('opens the parameter in another environment from its chip', async () => {

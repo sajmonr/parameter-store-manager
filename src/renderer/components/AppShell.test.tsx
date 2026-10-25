@@ -237,11 +237,12 @@ describe('pages', () => {
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /New parameter/ }));
-    const name = await screen.findByLabelText('Parameter name');
-    await user.type(name, 'Draft');
+    const name = await screen.findByLabelText('Path');
+    await user.clear(name);
+    await user.type(name, '/Draft');
     await user.click(railButton('Import & export'));
     await user.click(railButton('Parameters'));
-    expect(screen.getByLabelText('Parameter name')).toHaveValue('Draft');
+    expect(screen.getByLabelText('Path')).toHaveValue('/Draft');
   });
 
   it('keeps the drawer inside the Parameters page in a narrow window', async () => {
@@ -257,8 +258,9 @@ describe('pages', () => {
       await screen.findByText('Password');
 
       await user.click(screen.getByRole('button', { name: /New parameter/ }));
-      const name = await screen.findByLabelText('Parameter name');
-      await user.type(name, 'Draft');
+      const name = await screen.findByLabelText('Path');
+      await user.clear(name);
+      await user.type(name, '/Draft');
       // It renders inside the pages, so its mask doesn't cover the rail.
       const drawer = name.closest('.ant-drawer')!;
       expect(drawer.closest('main')).not.toBeNull();
@@ -268,9 +270,7 @@ describe('pages', () => {
       fireEvent.keyDown(window, { key: 'Escape' });
       expect(useUiStore.getState().paneMode).toBe('new');
       await user.click(railButton('Parameters'));
-      expect(await screen.findByLabelText('Parameter name')).toHaveValue(
-        'Draft'
-      );
+      expect(await screen.findByLabelText('Path')).toHaveValue('/Draft');
     } finally {
       window.matchMedia = matchMedia;
     }
