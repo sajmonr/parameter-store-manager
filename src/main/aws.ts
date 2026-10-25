@@ -8,6 +8,7 @@ import {
   fromIni,
   fromProcess
 } from '@aws-sdk/credential-providers';
+import { withCallLog } from './awsLog';
 import { withFakeSource } from './fake/fakeAws';
 import { availableSettings, getSetting } from './settings';
 import { isFakeSource } from './source';
@@ -61,6 +62,11 @@ const getClient = <T extends AwsClient>(
       retryMode: 'adaptive',
       maxAttempts: 8
     });
+    withCallLog(
+      client,
+      service.toUpperCase(),
+      `${region}, profile ${profile || 'default'}${fake ? ', fake' : ''}`
+    );
     if (fake) withFakeSource(client);
     clients.set(key, client);
   }

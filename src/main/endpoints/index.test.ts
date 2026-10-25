@@ -27,7 +27,7 @@ vi.mock('../updates', () => ({
   openReleasePage: vi.fn(async () => {})
 }));
 vi.mock('../files', () => ({
-  saveCsvFile: vi.fn(async () => '/Users/me/Downloads/export.csv')
+  saveFile: vi.fn(async () => '/Users/me/Downloads/export.csv')
 }));
 vi.mock('../aws', async importActual => ({
   ...(await importActual<typeof Aws>()),
@@ -198,8 +198,8 @@ describe('invokeEndpoint', () => {
     // The URL to open is decided in the main process.
     ['updates.openReleasePage', 'https://evil.example'],
     // The suggested name can't point outside the folder the user picks.
-    ['files.saveCsv', { fileName: '../../.ssh/config.csv', content: '' }],
-    ['files.saveCsv', { fileName: 'export.sh', content: '' }]
+    ['files.save', { fileName: '../../.ssh/config.csv', content: '' }],
+    ['files.save', { fileName: 'export.sh', content: '' }]
   ])('rejects an invalid request to %s', async (channel, request) => {
     await expect(invoke(channel, request)).resolves.toMatchObject({
       ok: false,
@@ -207,17 +207,18 @@ describe('invokeEndpoint', () => {
     });
     expect(send).not.toHaveBeenCalled();
     expect(updates.openReleasePage).not.toHaveBeenCalled();
-    expect(files.saveCsvFile).not.toHaveBeenCalled();
+    expect(files.saveFile).not.toHaveBeenCalled();
   });
 
-  it('saves a CSV where the user picked', async () => {
-    await expect(
-      invoke('files.saveCsv', { fileName: 'export.csv', content: 'a,b\r\n' })
-    ).resolves.toEqual({
+  it.each([
+    ['export.csv', 'a,b\r\n'],
+    ['export.json', '{}\n']
+  ])('saves %s where the user picked', async (fileName, content) => {
+    await expect(invoke('files.save', { fileName, content })).resolves.toEqual({
       ok: true,
       result: { filePath: '/Users/me/Downloads/export.csv' }
     });
-    expect(files.saveCsvFile).toHaveBeenCalledWith('export.csv', 'a,b\r\n');
+    expect(files.saveFile).toHaveBeenCalledWith(fileName, content);
   });
 
   it('applies the schema defaults: a new parameter is tagged', async () => {

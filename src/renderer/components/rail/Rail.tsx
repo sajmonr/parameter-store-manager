@@ -6,6 +6,7 @@ import {
   UnorderedListOutlined
 } from '@ant-design/icons';
 import { describeProgress, useExportStore } from '../../state/export';
+import { useImportStore } from '../../state/import';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { Page } from '../../state/ui';
 import { settingsShortcutLabel } from '../../utils/keys';
@@ -30,9 +31,14 @@ const RailItem = ({
   onClick
 }: RailItemProps) => {
   const active = useUiStore(state => state.page === page);
+  // An import can't be left until it finishes (see ui.showPage).
+  const locked = useImportStore(state => state.running) && !active;
   // The Badge stays when the dot goes, so the button keeps keyboard focus.
   return (
-    <Tooltip title={tooltip} placement="right">
+    <Tooltip
+      title={locked ? `${label}: available once the import finishes` : tooltip}
+      placement="right"
+    >
       <Badge status="processing" dot={busy} offset={[-4, 4]}>
         <Button
           color={active ? 'primary' : 'default'}
@@ -42,6 +48,7 @@ const RailItem = ({
           aria-current={active ? 'page' : undefined}
           // Large is the rail's 40×40 with an 8px radius.
           size="large"
+          disabled={locked}
           onClick={onClick}
         />
       </Badge>
@@ -49,18 +56,27 @@ const RailItem = ({
   );
 };
 
-// While an export runs, the tooltip says how far it's got.
+// While an export or import runs, the tooltip says how far it's got.
 const ImportExportItem = () => {
-  const running = useExportStore(state => state.running);
+  const exporting = useExportStore(state => state.running);
   const progress = useExportStore(state => state.progress);
+  const importing = useImportStore(state => state.running);
+  const imported = useImportStore(state => state.done);
+  const toImport = useImportStore(state => state.total);
   const label = 'Import & export';
+  let tooltip: string | undefined;
+  if (importing) {
+    tooltip = `${label}: Importing ${imported.toLocaleString()} of ${toImport.toLocaleString()}…`;
+  } else if (progress) {
+    tooltip = `${label}: ${describeProgress(progress)}`;
+  }
   return (
     <RailItem
       page="importExport"
       label={label}
-      tooltip={progress ? `${label}: ${describeProgress(progress)}` : undefined}
+      tooltip={tooltip}
       icon={<SwapOutlined />}
-      busy={running}
+      busy={exporting || importing}
       onClick={() => uiActions.showPage('importExport')}
     />
   );

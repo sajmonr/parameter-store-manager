@@ -1,0 +1,89 @@
+.well {
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-bg-layout);
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dot {
+  position: relative;
+  top: -1px;
+}
+
+.path {
+  min-width: 0;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.meta {
+  font-size: 12px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid;
+  border-radius: var(--ant-border-radius-sm);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.exists {
+  background: var(--ant-color-error-bg);
+  border-color: var(--ant-color-error-border);
+  color: var(--ant-color-error);
+}
+
+.created {
+  background: var(--ant-color-success-bg);
+  border-color: var(--ant-color-success-border);
+  color: var(--ant-color-success);
+}
+
+.open {
+  margin-left: auto;
+  height: 22px;
+  font-size: 12px;
+}
+
+.open:hover {
+  color: var(--ant-color-primary);
+  border-color: var(--ant-color-primary);
+}

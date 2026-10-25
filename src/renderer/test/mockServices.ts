@@ -47,7 +47,7 @@ export const updatesService = {
 };
 
 export const filesService = {
-  saveCsv: vi.fn<Service<'filesService'>['saveCsv']>(() =>
+  save: vi.fn<Service<'filesService'>['save']>(() =>
     Promise.resolve('/Downloads/export.csv')
   )
 };

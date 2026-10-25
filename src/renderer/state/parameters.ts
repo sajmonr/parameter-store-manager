@@ -2,7 +2,7 @@
 // Query. A load streams its pages and values into the query cache, so the
 // table fills in while it runs.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryFunctionContext } from '@tanstack/react-query';
+import type { QueryClient, QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
 import { create } from 'zustand';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
@@ -14,6 +14,7 @@ import { feedback } from '../feedback';
 import { classifyFetchError, describeError } from '../utils/awsErrors';
 import type { FetchErrorKind } from '../utils/awsErrors';
 import { getSettings, useSettingsStore } from './settings';
+import { ssmReads } from './ssmRateLimit';
 
 // The metadata from DescribeParameters, plus the value fields from
 // GetParameters once they are loaded.
@@ -129,23 +130,37 @@ export const useLoadProgress = create<LoadProgress>()(() => NO_PROGRESS);
 
 type Update = (change: (list: ParameterList) => ParameterList) => void;
 
+// Thrown by a queued value call of a load that is no longer current, so it
+// isn't sent.
+class StaleLoad extends Error {}
+
+// The batches of every page share the SSM read limit, so overlapping pages
+// can't add up to more calls than it allows.
 const loadValues = (
   names: string[],
   update: Update,
+  isCurrent: () => boolean,
   onBatchDone: (size: number) => void
 ) =>
-  pAll(
-    chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
+  Promise.all(
+    chunk(names, VALUES_BATCH_SIZE).map(async batch => {
       try {
-        const { parameters } = await parametersService.getValues(batch);
+        const { parameters } = await ssmReads.schedule(
+          () => parametersService.getValues(batch),
+          {
+            check: () => {
+              if (!isCurrent()) throw new StaleLoad();
+            }
+          }
+        );
         update(list => withValues(list, parameters));
       } catch (error) {
+        if (error instanceof StaleLoad) return;
         console.error('Something went wrong while fetching parameters', error);
       } finally {
         onBatchDone(batch.length);
       }
-    }),
-    { concurrency: 2 }
+    })
   );
 
 const notifyLoadError = (error: unknown) => {
@@ -200,7 +215,7 @@ const loadParameters = async ({
       names.forEach(name => seen.add(name));
       update(list => withMetadata(list, page.parameters, changes.deleted));
       progress(() => ({ found: seen.size }));
-      valueLoads.push(loadValues(names, update, onBatchDone));
+      valueLoads.push(loadValues(names, update, isCurrent, onBatchDone));
 
       ({ nextToken } = page);
     } while (nextToken);
@@ -322,17 +337,55 @@ const without = (list: ParameterList, names: string[]): ParameterList => {
   return { ...list, byName };
 };
 
-// Creates a parameter, or with `overwrite` saves a new version of one.
+// Creates a parameter, or with `overwrite` saves a new version of one, and
+// shows it in the loaded list. Every save in the app goes through here.
+export const putParameter = async (
+  client: QueryClient,
+  request: PutParameterRequest
+) => {
+  const key = currentKey();
+  const result = await parametersService.put(request);
+  recordChange(key, request.name, 'created');
+  client.setQueryData<ParameterList>(
+    key,
+    list => list && withPut(list, request, result.version)
+  );
+  return result;
+};
+
+// Loads the current profile and region again, for code outside components.
+export const refreshParameters = (client: QueryClient) =>
+  client.refetchQueries({ queryKey: currentKey() });
+
 export const usePutParameter = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (request: PutParameterRequest) => {
-      const key = currentKey();
-      const result = await parametersService.put(request);
-      recordChange(key, request.name, 'created');
-      client.setQueryData<ParameterList>(
-        key,
-        list => list && withPut(list, request, result.version)
+    mutationFn: (request: PutParameterRequest) => putParameter(client, request)
+  });
+};
+
+export interface CreateResult {
+  created: string[];
+  // Each name that wasn't created, with why.
+  failed: Map<string, string>;
+}
+
+// Creates the parameters, 5 at a time. A failed one doesn't stop the others.
+export const useCreateParameters = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (requests: PutParameterRequest[]) => {
+      const result: CreateResult = { created: [], failed: new Map() };
+      await pAll(
+        requests.map(request => async () => {
+          try {
+            await putParameter(client, request);
+            result.created.push(request.name);
+          } catch (error) {
+            result.failed.set(request.name, describeError(error as ApiError));
+          }
+        }),
+        { concurrency: 5 }
       );
       return result;
     }

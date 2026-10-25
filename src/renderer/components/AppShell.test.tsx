@@ -237,11 +237,12 @@ describe('pages', () => {
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /New parameter/ }));
-    const name = await screen.findByLabelText('Parameter name');
-    await user.type(name, 'Draft');
+    const name = await screen.findByLabelText('Path');
+    await user.clear(name);
+    await user.type(name, '/Draft');
     await user.click(railButton('Import & export'));
     await user.click(railButton('Parameters'));
-    expect(screen.getByLabelText('Parameter name')).toHaveValue('Draft');
+    expect(screen.getByLabelText('Path')).toHaveValue('/Draft');
   });
 
   it('keeps the drawer inside the Parameters page in a narrow window', async () => {
@@ -257,8 +258,9 @@ describe('pages', () => {
       await screen.findByText('Password');
 
       await user.click(screen.getByRole('button', { name: /New parameter/ }));
-      const name = await screen.findByLabelText('Parameter name');
-      await user.type(name, 'Draft');
+      const name = await screen.findByLabelText('Path');
+      await user.clear(name);
+      await user.type(name, '/Draft');
       // It renders inside the pages, so its mask doesn't cover the rail.
       const drawer = name.closest('.ant-drawer')!;
       expect(drawer.closest('main')).not.toBeNull();
@@ -268,9 +270,7 @@ describe('pages', () => {
       fireEvent.keyDown(window, { key: 'Escape' });
       expect(useUiStore.getState().paneMode).toBe('new');
       await user.click(railButton('Parameters'));
-      expect(await screen.findByLabelText('Parameter name')).toHaveValue(
-        'Draft'
-      );
+      expect(await screen.findByLabelText('Path')).toHaveValue('/Draft');
     } finally {
       window.matchMedia = matchMedia;
     }
@@ -313,7 +313,7 @@ describe('pages', () => {
 
   it('keeps exporting on another page, showing it in the rail', async () => {
     const user = userEvent.setup();
-    api.filesService.saveCsv.mockResolvedValue('/Downloads/export.csv');
+    api.filesService.save.mockResolvedValue('/Downloads/export.csv');
     renderApp();
     await screen.findByText('Password');
     let lastPage!: (page: { parameters: typeof parameters }) => void;
@@ -324,7 +324,9 @@ describe('pages', () => {
     );
 
     await user.click(railButton('Import & export'));
-    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(
+      screen.getByRole('button', { name: /^Export .* as CSV$/ })
+    );
     await user.click(railButton('Parameters'));
     // It fades out, but stops showing at once.
     const busyDot = () =>
@@ -335,7 +337,7 @@ describe('pages', () => {
 
     lastPage({ parameters });
     expect(
-      await screen.findByText('Exported 4 parameters')
+      await screen.findByText('Saved export.csv (4 parameters)')
     ).toBeInTheDocument();
     expect(page()).toBe('parameters');
     expect(busyDot()).not.toBeInTheDocument();

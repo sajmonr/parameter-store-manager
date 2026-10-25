@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createMatcher,
+  createPathMatcher,
   createPrefixMatcher,
   globToRegExp,
   isGlobQuery,
@@ -110,6 +111,38 @@ describe('createPrefixMatcher', () => {
     expect(byPrefix('/**/Password')).toEqual([names[0], names[3]]);
     expect(byPrefix('*/compass')).toEqual([]);
     expect(byPrefix('*', '.')).toEqual(names);
+  });
+});
+
+describe('createPathMatcher', () => {
+  const byPath = (path: string, delimiter = '/') =>
+    names.filter(createPathMatcher(path, delimiter).test);
+
+  it('matches everything when empty', () => {
+    expect(byPath('  ')).toEqual(names);
+  });
+
+  it('matches everything under a path without wildcards, case-sensitively', () => {
+    expect(byPath('/development/compass/AppServer')).toEqual(names.slice(0, 2));
+    expect(byPath('/Development')).toEqual([]);
+  });
+
+  it('matches a glob against the whole name', () => {
+    expect(byPath('/development/**')).toEqual(names.slice(0, 2));
+    expect(byPath('/**')).toEqual(names);
+    expect(byPath('/**/Password')).toEqual([names[0], names[3]]);
+    // * stays within one segment, and the glob must reach the end.
+    expect(byPath('/*/compass/AppServer')).toEqual([]);
+    expect(byPath('/*/compass/AppServer/*')).toEqual([]);
+    expect(byPath('/*/compass/AppServer/*/*')).toEqual(names.slice(0, 2));
+    expect(byPath('/staging/other/Pass?ord')).toEqual([names[3]]);
+    expect(byPath('/staging/other/Pass?')).toEqual([]);
+  });
+
+  it('uses the path delimiter for segments', () => {
+    expect(
+      ['a.b.c', 'a.b', 'a.bc'].filter(createPathMatcher('a.*', '.').test)
+    ).toEqual(['a.b', 'a.bc']);
   });
 });
 

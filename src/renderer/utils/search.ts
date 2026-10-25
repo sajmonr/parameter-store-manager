@@ -11,11 +11,12 @@ export const isGlobQuery = (query: string, delimiter: string) =>
 // stay within one segment. A leading delimiter (or `anchored`) anchors at the
 // start of the name, otherwise the glob may start at any segment boundary.
 // Like a path prefix, the glob only has to match the beginning of the rest of
-// the name.
+// the name, unless `whole` is set.
 export const globToRegExp = (
   glob: string,
   delimiter: string,
-  anchored = glob.startsWith(delimiter)
+  anchored = glob.startsWith(delimiter),
+  whole = false
 ) => {
   const d = escapeRegExp(delimiter);
   const notDelimiter = delimiter.length === 1 ? `[^${d}]` : `(?:(?!${d}).)`;
@@ -39,7 +40,7 @@ export const globToRegExp = (
   }
 
   const start = anchored ? '^' : `(?:^|${d})`;
-  return new RegExp(start + source);
+  return new RegExp(start + source + (whole ? '$' : ''));
 };
 
 export interface Matcher {
@@ -82,6 +83,21 @@ export const createPrefixMatcher = (
     return { query, isGlob: false, test: name => name.startsWith(query) };
   }
   const regExp = globToRegExp(query, delimiter, true);
+  return { query, isGlob: true, test: name => regExp.test(name) };
+};
+
+// What an export takes: a path matches everything under it, and a glob must
+// match the whole name. Like SSM, it is case-sensitive. An empty path matches
+// everything.
+export const createPathMatcher = (
+  rawPath: string | null | undefined,
+  delimiter: string
+): Matcher => {
+  const query = (rawPath || '').trim();
+  if (!/[*?]/.test(query)) {
+    return { query, isGlob: false, test: name => name.startsWith(query) };
+  }
+  const regExp = globToRegExp(query, delimiter, true, true);
   return { query, isGlob: true, test: name => regExp.test(name) };
 };
 
