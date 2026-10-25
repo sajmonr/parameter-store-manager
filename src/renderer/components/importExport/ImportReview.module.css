@@ -1,0 +1,138 @@
+.fileIcon {
+  font-size: 20px;
+  color: var(--ant-color-primary);
+}
+
+/* Lets the file name shrink and truncate in the card header. */
+.fileTitle {
+  min-width: 0;
+  font-weight: normal;
+}
+
+.meta,
+.hint {
+  font-size: 12px;
+}
+
+.stat.stat {
+  margin: 0;
+  border-radius: 999px;
+}
+
+/* A count that narrows the list to its status. */
+.statButton {
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.statButton:focus-visible {
+  outline: 2px solid var(--ant-color-primary-border);
+  outline-offset: 1px;
+}
+
+.statButton[aria-pressed='true'] .stat {
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.statButton:disabled {
+  cursor: default;
+}
+
+/* While one status is picked, the others step back. */
+.statInactive {
+  opacity: 0.5;
+}
+
+.empty {
+  padding: 8px 12px;
+}
+
+.list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 12px;
+}
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* What a new or changed row writes, under its name. */
+.details {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  /* Lines up with the name, after the status column. */
+  padding-inline-start: 92px;
+  padding-bottom: 4px;
+  font-size: 12px;
+}
+
+.fieldLabel.fieldLabel {
+  font-size: 12px;
+}
+
+.change {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.value.value {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.arrow {
+  flex: none;
+  font-size: 10px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.dimmed {
+  opacity: 0.5;
+}
+
+.statusColumn {
+  flex: 0 0 84px;
+}
+
+.statusColumn :global(.ant-tag) {
+  margin: 0;
+}
+
+.name.name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.lock {
+  color: var(--ant-color-text-secondary);
+}
+
+.status {
+  margin-inline-end: auto;
+}

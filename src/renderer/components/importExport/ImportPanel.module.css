@@ -1,0 +1,13 @@
+.subtitle {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.dropZone {
+  padding: 16px;
+}
+
+.dropIcon.dropIcon {
+  font-size: 32px;
+  color: var(--ant-color-primary);
+}

@@ -14,6 +14,7 @@ import {
 import type { Location, LocationView } from '../utils/location';
 import type { CompareFilter } from '../utils/compare';
 import { createMatcher } from '../utils/search';
+import { useImportStore } from './import';
 import { getLocationContext, getSettings } from './settings';
 
 export type PaneMode = 'detail' | 'new';
@@ -230,18 +231,25 @@ const finishDelete = (
   }
 };
 
+// An import can't be left until it finishes: its review shows what failed.
+const importing = () => useImportStore.getState().running;
+
 // Pages stay mounted while hidden, so each keeps its state.
-const showPage = (page: Page) => set({ page });
+const showPage = (page: Page) => {
+  if (!importing()) set({ page });
+};
 
 const showSettingsSection = (settingsSection: SettingsSection) =>
   set({ settingsSection });
 
 // Without a section, Settings opens on the one used last.
-const openSettings = (section?: SettingsSection) =>
+const openSettings = (section?: SettingsSection) => {
+  if (importing()) return;
   set(state => ({
     page: 'settings',
     settingsSection: section ?? state.settingsSection
   }));
+};
 
 // Shows a parameter that was just created: selects it, expands the tree to
 // it and goes to its folder unless the table already lists it.

@@ -2,7 +2,7 @@
 // Query. A load streams its pages and values into the query cache, so the
 // table fills in while it runs.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryFunctionContext } from '@tanstack/react-query';
+import type { QueryClient, QueryFunctionContext } from '@tanstack/react-query';
 import pAll from 'p-all';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { MAX_DELETES_PER_REQUEST } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
@@ -13,6 +13,7 @@ import { feedback } from '../feedback';
 import { classifyFetchError, describeError } from '../utils/awsErrors';
 import type { FetchErrorKind } from '../utils/awsErrors';
 import { getSettings, useSettingsStore } from './settings';
+import { ssmReads } from './ssmRateLimit';
 
 // The metadata from DescribeParameters, plus the value fields from
 // GetParameters once they are loaded.
@@ -114,17 +115,34 @@ const withValues = (
 
 type Update = (change: (list: ParameterList) => ParameterList) => void;
 
-const loadValues = (names: string[], update: Update) =>
-  pAll(
-    chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
+// Thrown by a queued value call of a load that is no longer current, so it
+// isn't sent.
+class StaleLoad extends Error {}
+
+// The batches of every page share the SSM read limit, so overlapping pages
+// can't add up to more calls than it allows.
+const loadValues = (
+  names: string[],
+  update: Update,
+  isCurrent: () => boolean
+) =>
+  Promise.all(
+    chunk(names, VALUES_BATCH_SIZE).map(async batch => {
       try {
-        const { parameters } = await parametersService.getValues(batch);
+        const { parameters } = await ssmReads.schedule(
+          () => parametersService.getValues(batch),
+          {
+            check: () => {
+              if (!isCurrent()) throw new StaleLoad();
+            }
+          }
+        );
         update(list => withValues(list, parameters));
       } catch (error) {
+        if (error instanceof StaleLoad) return;
         console.error('Something went wrong while fetching parameters', error);
       }
-    }),
-    { concurrency: 2 }
+    })
   );
 
 const notifyLoadError = (error: unknown) => {
@@ -170,7 +188,7 @@ const loadParameters = async ({
       const names = page.parameters.flatMap(p => (p.Name ? [p.Name] : []));
       names.forEach(name => seen.add(name));
       update(list => withMetadata(list, page.parameters, changes.deleted));
-      valueLoads.push(loadValues(names, update));
+      valueLoads.push(loadValues(names, update, isCurrent));
 
       ({ nextToken } = page);
     } while (nextToken);
@@ -291,20 +309,30 @@ const without = (list: ParameterList, names: string[]): ParameterList => {
   return { ...list, byName };
 };
 
-// Creates a parameter, or with `overwrite` saves a new version of one.
+// Creates a parameter, or with `overwrite` saves a new version of one, and
+// shows it in the loaded list. Every save in the app goes through here.
+export const putParameter = async (
+  client: QueryClient,
+  request: PutParameterRequest
+) => {
+  const key = currentKey();
+  const result = await parametersService.put(request);
+  recordChange(key, request.name, 'created');
+  client.setQueryData<ParameterList>(
+    key,
+    list => list && withPut(list, request, result.version)
+  );
+  return result;
+};
+
+// Loads the current profile and region again, for code outside components.
+export const refreshParameters = (client: QueryClient) =>
+  client.refetchQueries({ queryKey: currentKey() });
+
 export const usePutParameter = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (request: PutParameterRequest) => {
-      const key = currentKey();
-      const result = await parametersService.put(request);
-      recordChange(key, request.name, 'created');
-      client.setQueryData<ParameterList>(
-        key,
-        list => list && withPut(list, request, result.version)
-      );
-      return result;
-    }
+    mutationFn: (request: PutParameterRequest) => putParameter(client, request)
   });
 };
 
