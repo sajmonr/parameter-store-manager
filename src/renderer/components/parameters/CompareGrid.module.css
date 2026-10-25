@@ -1,3 +1,12 @@
+/* Holds the grid and, during a slow first load, the progress over it. */
+.frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Scrolls both ways; the header row and the key column are sticky in it. */
 .scroll {
   flex: 1;
@@ -174,9 +183,15 @@
   font-weight: 600;
 }
 
+/* Over the placeholder rows, so showing it moves nothing. */
 .progress {
-  flex: none;
-  margin: 0 16px 12px;
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  z-index: 3;
+  width: min(420px, calc(100% - 32px));
+  transform: translateX(-50%);
+  box-shadow: var(--ant-box-shadow-secondary);
 }
 
 .empty {

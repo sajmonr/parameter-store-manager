@@ -68,7 +68,10 @@ const startComparing = async (loaded = 'Port') => {
   renderApp();
   await screen.findByText(loaded);
   await user.click(within(modeSwitch()).getByText('Compare'));
-  await screen.findByRole('table', { name: 'Compare environments' });
+  // The columns show first; the rows once everything has loaded.
+  await within(
+    await screen.findByRole('table', { name: 'Compare environments' })
+  ).findAllByRole('rowheader');
   return user;
 };
 
@@ -274,7 +277,8 @@ const holdValues = () => {
   return values;
 };
 
-const skeleton = () => screen.queryByLabelText('Loading parameters');
+// The grid's placeholder rows during the first load.
+const placeholders = () => grid().querySelectorAll('.ant-skeleton').length;
 
 describe('Compare mode while loading', () => {
   it('waits for the first load, then shows the comparison', async () => {
@@ -284,19 +288,23 @@ describe('Compare mode while loading', () => {
     await screen.findByText('Port');
     await user.click(within(modeSwitch()).getByText('Compare'));
 
+    // The columns show straight away; the rows wait.
     expect(
-      screen.queryByRole('table', { name: 'Compare environments' })
-    ).toBeNull();
-    expect(skeleton()).toBeInTheDocument();
+      within(grid())
+        .getAllByRole('columnheader')
+        .map(header => header.textContent)
+    ).toEqual(['Key', 'development–', 'staging–', 'production–']);
+    expect(within(grid()).queryAllByRole('rowheader')).toHaveLength(0);
+    expect(placeholders()).toBeGreaterThan(0);
     // No counts from names still arriving.
     expect(within(filter()).getAllByText('–')).toHaveLength(3);
     expect(within(filter()).queryByText('3')).toBeNull();
     await user.click(within(filter()).getByText('Missing'));
-    expect(skeleton()).toBeInTheDocument();
+    expect(placeholders()).toBeGreaterThan(0);
 
     await act(async () => values.open());
     await waitFor(() => expect(keyNames()).toEqual(['Secret']));
-    expect(skeleton()).toBeNull();
+    expect(placeholders()).toBe(0);
   });
 
   it('says how far a slow load has got', async () => {
@@ -333,7 +341,7 @@ describe('Compare mode while loading', () => {
     ).toBeInTheDocument();
 
     await act(async () => values.open());
-    await screen.findByRole('table', { name: 'Compare environments' });
+    await waitFor(() => expect(placeholders()).toBe(0));
     expect(screen.queryByText(/Loading values…/)).toBeNull();
   });
 
@@ -351,8 +359,7 @@ describe('Compare mode while loading', () => {
     await waitFor(() =>
       expect(api.parametersService.getValues).toHaveBeenCalledTimes(2)
     );
-    expect(grid()).toBeInTheDocument();
-    expect(skeleton()).toBeNull();
+    expect(placeholders()).toBe(0);
     expect(within(rowOf('Flag')).getByText('Differs')).toBeInTheDocument();
   });
 });

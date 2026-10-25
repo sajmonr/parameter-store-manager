@@ -12,7 +12,6 @@ import {
 import { filterKeys } from '../../utils/compare';
 import type { CompareKey, Comparison } from '../../utils/compare';
 import CompareGrid from './CompareGrid';
-import CompareLoading from './CompareLoading';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
 import StatusBar from './StatusBar';
@@ -56,7 +55,7 @@ const renderContent = (
           checked={[]}
           comparison={compared.comparison}
         />
-        {compared.ready ? <CompareGrid {...compared} /> : <CompareLoading />}
+        <CompareGrid {...compared} />
       </>
     );
   }

@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Tag, Tooltip, Typography } from 'antd';
+import { Skeleton, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   FolderOpenOutlined,
@@ -23,6 +23,7 @@ import type {
 import { leafOf } from '../../utils/paths';
 import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
+import CompareProgress from './CompareProgress';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
@@ -246,17 +247,55 @@ const emptyStateOf = (comparison: Comparison, filter: CompareFilter) => {
   );
 };
 
+// Widths of the key and value placeholders, so rows don't look identical.
+const PLACEHOLDER_ROWS: [key: number, value: number][] = [
+  [40, 55],
+  [60, 30],
+  [35, 70],
+  [50, 40],
+  [45, 60],
+  [30, 35],
+  [55, 50],
+  [40, 45]
+];
+
+const Bar = ({ width }: { width: number }) => (
+  <Skeleton.Input
+    active
+    size="small"
+    style={{ width: `${width}%`, minWidth: 0, height: 14 }}
+  />
+);
+
+// The rows' places during the first load.
+const PlaceholderRows = ({ columns }: { columns: number }) =>
+  PLACEHOLDER_ROWS.map(([key, value], index) => (
+    <div key={index} role="row" className={styles.row}>
+      <div className={styles.keyCell}>
+        <Bar width={key} />
+      </div>
+      {Array.from({ length: columns }, (_, column) => (
+        <div key={column} className={styles.cell}>
+          <Bar width={((value + column * 15) % 60) + 25} />
+        </div>
+      ))}
+    </div>
+  ));
+
 interface CompareGridProps {
   comparison: Comparison;
   // The keys the filter lists.
   keys: CompareKey[];
+  // False during the first load: the frame shows with placeholder rows.
+  ready: boolean;
 }
 
 // The service's keys under the folder, one column per environment. The
 // header row and the key column stay put while the values scroll; the
 // columns never get narrower than 200px, so many environments scroll
-// sideways.
-const CompareGrid = ({ comparison, keys }: CompareGridProps) => {
+// sideways. The environments are known from the settings, so the header
+// shows from the start and only the rows wait for the first load.
+const CompareGrid = ({ comparison, keys, ready }: CompareGridProps) => {
   const selectedName = useUiStore(state => state.selectedName);
   const revealed = useUiStore(state => state.revealed);
   const filter = useUiStore(state => state.compareFilter);
@@ -276,7 +315,7 @@ const CompareGrid = ({ comparison, keys }: CompareGridProps) => {
     [comparison, environments]
   );
 
-  if (!keys.length) return emptyStateOf(comparison, filter);
+  if (ready && !keys.length) return emptyStateOf(comparison, filter);
 
   const style = {
     '--compare-columns': `${KEY_COLUMN_WIDTH}px repeat(${environments.length}, minmax(${MIN_ENV_COLUMN_WIDTH}px, 1fr))`,
@@ -284,54 +323,61 @@ const CompareGrid = ({ comparison, keys }: CompareGridProps) => {
   } as CSSProperties;
 
   return (
-    <div className={styles.scroll}>
-      <div
-        role="table"
-        aria-label="Compare environments"
-        aria-busy={loading}
-        className={styles.grid}
-        style={style}
-      >
-        <div role="row" className={cx(styles.row, styles.headerRow)}>
-          <div role="columnheader" className={styles.keyCell}>
-            Key
-          </div>
-          {environments.map(({ segment, color }, index) => (
-            <div key={segment} role="columnheader" className={styles.cell}>
-              <EnvironmentDot color={color} />
-              <span className={styles.envName}>{segment}</span>
-              <span className={styles.envCount}>{counts[index]}</span>
+    <div className={styles.frame}>
+      <div className={styles.scroll}>
+        <div
+          role="table"
+          aria-label="Compare environments"
+          aria-busy={loading || !ready}
+          className={styles.grid}
+          style={style}
+        >
+          <div role="row" className={cx(styles.row, styles.headerRow)}>
+            <div role="columnheader" className={styles.keyCell}>
+              Key
             </div>
-          ))}
-        </div>
-        {rows.map(row => {
-          if (isFolderRow(row)) {
-            return (
-              <div key={row.id} role="row" className={styles.folderRow}>
-                <span className={styles.folderLabel}>
-                  <FolderOutlined />
-                  <Mono size={13}>
-                    {row.folder.slice(0, -delimiter.length)}
-                  </Mono>
-                  <span className={styles.envCount}>{row.count}</span>
+            {environments.map(({ segment, color }, index) => (
+              <div key={segment} role="columnheader" className={styles.cell}>
+                <EnvironmentDot color={color} />
+                <span className={styles.envName}>{segment}</span>
+                <span className={styles.envCount}>
+                  {ready ? counts[index] : '–'}
                 </span>
               </div>
-            );
-          }
-          const own = [...row.cells.values()].some(
-            p => p.Name === selectedName
-          );
-          return (
-            <KeyRow
-              key={row.key}
-              row={row}
-              environments={environments}
-              selectedName={own ? selectedName : null}
-              revealed={revealed}
-            />
-          );
-        })}
+            ))}
+          </div>
+          {!ready && <PlaceholderRows columns={environments.length} />}
+          {ready &&
+            rows.map(row => {
+              if (isFolderRow(row)) {
+                return (
+                  <div key={row.id} role="row" className={styles.folderRow}>
+                    <span className={styles.folderLabel}>
+                      <FolderOutlined />
+                      <Mono size={13}>
+                        {row.folder.slice(0, -delimiter.length)}
+                      </Mono>
+                      <span className={styles.envCount}>{row.count}</span>
+                    </span>
+                  </div>
+                );
+              }
+              const own = [...row.cells.values()].some(
+                p => p.Name === selectedName
+              );
+              return (
+                <KeyRow
+                  key={row.key}
+                  row={row}
+                  environments={environments}
+                  selectedName={own ? selectedName : null}
+                  revealed={revealed}
+                />
+              );
+            })}
+        </div>
       </div>
+      {!ready && <CompareProgress />}
     </div>
   );
 };
