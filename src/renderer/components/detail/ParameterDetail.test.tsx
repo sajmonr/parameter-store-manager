@@ -138,8 +138,7 @@ describe('ParameterDetail', () => {
     setup();
     await user.click(screen.getByRole('button', { name: /Duplicate/ }));
     expect(useUiStore.getState().newPrefill).toEqual({
-      folder: '/dev/app/',
-      name: 'PasswordCopy',
+      source: '/dev/app/Password',
       description: 'Login',
       type: 'SecureString',
       kmsKey: 'alias/aws/ssm',

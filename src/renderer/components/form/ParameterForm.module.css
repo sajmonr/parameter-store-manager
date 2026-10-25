@@ -1,23 +1,80 @@
-.form :global(.ant-form-item) {
+.form :global(.ant-form-item),
+.form :global(.ant-form-item-with-help) {
   margin-bottom: 18px;
 }
 
-.name {
-  flex: 1;
-  min-width: 0;
-}
-
 .mono,
-.mono textarea {
+.mono textarea,
+.mono :global(.ant-select-content) {
   font-family: var(--ant-font-family-code);
 }
 
-.path {
-  overflow-wrap: anywhere;
+/* Lets a label hold an action or a prefix on its right. */
+.wideLabel :global(.ant-form-item-label > label) {
+  width: 100%;
+}
+
+.wideLabel :global(.ant-form-item-label > label::after) {
+  display: none;
+}
+
+.labelRow {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.labelAction {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* Truncates from the left, so the end of the path stays visible. */
+.prefix {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: right;
+  font-family: var(--ant-font-family-code);
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.prefixText {
+  unicode-bidi: plaintext;
+}
+
+.extra {
+  margin-top: 4px;
+}
+
+.code {
+  font-family: var(--ant-font-family-code);
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.switch {
+  align-self: flex-start;
+}
+
+.alert {
+  margin-bottom: 18px;
 }
 
 .hint {
   flex: 1;
   font-size: 12px;
   color: var(--ant-color-text-tertiary);
+}
+
+/* Clears the character count on the right of the value. */
+.valueNote {
+  display: block;
+  padding-right: 88px;
 }

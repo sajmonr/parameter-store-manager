@@ -24,8 +24,8 @@ export type SettingsSection = 'aws' | 'services' | 'display';
 
 // The new-parameter form's starting values when duplicating.
 export interface NewParameterPrefill {
-  folder?: string;
-  name?: string;
+  // The duplicated parameter; the form starts on its name with 'Copy' added.
+  source: string;
   description?: string;
   type?: EditableParameterType;
   kmsKey?: string;

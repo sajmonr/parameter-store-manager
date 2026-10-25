@@ -1,0 +1,26 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  cursor: pointer;
+  user-select: none;
+}
+
+.chip:hover {
+  border-color: var(--ant-color-primary-hover);
+}
+
+.checked {
+  background: var(--ant-color-primary-bg);
+  border-color: var(--ant-color-primary);
+}

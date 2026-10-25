@@ -336,6 +336,34 @@ export const usePutParameter = () => {
   });
 };
 
+export interface CreateResult {
+  created: string[];
+  // Each name that wasn't created, with why.
+  failed: Map<string, string>;
+}
+
+// Creates the parameters, 5 at a time. A failed one doesn't stop the others.
+export const useCreateParameters = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (requests: PutParameterRequest[]) => {
+      const result: CreateResult = { created: [], failed: new Map() };
+      await pAll(
+        requests.map(request => async () => {
+          try {
+            await putParameter(client, request);
+            result.created.push(request.name);
+          } catch (error) {
+            result.failed.set(request.name, describeError(error as ApiError));
+          }
+        }),
+        { concurrency: 5 }
+      );
+      return result;
+    }
+  });
+};
+
 export interface DeleteResult {
   deleted: string[];
   // Names SSM didn't delete, or that were in a call that failed.

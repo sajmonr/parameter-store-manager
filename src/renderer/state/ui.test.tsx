@@ -74,7 +74,7 @@ describe('ui state', () => {
 
   it('opens the new form with a prefill', () => {
     setup();
-    const prefill = { folder: '/dev/', name: 'TitleCopy' };
+    const prefill = { source: '/dev/Title' };
     uiActions.openNewParameter(prefill);
     expect(ui().paneMode).toBe('new');
     expect(ui().newPrefill).toBe(prefill);
