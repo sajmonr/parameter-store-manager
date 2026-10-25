@@ -34,9 +34,6 @@ export interface Comparison {
   keys: CompareKey[];
   // Every key under the folder, ignoring the search.
   total: number;
-  // The keys in `keys` with a value still loading. Until they arrive, the
-  // Differs filter can't tell whether they differ.
-  pending: number;
   // The keys each filter lists, from `keys`.
   counts: Record<CompareFilter, number>;
 }
@@ -115,10 +112,6 @@ export const compare = (
     environments,
     keys,
     total: cellsByKey.size,
-    pending: loading
-      ? keys.filter(k => [...k.cells.values()].some(p => p.Value === undefined))
-          .length
-      : 0,
     counts: {
       all: keys.length,
       differs: keys.filter(isDiffering).length,

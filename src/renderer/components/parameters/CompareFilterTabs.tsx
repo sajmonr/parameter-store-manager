@@ -1,4 +1,4 @@
-import { Segmented, Spin, Typography } from 'antd';
+import { Segmented, Typography } from 'antd';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { CompareFilter, Comparison } from '../../utils/compare';
 import { plural } from '../../utils/plural';
@@ -12,8 +12,7 @@ const FILTERS: { value: CompareFilter; label: string; color?: string }[] = [
 ];
 
 // In place of the environment tabs while comparing: which keys to list, with
-// the keys matching the search in each. Differs can still grow while values
-// load, so it shows a spinner until they have.
+// the keys matching the search in each.
 const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
   const filter = useUiStore(state => state.compareFilter);
   return (
@@ -31,9 +30,6 @@ const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
               <span className={styles.tabCount}>
                 {comparison.counts[value]}
               </span>
-              {value === 'differs' && comparison.pending > 0 && (
-                <Spin size="small" aria-label="Values still loading" />
-              )}
             </span>
           )
         }))}

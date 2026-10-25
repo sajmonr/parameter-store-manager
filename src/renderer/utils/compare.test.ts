@@ -119,14 +119,10 @@ describe('compare', () => {
     expect(
       byKey(compare(compass(), unloaded, everything, ctx)).Secret
     ).toMatchObject({ differs: false, unreadable: ['staging'] });
-    expect(compare(compass(), unloaded, everything, ctx).pending).toBe(0);
-    // Still loading: not unreadable yet, but pending.
-    const loading = compare(compass(), unloaded, everything, ctx, true);
-    expect(byKey(loading).Secret).toMatchObject({
-      differs: false,
-      unreadable: []
-    });
-    expect(loading.pending).toBe(1);
+    // Still loading: not unreadable yet.
+    expect(
+      byKey(compare(compass(), unloaded, everything, ctx, true)).Secret
+    ).toMatchObject({ differs: false, unreadable: [] });
   });
 
   it('keeps to the folder, with folders relative to it', () => {
