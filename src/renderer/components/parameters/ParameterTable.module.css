@@ -17,6 +17,27 @@
   font-size: 13px;
 }
 
+/* Placeholder rows line up with the columns themselves, without the
+   padding antd gives its empty state. */
+.table :global(.ant-table-tbody > tr.ant-table-placeholder > td.ant-table-cell),
+.table
+  :global(
+    .ant-table-tbody
+      > tr.ant-table-placeholder
+      > td.ant-table-cell
+      > .ant-table-expanded-row-fixed
+  ) {
+  padding: 0;
+  margin: 0;
+  text-align: start;
+  vertical-align: top;
+}
+
+/* The placeholder never scrolls; antd sets the overflow inline. */
+.placeholder :global(.ant-table-body) {
+  overflow: hidden !important;
+}
+
 .table :global(.ant-table-row) {
   cursor: pointer;
 }

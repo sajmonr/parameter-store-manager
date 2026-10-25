@@ -154,10 +154,11 @@ export const useCompareMode = () => {
   return compareOn && isServiceLocation(location);
 };
 
-// Whether a comparison can be trusted: a load has finished for this profile
-// and region. During the first one, names and values are still arriving, so
-// keys would look missing or equal. A refresh keeps the previous list.
-export const useComparisonReady = () => {
+// Whether a load has finished for this profile and region. During the first
+// one, names and values are still arriving: counts would keep rolling and a
+// comparison would see keys as missing or equal. A refresh keeps the
+// previous list, so it stays loaded.
+export const useLoaded = () => {
   const { syncedAt, loading } = useParameters();
   return !!syncedAt || !loading;
 };

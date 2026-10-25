@@ -5,7 +5,7 @@ import { useUiStore } from '../../state/ui';
 import {
   useCheckedNames,
   useComparison,
-  useComparisonReady,
+  useLoaded,
   useMatcher,
   useVisibleParameters
 } from '../../state/views';
@@ -38,7 +38,26 @@ const renderContent = (
 ) => {
   switch (loadState) {
     case 'loading':
-      return <TableSkeleton />;
+      // The place is known from the settings before any parameter is, so
+      // only the rows wait.
+      return (
+        <>
+          <ParameterBreadcrumb
+            count={0}
+            checked={[]}
+            comparison={compared?.comparison}
+          />
+          {compared ? (
+            <CompareGrid {...compared} />
+          ) : (
+            <ParameterTable
+              parameters={[]}
+              checked={[]}
+              placeholder={<TableSkeleton />}
+            />
+          )}
+        </>
+      );
     case 'empty':
       return <EmptyAccount />;
     case 'ready':
@@ -78,7 +97,7 @@ const ParameterBrowser = () => {
   const checked = useCheckedNames();
   const { query } = useMatcher();
   const comparison = useComparison();
-  const ready = useComparisonReady();
+  const ready = useLoaded();
   const filter = useUiStore(state => state.compareFilter);
   const compared = useMemo(
     () =>

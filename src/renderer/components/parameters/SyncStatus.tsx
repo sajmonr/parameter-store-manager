@@ -5,16 +5,10 @@ import TimeAgo from '../common/TimeAgo';
 // When the parameters were last loaded. Nothing during the first load: the
 // count next to it already says it's loading.
 const SyncStatus = () => {
-  const {
-    loading,
-    fetchError: error,
-    parameters,
-    syncedAt: lastSynced
-  } = useParameters();
-  const hasData = parameters.length > 0;
+  const { loading, fetchError: error, syncedAt: lastSynced } = useParameters();
 
   let content = null;
-  if (loading) content = hasData ? 'Syncing…' : null;
+  if (loading) content = lastSynced ? 'Syncing…' : null;
   else if (error) content = 'Last sync failed';
   else if (lastSynced)
     content = (

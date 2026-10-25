@@ -1,6 +1,6 @@
 import { Segmented, Typography } from 'antd';
 import { uiActions, useUiStore } from '../../state/ui';
-import { useComparisonReady } from '../../state/views';
+import { useLoaded } from '../../state/views';
 import type { CompareFilter, Comparison } from '../../utils/compare';
 import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
@@ -17,7 +17,7 @@ const FILTERS: { value: CompareFilter; label: string; color?: string }[] = [
 // the first load: a dash until then.
 const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
   const filter = useUiStore(state => state.compareFilter);
-  const ready = useComparisonReady();
+  const ready = useLoaded();
   return (
     <>
       <Segmented

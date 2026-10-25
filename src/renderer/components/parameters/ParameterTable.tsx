@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { GetRef, TableColumnsType } from 'antd';
 import { AppstoreOutlined, LockOutlined } from '@ant-design/icons';
@@ -76,11 +77,18 @@ interface ParameterTableProps {
   parameters: ParameterEntry[];
   // The checked rows' names (see views.useCheckedNames).
   checked: string[];
+  // Shown in place of the rows while there are none, such as placeholder
+  // rows during the first load.
+  placeholder?: ReactNode;
 }
 
 // A row's checkbox checks it for bulk actions; clicking anywhere else on the
 // row opens it in the detail pane. Group rows have no checkbox.
-const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
+const ParameterTable = ({
+  parameters,
+  checked,
+  placeholder
+}: ParameterTableProps) => {
   const checkContext = useCheckContext();
   const selectedName = useUiStore(state => state.selectedName);
   const location = useLocation();
@@ -184,7 +192,9 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
       {width > 0 && height > 0 && (
         <Table
           ref={tableRef}
-          className={styles.table}
+          className={
+            placeholder ? `${styles.table} ${styles.placeholder}` : styles.table
+          }
           size="small"
           virtual
           pagination={false}
@@ -216,6 +226,7 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
           }}
           columns={columns}
           dataSource={rows}
+          locale={placeholder ? { emptyText: placeholder } : undefined}
           scroll={{ x: width, y: height - HEADER_HEIGHT }}
           rowClassName={row => {
             if (isGroupRow(row)) return styles.groupRow ?? '';
