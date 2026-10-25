@@ -469,6 +469,31 @@ describe('ExportPanel', () => {
     expect(api.filesService.save).not.toHaveBeenCalled();
   });
 
+  it("doesn't send the queued value batches after Cancel", async () => {
+    const user = userEvent.setup();
+    const many = Array.from({ length: 60 }, (_, i) => makeParameter(`/p${i}`));
+    setup({ loaded: many });
+    api.serveParameters(many);
+    const inFlight: (() => void)[] = [];
+    api.parametersService.getValues.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          inFlight.push(() =>
+            resolve({ parameters: [], invalidParameters: [] })
+          );
+        })
+    );
+
+    await user.click(exportButton());
+    // 6 batches; the read limit lets 4 run at once.
+    await waitFor(() => expect(inFlight).toHaveLength(4));
+    await user.click(cancelButton()!);
+    await act(async () => inFlight.forEach(resolve => resolve()));
+
+    expect(api.parametersService.getValues).toHaveBeenCalledTimes(4);
+    expect(api.filesService.save).not.toHaveBeenCalled();
+  });
+
   it('ignores progress from a batch that finishes after another failed', async () => {
     const user = userEvent.setup();
     const many = Array.from({ length: 20 }, (_, i) => makeParameter(`/p${i}`));

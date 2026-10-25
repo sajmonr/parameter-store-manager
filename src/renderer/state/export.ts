@@ -2,7 +2,6 @@
 // may be out of date and may miss values whose load failed. It runs outside
 // any component, so it carries on whichever page is shown.
 import { create } from 'zustand';
-import pAll from 'p-all';
 import type { ApiError } from '../clients/call';
 import { feedback } from '../feedback';
 import { accountService, filesService, parametersService } from '../services';
@@ -19,6 +18,7 @@ import { plural } from '../utils/plural';
 import { createPathMatcher, literalPrefix } from '../utils/search';
 import { chunk, VALUES_BATCH_SIZE } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
+import { ssmReads } from './ssmRateLimit';
 
 export type ExportProgress =
   | { phase: 'listing'; found: number }
@@ -110,19 +110,31 @@ const loadValues = async (
   const deleted = new Set<string>();
   let done = 0;
   onProgress({ phase: 'values', done, total: names.length });
-  await pAll(
-    chunk(names, VALUES_BATCH_SIZE).map(batch => async () => {
-      check();
-      const res = await parametersService.getValues(batch, includeSecureValues);
-      check();
-      res.parameters.forEach(
-        ({ Name, Type, Value }) => Name && fetched.set(Name, { Type, Value })
-      );
-      res.invalidParameters.forEach(name => deleted.add(name));
-      done += batch.length;
-      onProgress({ phase: 'values', done, total: names.length });
-    }),
-    { concurrency: 2, stopOnError: true }
+  // After the first failure the queued batches aren't sent.
+  const failed = new AbortController();
+  const checkBatch = () => {
+    failed.signal.throwIfAborted();
+    check();
+  };
+  await Promise.all(
+    chunk(names, VALUES_BATCH_SIZE).map(async batch => {
+      try {
+        const res = await ssmReads.schedule(
+          () => parametersService.getValues(batch, includeSecureValues),
+          { check: checkBatch }
+        );
+        check();
+        res.parameters.forEach(
+          ({ Name, Type, Value }) => Name && fetched.set(Name, { Type, Value })
+        );
+        res.invalidParameters.forEach(name => deleted.add(name));
+        done += batch.length;
+        onProgress({ phase: 'values', done, total: names.length });
+      } catch (error) {
+        failed.abort(error);
+        throw error;
+      }
+    })
   );
   return { fetched, deleted };
 };
