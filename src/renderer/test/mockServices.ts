@@ -68,11 +68,15 @@ export const menuService = {
   )
 };
 
+// What DescribeParameters returns for a parameter: no value, not even an
+// empty field.
+export const metadataOf = ({ Value: _, ...metadata }: ParameterEntry) =>
+  metadata;
+
 // Makes the parameters service serve `parameters` as AWS would.
 export const serveParameters = (parameters: ParameterEntry[]) => {
   parametersService.describe.mockResolvedValue({
-    // DescribeParameters doesn't return values.
-    parameters: parameters.map(p => ({ ...p, Value: undefined }))
+    parameters: parameters.map(metadataOf)
   });
   parametersService.getValues.mockImplementation(names =>
     Promise.resolve({

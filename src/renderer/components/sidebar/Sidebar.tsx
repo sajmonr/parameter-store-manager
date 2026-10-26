@@ -31,7 +31,10 @@ const Sidebar = () => {
     environments: <EnvironmentsTree />
   };
   let tree = trees[view];
-  if (loadState === 'loading') {
+  // A grouped view's services and environments are known from the settings,
+  // so its tree shows from the start; the Paths view's folders come from the
+  // names.
+  if (loadState === 'loading' && view === 'paths') {
     tree = (
       <Skeleton
         active

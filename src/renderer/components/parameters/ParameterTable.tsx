@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { GetRef, TableColumnsType } from 'antd';
 import { AppstoreOutlined, LockOutlined } from '@ant-design/icons';
@@ -76,11 +77,18 @@ interface ParameterTableProps {
   parameters: ParameterEntry[];
   // The checked rows' names (see views.useCheckedNames).
   checked: string[];
+  // Shown in place of the rows while there are none, such as placeholder
+  // rows during the first load.
+  placeholder?: ReactNode;
 }
 
 // A row's checkbox checks it for bulk actions; clicking anywhere else on the
 // row opens it in the detail pane. Group rows have no checkbox.
-const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
+const ParameterTable = ({
+  parameters,
+  checked,
+  placeholder
+}: ParameterTableProps) => {
   const checkContext = useCheckContext();
   const selectedName = useUiStore(state => state.selectedName);
   const location = useLocation();
@@ -95,12 +103,9 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
     [parameters, location, context]
   );
   const pageVisible = usePageVisible();
-  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const revealed = useUiStore(state => state.revealed);
   const [ref, { width, height }] = useElementSize();
   const tableRef = useRef<GetRef<typeof Table>>(null);
-
-  const toggleReveal = (name: string) =>
-    setRevealed(prev => ({ ...prev, [name]: !prev[name] }));
 
   // Also when the location changes, such as on a view switch: the selection
   // is kept but sits elsewhere in the new rows. Not on every row change, so
@@ -160,8 +165,8 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
           !isGroupRow(parameter) && (
             <ValueCell
               parameter={parameter}
-              revealed={!!revealed[parameter.Name]}
-              onToggleReveal={() => toggleReveal(parameter.Name)}
+              revealed={revealed.has(parameter.Name)}
+              onToggleReveal={() => uiActions.toggleReveal(parameter.Name)}
             />
           )
       },
@@ -187,7 +192,9 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
       {width > 0 && height > 0 && (
         <Table
           ref={tableRef}
-          className={styles.table}
+          className={
+            placeholder ? `${styles.table} ${styles.placeholder}` : styles.table
+          }
           size="small"
           virtual
           pagination={false}
@@ -219,6 +226,7 @@ const ParameterTable = ({ parameters, checked }: ParameterTableProps) => {
           }}
           columns={columns}
           dataSource={rows}
+          locale={placeholder ? { emptyText: placeholder } : undefined}
           scroll={{ x: width, y: height - HEADER_HEIGHT }}
           rowClassName={row => {
             if (isGroupRow(row)) return styles.groupRow ?? '';

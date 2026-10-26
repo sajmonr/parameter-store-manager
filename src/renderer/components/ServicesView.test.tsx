@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
@@ -50,6 +50,43 @@ beforeEach(() => {
 });
 
 describe('Services view', () => {
+  it('shows its services, place and columns before any parameter loads', async () => {
+    // The first page of names waits until the test lets it through.
+    let release = () => {};
+    const released = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const serve = api.parametersService.describe.getMockImplementation()!;
+    api.parametersService.describe.mockImplementation(async token => {
+      await released;
+      return serve(token);
+    });
+    renderApp();
+
+    // Known from the settings: the services, the place and the tabs, with a
+    // dash for every count.
+    expect(within(sidebar()).getByText('compass')).toBeInTheDocument();
+    expect(within(sidebar()).getByText('billing')).toBeInTheDocument();
+    expect(
+      within(document.querySelector<HTMLElement>('.ant-breadcrumb')!).getByText(
+        'compass'
+      )
+    ).toBeInTheDocument();
+    expect(within(envTabs()).getByText('development')).toBeInTheDocument();
+    expect(within(envTabs()).getAllByText('–')).toHaveLength(2);
+    expect(
+      within(table()).getByRole('columnheader', { name: 'Key' })
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Loading parameters')).toBeInTheDocument();
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+
+    await act(async () => release());
+    expect(await within(table()).findByText('Port')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Loading parameters')).toBeNull();
+    expect(within(envTabs()).queryByText('–')).toBeNull();
+    expect(await screen.findByText('3 of 6 parameters')).toBeInTheDocument();
+  });
+
   it('opens on the first service, with folders and environment tabs', async () => {
     renderApp();
     await screen.findByText('Port');
@@ -64,7 +101,9 @@ describe('Services view', () => {
       '/development/compass/AppServer/Title',
       '/development/compass/Flag'
     ]);
-    expect(within(table()).getByText('Key')).toBeInTheDocument();
+    expect(
+      within(table()).getByRole('columnheader', { name: 'Key' })
+    ).toBeInTheDocument();
     expect(within(envTabs()).getByText('development')).toBeInTheDocument();
     expect(within(envTabs()).getByText('staging')).toBeInTheDocument();
     expect(

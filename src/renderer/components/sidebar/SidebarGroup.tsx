@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Tree } from 'antd';
 import type { TreeDataNode } from 'antd';
 import { AppstoreOutlined, InboxOutlined } from '@ant-design/icons';
-import { useTreeNames } from '../../state/views';
+import { useLoaded, useTreeNames } from '../../state/views';
 import type { Location } from '../../utils/location';
 import type { SidebarNode } from '../../utils/servicesTree';
 import EnvironmentDot from '../common/EnvironmentDot';
@@ -53,6 +53,8 @@ const SidebarGroup = ({
   const treeData = useMemo(() => withIcons(nodes), [nodes]);
   const { expandedKeys, onExpand, highlight } = expansion;
   const treeNames = useTreeNames();
+  // Counts would keep rolling during the first load: a dash until it ends.
+  const loaded = useLoaded();
   return (
     <>
       <div className={styles.group}>{title}</div>
@@ -80,10 +82,12 @@ const SidebarGroup = ({
               </span>
               <span
                 className={
-                  node.count ? styles.count : `${styles.count} ${styles.empty}`
+                  loaded && node.count
+                    ? styles.count
+                    : `${styles.count} ${styles.empty}`
                 }
               >
-                {node.count}
+                {loaded ? node.count : '–'}
               </span>
             </span>
           </TreeNodeMenu>

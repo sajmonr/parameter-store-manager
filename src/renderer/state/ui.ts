@@ -12,6 +12,7 @@ import {
   validate
 } from '../utils/location';
 import type { Location, LocationView } from '../utils/location';
+import type { CompareFilter } from '../utils/compare';
 import { createMatcher } from '../utils/search';
 import { useImportStore } from './import';
 import { getLocationContext, getSettings } from './settings';
@@ -63,6 +64,13 @@ export interface UiState {
   selectedName: string | null;
   // The table rows checked for bulk actions, by full name.
   checked: Checked;
+  // Whether a service shows its environments side by side instead of one
+  // environment's table. Kept while moving around the Services view; only
+  // a service shows it (see views.useCompareMode).
+  compare: boolean;
+  compareFilter: CompareFilter;
+  // The SecureStrings shown unmasked in the table and the compare grid.
+  revealed: ReadonlySet<string>;
   pendingDelete: DeleteRequest | null;
   // null while the pane is closed.
   paneMode: PaneMode | null;
@@ -79,6 +87,9 @@ export const initialUiState: UiState = {
   expanded: { paths: [], services: [], environments: [] },
   selectedName: null,
   checked: { context: '', names: new Set() },
+  compare: false,
+  compareFilter: 'all',
+  revealed: new Set(),
   pendingDelete: null,
   paneMode: null,
   newPrefill: null,
@@ -181,6 +192,26 @@ const setChecked = (context: string, names: Iterable<string>) =>
 
 const clearChecked = () => set({ checked: initialUiState.checked });
 
+// Switching between the table and the comparison unchecks the rows.
+const setCompare = (compare: boolean) => {
+  if (compare === get().compare) return;
+  set({ compare, checked: initialUiState.checked });
+};
+
+const setCompareFilter = (compareFilter: CompareFilter) =>
+  set({ compareFilter });
+
+// Masks every SecureString again: another profile or region can have a
+// parameter with the same name.
+const clearRevealed = () => set({ revealed: initialUiState.revealed });
+
+const toggleReveal = (name: string) =>
+  set(state => {
+    const revealed = new Set(state.revealed);
+    if (!revealed.delete(name)) revealed.add(name);
+    return { revealed };
+  });
+
 // Opens the delete confirmation.
 const requestDelete = (pendingDelete: DeleteRequest) => set({ pendingDelete });
 
@@ -257,6 +288,10 @@ export const uiActions = {
   closePane,
   setChecked,
   clearChecked,
+  setCompare,
+  setCompareFilter,
+  toggleReveal,
+  clearRevealed,
   requestDelete,
   cancelDelete,
   finishDelete,

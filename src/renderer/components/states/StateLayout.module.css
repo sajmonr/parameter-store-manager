@@ -24,26 +24,17 @@
   text-align: center;
 }
 
-.skeleton {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
+/* Past the checkbox column, and short of the padlock column, like the
+   table's cells; as tall as a row. */
 .skeletonRow {
+  box-sizing: border-box;
+  height: 56px;
+  overflow: hidden;
   display: flex;
-  gap: 24px;
+  gap: 16px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 0 48px 0 36px;
   border-bottom: 1px solid var(--ant-color-border-secondary);
-}
-
-.skeletonHeader {
-  composes: skeletonRow;
-  background: var(--ant-color-fill-alter);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 16px;
 }
 
 .skeletonName {

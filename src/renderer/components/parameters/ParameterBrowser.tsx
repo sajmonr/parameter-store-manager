@@ -1,10 +1,17 @@
+import { useMemo } from 'react';
 import { useParameters } from '../../state/parameters';
 import type { LoadState, ParameterEntry } from '../../state/parameters';
+import { useUiStore } from '../../state/ui';
 import {
   useCheckedNames,
+  useComparison,
+  useListComplete,
   useMatcher,
   useVisibleParameters
 } from '../../state/views';
+import { filterKeys } from '../../utils/compare';
+import type { CompareKey, Comparison } from '../../utils/compare';
+import CompareGrid from './CompareGrid';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
 import StatusBar from './StatusBar';
@@ -14,21 +21,64 @@ import EmptyFolder from '../states/EmptyFolder';
 import EmptyAccount from '../states/EmptyAccount';
 import ConnectionError from '../states/ConnectionError';
 
+// What compare mode lists: the comparison and the keys its filter keeps,
+// which aren't shown until a load has listed every name (`ready`). `failed`
+// when the first load stopped before it did.
+export interface Compared {
+  comparison: Comparison;
+  keys: CompareKey[];
+  ready: boolean;
+  failed: boolean;
+}
+
 const renderContent = (
   loadState: LoadState,
   visible: ParameterEntry[],
   checked: string[],
-  query: string
+  query: string,
+  compared: Compared | null
 ) => {
   switch (loadState) {
     case 'loading':
-      return <TableSkeleton />;
+      // The place is known from the settings before any parameter is, so
+      // only the rows wait.
+      return (
+        <>
+          <ParameterBreadcrumb
+            count={0}
+            checked={[]}
+            comparison={compared?.comparison}
+          />
+          {compared ? (
+            <CompareGrid {...compared} />
+          ) : (
+            <ParameterTable
+              parameters={[]}
+              checked={[]}
+              placeholder={<TableSkeleton />}
+            />
+          )}
+        </>
+      );
     case 'empty':
       return <EmptyAccount />;
     case 'ready':
       break;
     default:
       return <ConnectionError kind={loadState} />;
+  }
+
+  if (compared) {
+    return (
+      <>
+        <ParameterBreadcrumb
+          count={compared.keys.length}
+          checked={[]}
+          comparison={compared.comparison}
+        />
+        <CompareGrid {...compared} />
+      </>
+    );
   }
 
   let table = <ParameterTable parameters={visible} checked={checked} />;
@@ -41,17 +91,31 @@ const renderContent = (
   );
 };
 
-// The main area: breadcrumb and table, or whichever state replaces them.
+// The main area: breadcrumb and table or comparison, or whichever state
+// replaces them.
 const ParameterBrowser = () => {
-  const { loadState } = useParameters();
+  const { loadState, loading } = useParameters();
   const visible = useVisibleParameters();
   const checked = useCheckedNames();
   const { query } = useMatcher();
+  const comparison = useComparison();
+  const ready = useListComplete();
+  const filter = useUiStore(state => state.compareFilter);
+  const compared = useMemo(
+    () =>
+      comparison && {
+        comparison,
+        keys: filterKeys(comparison.keys, filter),
+        ready,
+        failed: !ready && !loading
+      },
+    [comparison, filter, ready, loading]
+  );
 
   return (
     <>
-      {renderContent(loadState, visible, checked, query)}
-      <StatusBar />
+      {renderContent(loadState, visible, checked, query, compared)}
+      <StatusBar compared={compared} />
     </>
   );
 };

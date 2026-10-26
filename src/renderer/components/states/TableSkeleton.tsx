@@ -21,16 +21,10 @@ const Bar = ({ width, height }: { width: number; height: number }) => (
   />
 );
 
+// The table's rows during the first load, under its real header (see
+// ParameterTable's `placeholder`), lined up with its name and value columns.
 const TableSkeleton = () => (
-  <div
-    className={styles.skeleton}
-    aria-busy="true"
-    aria-label="Loading parameters"
-  >
-    <div className={styles.skeletonHeader}>
-      <span className={styles.skeletonName}>Name</span>
-      <span>Value</span>
-    </div>
+  <div aria-busy="true" aria-label="Loading parameters">
     {ROWS.map(([name, value], index) => (
       <div key={index} className={styles.skeletonRow}>
         <div className={styles.skeletonName}>
