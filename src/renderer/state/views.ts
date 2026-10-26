@@ -163,6 +163,12 @@ export const useLoaded = () => {
   return !!syncedAt || !loading;
 };
 
+// Whether a load has succeeded for this profile and region, so every name
+// is listed. Unlike useLoaded, a first load that failed partway doesn't
+// count: its list is missing whole pages, and a comparison would report
+// their keys as missing.
+export const useListComplete = () => !!useParameters().syncedAt;
+
 // The selected service's keys under the selected folder in each of its
 // environments while comparing, otherwise null. Use it once, in the
 // component that owns the main area: it compares every loaded parameter.

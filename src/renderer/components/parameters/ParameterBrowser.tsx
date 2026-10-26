@@ -5,7 +5,7 @@ import { useUiStore } from '../../state/ui';
 import {
   useCheckedNames,
   useComparison,
-  useLoaded,
+  useListComplete,
   useMatcher,
   useVisibleParameters
 } from '../../state/views';
@@ -22,11 +22,13 @@ import EmptyAccount from '../states/EmptyAccount';
 import ConnectionError from '../states/ConnectionError';
 
 // What compare mode lists: the comparison and the keys its filter keeps,
-// which aren't shown until the first load is `ready`.
+// which aren't shown until a load has listed every name (`ready`). `failed`
+// when the first load stopped before it did.
 export interface Compared {
   comparison: Comparison;
   keys: CompareKey[];
   ready: boolean;
+  failed: boolean;
 }
 
 const renderContent = (
@@ -92,21 +94,22 @@ const renderContent = (
 // The main area: breadcrumb and table or comparison, or whichever state
 // replaces them.
 const ParameterBrowser = () => {
-  const { loadState } = useParameters();
+  const { loadState, loading } = useParameters();
   const visible = useVisibleParameters();
   const checked = useCheckedNames();
   const { query } = useMatcher();
   const comparison = useComparison();
-  const ready = useLoaded();
+  const ready = useListComplete();
   const filter = useUiStore(state => state.compareFilter);
   const compared = useMemo(
     () =>
       comparison && {
         comparison,
         keys: filterKeys(comparison.keys, filter),
-        ready
+        ready,
+        failed: !ready && !loading
       },
-    [comparison, filter, ready]
+    [comparison, filter, ready, loading]
   );
 
   return (

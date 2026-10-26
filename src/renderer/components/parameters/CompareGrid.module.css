@@ -183,7 +183,8 @@
   font-weight: 600;
 }
 
-/* Over the placeholder rows, so showing it moves nothing. */
+/* Over the grid's body, so showing it moves nothing: the progress over the
+   placeholder rows, or why there are no rows. */
 .progress {
   position: absolute;
   top: 96px;

@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { CSSProperties, ReactNode } from 'react';
-import { Skeleton, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Button, Skeleton, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   FolderOpenOutlined,
@@ -11,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
 import type { ParameterEntry } from '../../state/parameters';
-import { useParameters } from '../../state/parameters';
+import { refreshParameters, useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import { compareRows, isFolderRow } from '../../utils/compare';
@@ -282,12 +283,38 @@ const PlaceholderRows = ({ columns }: { columns: number }) =>
     </div>
   ));
 
+// In place of the rows when the first load stopped partway: the names it
+// listed aren't all of them, so nothing is compared. It doesn't read the
+// parameters itself: a failed query reloads when a new reader mounts, so
+// showing this would retry on its own, again after every failure.
+const LoadFailed = () => {
+  const client = useQueryClient();
+  return (
+    <div className={styles.progress}>
+      <Alert
+        type="error"
+        showIcon
+        title="Couldn't load every parameter"
+        description="Environments can't be compared until they have all loaded."
+        action={
+          <Button size="small" onClick={() => void refreshParameters(client)}>
+            Retry
+          </Button>
+        }
+      />
+    </div>
+  );
+};
+
 interface CompareGridProps {
   comparison: Comparison;
   // The keys the filter lists.
   keys: CompareKey[];
-  // False during the first load: the frame shows with placeholder rows.
+  // False until a load has listed every name: the frame shows with
+  // placeholder rows, or with no rows and a retry when the first load
+  // `failed`.
   ready: boolean;
+  failed: boolean;
 }
 
 // The service's keys under the folder, one column per environment. The
@@ -295,7 +322,7 @@ interface CompareGridProps {
 // columns never get narrower than 200px, so many environments scroll
 // sideways. The environments are known from the settings, so the header
 // shows from the start and only the rows wait for the first load.
-const CompareGrid = ({ comparison, keys, ready }: CompareGridProps) => {
+const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
   const selectedName = useUiStore(state => state.selectedName);
   const revealed = useUiStore(state => state.revealed);
   const filter = useUiStore(state => state.compareFilter);
@@ -346,7 +373,9 @@ const CompareGrid = ({ comparison, keys, ready }: CompareGridProps) => {
               </div>
             ))}
           </div>
-          {!ready && <PlaceholderRows columns={environments.length} />}
+          {!ready && !failed && (
+            <PlaceholderRows columns={environments.length} />
+          )}
           {ready &&
             rows.map(row => {
               if (isFolderRow(row)) {
@@ -377,7 +406,8 @@ const CompareGrid = ({ comparison, keys, ready }: CompareGridProps) => {
             })}
         </div>
       </div>
-      {!ready && <CompareProgress />}
+      {!ready && !failed && <CompareProgress />}
+      {failed && <LoadFailed />}
     </div>
   );
 };

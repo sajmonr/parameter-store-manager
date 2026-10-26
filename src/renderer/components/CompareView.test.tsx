@@ -345,6 +345,43 @@ describe('Compare mode while loading', () => {
     expect(screen.queryByText(/Loading values…/)).toBeNull();
   });
 
+  it("doesn't compare a first load that failed partway", async () => {
+    // The first page loads; the second fails once, while comparing, then
+    // works.
+    const [first, second] = [parameters.slice(0, 4), parameters.slice(4)];
+    const page = gate();
+    let failSecond = true;
+    api.parametersService.describe.mockImplementation(async nextToken => {
+      if (!nextToken) {
+        return { parameters: first.map(api.metadataOf), nextToken: 'page-2' };
+      }
+      if (failSecond) {
+        failSecond = false;
+        await page.opened;
+        throw new Error('Throttled');
+      }
+      return { parameters: second.map(api.metadataOf) };
+    });
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByText('Flag');
+    await user.click(within(modeSwitch()).getByText('Compare'));
+    await act(async () => page.open());
+
+    expect(
+      await screen.findByText("Couldn't load every parameter")
+    ).toBeInTheDocument();
+    expect(within(grid()).queryAllByRole('rowheader')).toHaveLength(0);
+    expect(placeholders()).toBe(0);
+    expect(within(filter()).getAllByText('–')).toHaveLength(3);
+    // Showing the failure doesn't start another load by itself.
+    expect(api.parametersService.describe).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(keyNames()).toEqual(['Flag', 'Secret', 'Port']));
+    expect(screen.queryByText("Couldn't load every parameter")).toBeNull();
+  });
+
   it('keeps the comparison on screen during a refresh', async () => {
     const user = userEvent.setup();
     const { queryClient } = renderApp();
