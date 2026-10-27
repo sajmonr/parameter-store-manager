@@ -93,7 +93,8 @@ const listEnvs = (envs: string[]) =>
   `${envs.join(', ')}. Deselect ${envs.length > 1 ? 'them' : 'it'}`;
 
 // Creates a parameter, or the same key in several environments of a service.
-// `prefill` comes from Duplicate; without it the form starts at the location.
+// `prefill` comes from Duplicate or from setting a missing value; without it
+// the form starts at the location.
 const ParameterForm = ({
   prefill
 }: {
@@ -110,7 +111,12 @@ const ParameterForm = ({
   const submitting = createParameters.isPending;
 
   const [naming, setNamingState] = useState<Naming>(() =>
-    initialNaming(location, context, prefill?.source ?? null)
+    initialNaming(
+      location,
+      context,
+      prefill?.source ?? null,
+      prefill?.target ?? null
+    )
   );
   // Whether the user has left the key or path field since it was shown.
   const [left, setLeft] = useState(false);
@@ -306,7 +312,7 @@ const ParameterForm = ({
     <>
       <PaneHeader>
         <Typography.Title level={5} style={{ margin: 0 }}>
-          {prefill ? 'Duplicate parameter' : 'New parameter'}
+          {prefill?.source ? 'Duplicate parameter' : 'New parameter'}
         </Typography.Title>
       </PaneHeader>
       <Form
@@ -421,6 +427,7 @@ const ParameterForm = ({
             autoSize={{ minRows: 4, maxRows: 12 }}
             showCount
             maxLength={MAX_VALUE_LENGTH}
+            autoFocus={prefill?.focusValue}
           />
         </Form.Item>
         {failedCount > 0 && (

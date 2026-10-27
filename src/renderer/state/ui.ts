@@ -11,9 +11,14 @@ import {
   treeKeysTo,
   validate
 } from '../utils/location';
-import type { Location, LocationView } from '../utils/location';
+import type {
+  Location,
+  LocationContext,
+  LocationView
+} from '../utils/location';
 import type { CompareFilter } from '../utils/compare';
 import { createMatcher } from '../utils/search';
+import { parse } from '../utils/structure';
 import { useImportStore } from './import';
 import { getLocationContext, getSettings } from './settings';
 
@@ -23,14 +28,32 @@ export type Page = 'parameters' | 'importExport' | 'settings';
 
 export type SettingsSection = 'aws' | 'services' | 'display';
 
-// The new-parameter form's starting values when duplicating.
+// The new-parameter form's starting values: when duplicating, or when
+// setting a key that's missing in an environment.
 export interface NewParameterPrefill {
   // The duplicated parameter; the form starts on its name with 'Copy' added.
-  source: string;
+  source?: string;
+  // The name to create instead, as a service, environment and key.
+  target?: { service: string; env: string; key: string };
   description?: string;
   type?: EditableParameterType;
   kmsKey?: string;
   value?: string;
+  // The value field gets the focus.
+  focusValue?: boolean;
+}
+
+// The copy dialog's starting point.
+export interface CopyRequest {
+  // Tells apart two openings for the same parameter.
+  id: number;
+  // The parameter whose value is copied; the user can pick another
+  // environment's.
+  source: string;
+  // The environments ticked from the start.
+  preselectTargets: string[];
+  // The user is asked to check the source: opened to fill a missing value.
+  pickSource: boolean;
 }
 
 // Parameters waiting for the delete confirmation: the checked rows, a
@@ -72,6 +95,8 @@ export interface UiState {
   // The SecureStrings shown unmasked in the table and the compare grid.
   revealed: ReadonlySet<string>;
   pendingDelete: DeleteRequest | null;
+  // null while the copy dialog is closed.
+  copyRequest: CopyRequest | null;
   // null while the pane is closed.
   paneMode: PaneMode | null;
   newPrefill: NewParameterPrefill | null;
@@ -91,6 +116,7 @@ export const initialUiState: UiState = {
   compareFilter: 'all',
   revealed: new Set(),
   pendingDelete: null,
+  copyRequest: null,
   paneMode: null,
   newPrefill: null,
   settingsSection: 'aws'
@@ -231,6 +257,30 @@ const finishDelete = (
   }
 };
 
+let copyRequests = 0;
+
+// Opens the dialog that copies a parameter's value to other environments
+// of its service.
+const openCopyDialog = (
+  sourceName: string,
+  {
+    preselectTargets = [],
+    pickSource = false
+  }: { preselectTargets?: string[]; pickSource?: boolean } = {}
+) => {
+  copyRequests += 1;
+  set({
+    copyRequest: {
+      id: copyRequests,
+      source: sourceName,
+      preselectTargets,
+      pickSource
+    }
+  });
+};
+
+const closeCopy = () => set({ copyRequest: null });
+
 // An import can't be left until it finishes: its review shows what failed.
 const importing = () => useImportStore.getState().running;
 
@@ -251,14 +301,24 @@ const openSettings = (section?: SettingsSection) => {
   }));
 };
 
+// Whether the main area lists `name` at `location`. Comparing, it lists the
+// service's keys in each of its environments, not only the location's.
+const lists = (location: Location, name: string, context: LocationContext) => {
+  if (get().compare && isServiceLocation(location)) {
+    const match = parse(name, context.structure, context.delimiter);
+    return !!match && contains({ ...location, env: match.env }, name, context);
+  }
+  return contains(location, name, context);
+};
+
 // Shows a parameter that was just created: selects it, expands the tree to
-// it and goes to its folder unless the table already lists it.
+// it and goes to its folder unless the main area already lists it.
 const showCreatedParameter = (name: string) => {
   const context = getLocationContext();
   set({ query: '' });
   const current = getLocation();
   const own = locationOf(name, current.view, context);
-  if (!contains(current, name, context)) setLocation(own);
+  if (!lists(current, name, context)) setLocation(own);
   expand(own.view, treeKeysTo(own, context));
   selectParameter(name);
 };
@@ -295,6 +355,8 @@ export const uiActions = {
   requestDelete,
   cancelDelete,
   finishDelete,
+  openCopyDialog,
+  closeCopy,
   openSettings,
   showSettingsSection,
   showCreatedParameter,

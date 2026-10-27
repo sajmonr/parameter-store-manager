@@ -10,6 +10,7 @@ import {
   validate
 } from '../utils/location';
 import { compare } from '../utils/compare';
+import { copyTargets } from '../utils/copyValue';
 import { folderSet } from '../utils/newParameter';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
@@ -347,4 +348,21 @@ export const useParameterPlace = (name: string) => {
     const color = environments.find(e => e.state === 'current')!.color;
     return { ...match, color, environments };
   }, [name, byName, context]);
+};
+
+// The other environments of `name`'s service, with what copying its value
+// to each would do. Null when it can't be copied: it isn't loaded, it's
+// under Other paths, or its service has only one environment.
+export const useCopyTargets = (name: string) => {
+  const { byName } = useParameters();
+  const place = useParameterPlace(name);
+  const source = byName.get(name);
+  return useMemo(() => {
+    if (!source || !place || place.environments.length < 2) return null;
+    return {
+      source,
+      place,
+      targets: copyTargets(source, place.environments, byName)
+    };
+  }, [source, place, byName]);
 };

@@ -21,8 +21,22 @@
   color: var(--ant-color-primary);
 }
 
+/* A button: its menu sets the value in that environment. */
 .missing {
   border-style: dashed;
   border-color: var(--ant-color-error);
   color: var(--ant-color-text-secondary);
+  cursor: pointer;
+}
+
+.missing:hover,
+.missing:focus-visible,
+.missing.active {
+  border-style: solid;
+  background: var(--ant-color-error-bg);
+  color: var(--ant-color-text);
+}
+
+.add {
+  font-size: 10px;
 }

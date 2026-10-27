@@ -310,20 +310,24 @@ export const useParameters = () => {
   };
 };
 
-// The parameter as SSM would now return it, shown until the next load.
+// The parameter as SSM would now return it, shown until the next load. An
+// overwrite without a type or description keeps the old ones.
 const withPut = (
   list: ParameterList,
   { name, type, value, description, kmsKey }: PutParameterRequest,
   version: number | undefined
 ): ParameterList => {
   const byName = new Map(list.byName);
+  const previous = byName.get(name);
+  let keyId = previous?.KeyId;
+  if (type) keyId = type === 'SecureString' ? kmsKey : undefined;
   byName.set(name, {
-    ...byName.get(name),
+    ...previous,
     Name: name,
-    Type: type,
+    Type: type ?? previous?.Type,
     Value: value,
-    Description: description,
-    KeyId: type === 'SecureString' ? kmsKey : undefined,
+    Description: description ?? previous?.Description,
+    KeyId: keyId,
     LastModifiedDate: new Date(),
     LastModifiedUser: 'Parameter Store Manager',
     Version: version || 1
@@ -383,6 +387,66 @@ export const useCreateParameters = () => {
             result.created.push(request.name);
           } catch (error) {
             result.failed.set(request.name, describeError(error as ApiError));
+          }
+        }),
+        { concurrency: 5 }
+      );
+      return result;
+    }
+  });
+};
+
+const isThrottled = ({ name, code }: ApiError) =>
+  name === 'ThrottlingException' || code === 'ThrottlingException';
+
+const THROTTLE_RETRIES = 3;
+
+// The SDK already backs off while SSM throttles; when it gives up, the save
+// waits 1, 2 and then 4 seconds and tries again.
+const putWithBackoff = async (
+  client: QueryClient,
+  request: PutParameterRequest
+) => {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await putParameter(client, request);
+    } catch (error) {
+      if (attempt >= THROTTLE_RETRIES || !isThrottled(error as ApiError)) {
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
+    }
+  }
+};
+
+export interface CopyResult {
+  copied: string[];
+  // Each name that wasn't saved, with why.
+  failed: Map<string, string>;
+}
+
+// Saves one value to other parameters, 5 at a time. A failed one doesn't
+// stop the others; `onDone` runs as each finishes either way.
+export const useCopyValue = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      requests,
+      onDone
+    }: {
+      requests: PutParameterRequest[];
+      onDone?: () => void;
+    }) => {
+      const result: CopyResult = { copied: [], failed: new Map() };
+      await pAll(
+        requests.map(request => async () => {
+          try {
+            await putWithBackoff(client, request);
+            result.copied.push(request.name);
+          } catch (error) {
+            result.failed.set(request.name, describeError(error as ApiError));
+          } finally {
+            onDone?.();
           }
         }),
         { concurrency: 5 }

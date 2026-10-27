@@ -172,6 +172,139 @@ describe('Compare mode', () => {
     expect(grid()).toBeInTheDocument();
   });
 
+  it('copies a value from keys that differ or are missing', async () => {
+    const user = await startComparing();
+    const copyButtons = (key: string) =>
+      within(rowOf(key)).queryAllByRole('button', {
+        name: 'Copy to other environments'
+      });
+
+    // One per value; none where the values are the same everywhere.
+    expect(copyButtons('Flag')).toHaveLength(3);
+    expect(copyButtons('Secret')).toHaveLength(2);
+    expect(copyButtons('Port')).toHaveLength(0);
+
+    await user.click(copyButtons('Flag')[2]!);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('/production/compass/Flag');
+    expect(useUiStore.getState().selectedName).toBeNull();
+  });
+
+  it('sets a missing value by copying it from another environment', async () => {
+    const user = await startComparing();
+    api.parametersService.put.mockResolvedValue({ version: 1 });
+
+    await user.click(
+      within(rowOf('Secret')).getByRole('button', { name: /Not set/ })
+    );
+    const menu = await screen.findByRole('menu');
+    expect(menu).toHaveTextContent('Set value in production');
+    expect(menu).toHaveTextContent('/production/compass/Secret');
+    expect(menu).toHaveTextContent('Set in development, staging');
+
+    await user.click(
+      within(menu).getByRole('menuitem', {
+        name: /Copy from another environment/
+      })
+    );
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('/development/compass/Secret');
+    expect(dialog).toHaveTextContent(
+      'Choose which environment to copy the value from.'
+    );
+    expect(
+      within(dialog).getByRole('checkbox', { name: 'production' })
+    ).toBeChecked();
+    expect(useUiStore.getState().selectedName).toBeNull();
+
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Copy to 1 environment' })
+    );
+    expect(api.parametersService.put).toHaveBeenCalledWith({
+      name: '/production/compass/Secret',
+      type: 'SecureString',
+      kmsKey: 'alias/aws/ssm',
+      value: 'dev-secret',
+      overwrite: false
+    });
+    await waitFor(() =>
+      expect(
+        within(rowOf('Secret')).queryByRole('button', { name: /Not set/ })
+      ).not.toBeInTheDocument()
+    );
+    expect(grid()).toBeInTheDocument();
+  });
+
+  it('closes the Not set menu on Esc', async () => {
+    const user = await startComparing();
+    act(() => uiActions.selectParameter('/development/compass/Flag'));
+    await user.click(
+      within(rowOf('Secret')).getByRole('button', { name: /Not set/ })
+    );
+    await screen.findByRole('menu');
+
+    await user.keyboard('{Escape}');
+    // The menu took the Esc, so the pane stays open.
+    expect(useUiStore.getState().selectedName).toBe(
+      '/development/compass/Flag'
+    );
+    // The menu is closed, so the next Esc closes the pane.
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(useUiStore.getState().selectedName).toBeNull());
+  });
+
+  it('sets a missing value in the new-parameter form, staying in compare mode', async () => {
+    const user = await startComparing();
+    api.parametersService.put.mockResolvedValue({ version: 1 });
+
+    await user.click(
+      within(rowOf('Secret')).getByRole('button', { name: /Not set/ })
+    );
+    await user.click(
+      await screen.findByRole('menuitem', { name: /Enter a new value/ })
+    );
+
+    const pane = await screen.findByRole('complementary', { name: 'Details' });
+    expect(within(pane).getByText('New parameter')).toBeInTheDocument();
+    expect(within(pane).getByTitle('compass')).toBeInTheDocument();
+    expect(
+      within(pane).getByRole('checkbox', { name: 'production' })
+    ).toBeChecked();
+    expect(
+      within(pane).getByRole('checkbox', { name: 'development' })
+    ).not.toBeChecked();
+    expect(within(pane).getByRole('combobox', { name: 'Key' })).toHaveValue(
+      'Secret'
+    );
+    expect(pane).toHaveTextContent('/production/compass/Secret');
+    expect(pane).not.toHaveTextContent('Already exists');
+    const value = within(pane).getByRole('textbox', { name: 'Value' });
+    expect(value).toHaveValue('');
+    expect(value).toHaveFocus();
+
+    await user.type(value, 'prod-secret');
+    await user.click(
+      within(pane).getByRole('button', { name: 'Create parameter' })
+    );
+    expect(api.parametersService.put).toHaveBeenCalledWith({
+      name: '/production/compass/Secret',
+      description: '',
+      type: 'SecureString',
+      kmsKey: 'alias/aws/ssm',
+      value: 'prod-secret',
+      overwrite: false
+    });
+    await waitFor(() =>
+      expect(useUiStore.getState().selectedName).toBe(
+        '/production/compass/Secret'
+      )
+    );
+    expect(grid()).toBeInTheDocument();
+    expect(
+      within(rowOf('Secret')).queryByRole('button', { name: /Not set/ })
+    ).not.toBeInTheDocument();
+  });
+
   it('keeps the mode across services and only shows the switch for a service', async () => {
     const user = await startComparing();
 

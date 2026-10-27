@@ -118,8 +118,9 @@
   color: var(--ant-color-primary);
 }
 
-/* The padlock and the reveal button, at the cell's right edge. */
-.secure {
+/* The padlock, the reveal button and the copy button, at the cell's right
+   edge. */
+.actions {
   flex: none;
   display: flex;
   align-items: center;
@@ -140,10 +141,33 @@
   white-space: nowrap;
 }
 
+/* A button: its menu sets the value in that environment. */
 .notSet {
   composes: chip;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
   color: var(--ant-color-error);
+  background: none;
   border: 1px dashed var(--ant-color-error-border);
+  cursor: pointer;
+}
+
+.notSet:hover,
+.notSet.open {
+  color: var(--ant-color-error-hover);
+  background: var(--ant-color-error-bg);
+  border-style: solid;
+}
+
+.notSet:focus-visible {
+  outline: 2px solid var(--ant-color-primary);
+  outline-offset: 1px;
+}
+
+.notSetIcon {
+  font-size: 10px;
 }
 
 .unreadable {

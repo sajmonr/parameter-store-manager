@@ -1,0 +1,196 @@
+.header {
+  min-width: 0;
+}
+
+.sourceName {
+  display: block;
+  margin-top: 2px;
+  font-weight: normal;
+  word-break: break-all;
+}
+
+/* The value being copied, on one line. */
+.source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-bg-layout);
+}
+
+.sourceValue {
+  flex: 1;
+  min-width: 0;
+}
+
+.source :global(.ant-tag) {
+  margin: 0;
+}
+
+.tag {
+  margin: 0;
+}
+
+.toolbar {
+  min-height: 24px;
+}
+
+.filter {
+  width: 200px;
+  margin-left: auto;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--ant-border-radius);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.row + .row {
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+
+.row:hover {
+  background: var(--ant-color-fill-quaternary);
+}
+
+.picked,
+.picked:hover {
+  background: var(--ant-control-item-bg-active);
+}
+
+.same,
+.same:hover {
+  background: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.envName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Lines up with the name, after the checkbox and the dot. */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-inline-start: 40px;
+  font-size: 12px;
+}
+
+.current {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.current :global(.ant-typography),
+.note,
+.kms :global(.ant-typography) {
+  font-size: 12px;
+}
+
+.currentValue {
+  min-width: 0;
+}
+
+.kms {
+  min-width: 0;
+}
+
+.kmsSelect {
+  flex: 1;
+  max-width: 300px;
+  min-width: 0;
+  font-family: var(--ant-font-family-code);
+}
+
+.empty {
+  padding: 8px 0;
+}
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  text-align: start;
+}
+
+.summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hint {
+  font-size: 12px;
+}
+
+.overwriteIcon {
+  margin-right: 6px;
+  color: var(--ant-color-warning);
+}
+
+.buttons {
+  flex: none;
+}
+
+.sourcePicker {
+  flex: none;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--ant-color-bg-container);
+}
+
+/* Opened to fill a missing value: the user is asked to check the source. */
+.highlight,
+.highlight:hover {
+  border-color: var(--ant-color-primary);
+}
+
+.sourceOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unsupported.unsupported {
+  font-size: 12px;
+}
+
+.pickHint {
+  font-size: 12px;
+}
+
+.pickIcon {
+  color: var(--ant-color-primary);
+}

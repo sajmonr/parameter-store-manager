@@ -6,14 +6,25 @@ import Mono from '../common/Mono';
 
 const isAwsManaged = (alias: string) => alias.startsWith('alias/aws/');
 
+type KmsKeySelectProps = SelectProps<string> & {
+  // Keys to list even when they aren't selected or don't have an alias.
+  include?: string[];
+};
+
 // Form.Item passes the value and onChange.
-const KmsKeySelect = ({ value, onChange, ...rest }: SelectProps<string>) => {
+const KmsKeySelect = ({
+  value,
+  onChange,
+  include = [],
+  ...rest
+}: KmsKeySelectProps) => {
   const { data: keys = [], isFetching: loading } = useKmsAliases();
 
   // The default and current keys are listed even before the aliases load.
   const aliases = [
     ...new Set([
       DEFAULT_KMS_KEY,
+      ...include,
       ...(value ? [value] : []),
       ...keys.flatMap(key => (key.AliasName ? [key.AliasName] : []))
     ])

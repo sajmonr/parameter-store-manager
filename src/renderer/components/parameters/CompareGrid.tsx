@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Alert, Button, Skeleton, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
+  CopyOutlined,
   FolderOpenOutlined,
   FolderOutlined,
   LockOutlined,
@@ -11,6 +12,7 @@ import {
   WarningOutlined
 } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
+import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
@@ -25,6 +27,7 @@ import { leafOf } from '../../utils/paths';
 import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
 import CompareProgress from './CompareProgress';
+import NotSetCell from './NotSetCell';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
@@ -38,31 +41,49 @@ const cx = (...classes: (string | false | null | undefined)[]) =>
 
 interface ValueCellProps {
   env: string;
-  parameter: ParameterEntry | undefined;
+  parameter: ParameterEntry;
   unreadable: boolean;
   selected: boolean;
   revealed: boolean;
+  // Whether the value can be copied to the key's other environments: the
+  // key differs or is missing somewhere.
+  copyable: boolean;
 }
 
+const CopyAction = ({ parameter }: { parameter: ParameterEntry }) => {
+  let reason = 'Copy to other environments';
+  if (!isEditableType(parameter.Type)) {
+    reason = `${parameter.Type} is not supported yet`;
+  } else if (parameter.Value === undefined) {
+    reason = "Can't read the value";
+  }
+  return (
+    <Tooltip title={reason}>
+      <Button
+        type="text"
+        size="small"
+        icon={<CopyOutlined />}
+        aria-label="Copy to other environments"
+        disabled={reason !== 'Copy to other environments'}
+        onClick={event => {
+          event.stopPropagation();
+          uiActions.openCopyDialog(parameter.Name);
+        }}
+      />
+    </Tooltip>
+  );
+};
+
 // The key's value in one environment. Clicking it opens the parameter;
-// revealing a SecureString doesn't.
+// revealing a SecureString or copying the value doesn't.
 const ValueCell = ({
   env,
   parameter,
   unreadable,
   selected,
-  revealed
+  revealed,
+  copyable
 }: ValueCellProps) => {
-  if (!parameter) {
-    return (
-      <div role="cell" className={styles.cell}>
-        <Tooltip title={`Not set in ${env}`}>
-          <span className={styles.notSet}>Not set</span>
-        </Tooltip>
-      </div>
-    );
-  }
-
   const { Name, Value } = parameter;
   const secure = parameter.Type === 'SecureString';
   let value: ReactNode;
@@ -103,7 +124,7 @@ const ValueCell = ({
       tabIndex={0}
       onClick={() => uiActions.selectParameter(Name)}
       onKeyDown={event => {
-        // Not from the reveal button inside.
+        // Not from the buttons inside.
         if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -111,17 +132,20 @@ const ValueCell = ({
       }}
     >
       {value}
-      {secure && (
-        <span className={styles.secure}>
-          <Tooltip title="SecureString">
-            <LockOutlined className={styles.lock} aria-label="SecureString" />
-          </Tooltip>
-          {Value !== undefined && (
+      {(secure || copyable) && (
+        <span className={styles.actions}>
+          {secure && (
+            <Tooltip title="SecureString">
+              <LockOutlined className={styles.lock} aria-label="SecureString" />
+            </Tooltip>
+          )}
+          {secure && Value !== undefined && (
             <RevealButton
               revealed={revealed}
               onToggle={() => uiActions.toggleReveal(Name)}
             />
           )}
+          {copyable && <CopyAction parameter={parameter} />}
         </span>
       )}
     </div>
@@ -184,16 +208,28 @@ const KeyRow = memo(
             )}
           </span>
         </div>
-        {environments.map(({ segment }) => {
+        {environments.map(env => {
+          const { segment } = env;
           const parameter = cells.get(segment);
+          if (!parameter) {
+            return (
+              <NotSetCell
+                key={segment}
+                env={env}
+                row={row}
+                environments={environments}
+              />
+            );
+          }
           return (
             <ValueCell
               key={segment}
               env={segment}
               parameter={parameter}
               unreadable={unreadable.includes(segment)}
-              selected={!!parameter && parameter.Name === selectedName}
-              revealed={!!parameter && revealed.has(parameter.Name)}
+              selected={parameter.Name === selectedName}
+              revealed={revealed.has(parameter.Name)}
+              copyable={differs || missing.length > 0}
             />
           );
         })}

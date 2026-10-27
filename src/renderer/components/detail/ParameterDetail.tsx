@@ -80,7 +80,16 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
       )}
       <ParameterMeta
         parameter={parameter}
-        environments={place && <EnvironmentChips chips={place.environments} />}
+        environments={
+          place && (
+            <EnvironmentChips
+              chips={place.environments}
+              parameter={parameter}
+              service={place.service}
+              parameterKey={place.key}
+            />
+          )
+        }
       />
       {structure.enabled && !place && (
         <Alert

@@ -62,7 +62,7 @@ const TreeNodeMenu = ({
             disabled: !names.length,
             label: (
               <span className={styles.menuItem}>
-                Delete tree…
+                Delete tree
                 <span className={styles.count}>{names.length}</span>
               </span>
             )

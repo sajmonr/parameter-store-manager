@@ -251,7 +251,7 @@ describe('deleting a tree from the sidebar', () => {
     const menu = await openMenu('compass');
     expect(menu).toHaveTextContent('/development/compass/');
     const item = within(menu).getByRole('menuitem', { name: /Delete tree/ });
-    expect(item).toHaveTextContent('Delete tree…3');
+    expect(item).toHaveTextContent('Delete tree3');
     await user.click(item);
 
     const dialog = await screen.findByRole('dialog');
@@ -279,7 +279,7 @@ describe('deleting a tree from the sidebar', () => {
     const menu = await openMenu('AppServer');
     expect(
       within(menu).getByRole('menuitem', { name: /Delete tree/ })
-    ).toHaveTextContent('Delete tree…2');
+    ).toHaveTextContent('Delete tree2');
   });
 
   it('deletes a folder in the Paths tree while grouping is off', async () => {
@@ -360,10 +360,10 @@ describe('the Environments view', () => {
     };
 
     expect(await menuFor('development', '/development/')).toHaveTextContent(
-      'Delete tree…3'
+      'Delete tree3'
     );
     expect(await menuFor('compass', '/development/compass/')).toHaveTextContent(
-      'Delete tree…3'
+      'Delete tree3'
     );
   });
 });
