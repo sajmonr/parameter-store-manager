@@ -4,10 +4,10 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Alert, Button, Skeleton, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
-  CopyOutlined,
   FolderOpenOutlined,
   FolderOutlined,
   LockOutlined,
+  RetweetOutlined,
   SearchOutlined,
   WarningOutlined
 } from '@ant-design/icons';
@@ -25,6 +25,7 @@ import type {
 } from '../../utils/compare';
 import { leafOf } from '../../utils/paths';
 import { plural } from '../../utils/plural';
+import CopyButton from '../common/CopyButton';
 import EnvironmentDot from '../common/EnvironmentDot';
 import CompareProgress from './CompareProgress';
 import NotSetCell from './NotSetCell';
@@ -45,16 +46,28 @@ interface ValueCellProps {
   unreadable: boolean;
   selected: boolean;
   revealed: boolean;
-  // Whether the value can be copied to the key's other environments: the
-  // key differs or is missing somewhere.
-  copyable: boolean;
 }
 
-const CopyAction = ({ parameter }: { parameter: ParameterEntry }) => {
-  let reason = 'Copy to other environments';
-  if (!isEditableType(parameter.Type)) {
-    reason = `${parameter.Type} is not supported yet`;
-  } else if (parameter.Value === undefined) {
+// Opens Synchronize environments for a key that differs or is missing
+// somewhere, from the first environment whose value can be copied.
+const SyncAction = ({
+  row,
+  environments
+}: {
+  row: CompareKey;
+  environments: StructureEnvironment[];
+}) => {
+  const present = environments.flatMap(({ segment }) => {
+    const parameter = row.cells.get(segment);
+    return parameter ? [parameter] : [];
+  });
+  const source =
+    present.find(p => isEditableType(p.Type) && p.Value !== undefined) ??
+    present[0];
+  let reason = 'Synchronize environments';
+  if (!source || !isEditableType(source.Type)) {
+    reason = `${source?.Type ?? 'This type'} is not supported yet`;
+  } else if (source.Value === undefined) {
     reason = "Can't read the value";
   }
   return (
@@ -62,13 +75,12 @@ const CopyAction = ({ parameter }: { parameter: ParameterEntry }) => {
       <Button
         type="text"
         size="small"
-        icon={<CopyOutlined />}
-        aria-label="Copy to other environments"
-        disabled={reason !== 'Copy to other environments'}
-        onClick={event => {
-          event.stopPropagation();
-          uiActions.openCopyDialog(parameter.Name);
-        }}
+        icon={<RetweetOutlined />}
+        aria-label="Synchronize environments"
+        disabled={reason !== 'Synchronize environments'}
+        onClick={() =>
+          source && uiActions.openCopyDialog(source.Name, { pickSource: true })
+        }
       />
     </Tooltip>
   );
@@ -81,8 +93,7 @@ const ValueCell = ({
   parameter,
   unreadable,
   selected,
-  revealed,
-  copyable
+  revealed
 }: ValueCellProps) => {
   const { Name, Value } = parameter;
   const secure = parameter.Type === 'SecureString';
@@ -132,22 +143,20 @@ const ValueCell = ({
       }}
     >
       {value}
-      {(secure || copyable) && (
-        <span className={styles.actions}>
-          {secure && (
-            <Tooltip title="SecureString">
-              <LockOutlined className={styles.lock} aria-label="SecureString" />
-            </Tooltip>
-          )}
-          {secure && Value !== undefined && (
-            <RevealButton
-              revealed={revealed}
-              onToggle={() => uiActions.toggleReveal(Name)}
-            />
-          )}
-          {copyable && <CopyAction parameter={parameter} />}
-        </span>
-      )}
+      <span className={styles.actions}>
+        {secure && (
+          <Tooltip title="SecureString">
+            <LockOutlined className={styles.lock} aria-label="SecureString" />
+          </Tooltip>
+        )}
+        {secure && Value !== undefined && (
+          <RevealButton
+            revealed={revealed}
+            onToggle={() => uiActions.toggleReveal(Name)}
+          />
+        )}
+        {!unreadable && <CopyButton text={Value} />}
+      </span>
     </div>
   );
 };
@@ -206,6 +215,9 @@ const KeyRow = memo(
                 </Tag>
               </Tooltip>
             )}
+            {(differs || missing.length > 0) && (
+              <SyncAction row={row} environments={environments} />
+            )}
           </span>
         </div>
         {environments.map(env => {
@@ -229,7 +241,6 @@ const KeyRow = memo(
               unreadable={unreadable.includes(segment)}
               selected={parameter.Name === selectedName}
               revealed={revealed.has(parameter.Name)}
-              copyable={differs || missing.length > 0}
             />
           );
         })}

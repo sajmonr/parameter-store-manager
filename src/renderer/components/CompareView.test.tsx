@@ -172,22 +172,40 @@ describe('Compare mode', () => {
     expect(grid()).toBeInTheDocument();
   });
 
-  it('copies a value from keys that differ or are missing', async () => {
+  it('synchronizes keys that differ or are missing from their first environment', async () => {
     const user = await startComparing();
-    const copyButtons = (key: string) =>
-      within(rowOf(key)).queryAllByRole('button', {
-        name: 'Copy to other environments'
+    const syncButton = (key: string) =>
+      within(rowOf(key)).queryByRole('button', {
+        name: 'Synchronize environments'
       });
 
-    // One per value; none where the values are the same everywhere.
-    expect(copyButtons('Flag')).toHaveLength(3);
-    expect(copyButtons('Secret')).toHaveLength(2);
-    expect(copyButtons('Port')).toHaveLength(0);
+    // One per key, next to its tags; none where every value is the same.
+    expect(syncButton('Flag')).toBeInTheDocument();
+    expect(syncButton('Secret')).toBeInTheDocument();
+    expect(syncButton('Port')).not.toBeInTheDocument();
 
-    await user.click(copyButtons('Flag')[2]!);
+    await user.click(syncButton('Flag')!);
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('/production/compass/Flag');
+    expect(dialog).toHaveTextContent('Synchronize environments');
+    expect(dialog).toHaveTextContent('/development/compass/Flag');
+    expect(
+      within(dialog).getByRole('combobox', { name: 'Source environment' })
+    ).toBeInTheDocument();
+    expect(dialog).toHaveTextContent(
+      'Choose which environment to copy the value from.'
+    );
     expect(useUiStore.getState().selectedName).toBeNull();
+  });
+
+  it('copies each value to the clipboard', async () => {
+    await startComparing();
+    // Every value has its own button, including where they're all the same.
+    expect(
+      within(rowOf('Port')).getAllByRole('button', { name: 'Copy' })
+    ).toHaveLength(3);
+    expect(
+      within(rowOf('Secret')).getAllByRole('button', { name: 'Copy' })
+    ).toHaveLength(2);
   });
 
   it('sets a missing value by copying it from another environment', async () => {

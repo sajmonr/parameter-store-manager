@@ -3,10 +3,10 @@ import { Button, Dropdown, Flex, Space, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   BlockOutlined,
-  CopyOutlined,
   DeleteOutlined,
   EditOutlined,
-  EllipsisOutlined
+  EllipsisOutlined,
+  RetweetOutlined
 } from '@ant-design/icons';
 import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
@@ -20,7 +20,7 @@ interface DetailActionsProps {
   onEdit: () => void;
 }
 
-// Edit, with Duplicate and Copy to environments in its menu, and Delete.
+// Edit, with Duplicate and Synchronize environments in its menu, and Delete.
 const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
   const { Type: type } = parameter;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,10 +60,10 @@ const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
       ? [
           {
             key: 'copy',
-            icon: <CopyOutlined />,
+            icon: <RetweetOutlined />,
             label: (
               <Tooltip title={copyReason} placement="right">
-                <span>Copy to environments</span>
+                <span>Synchronize environments</span>
               </Tooltip>
             ),
             disabled: !!copyReason

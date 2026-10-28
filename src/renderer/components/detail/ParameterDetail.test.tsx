@@ -171,7 +171,7 @@ describe('ParameterDetail', () => {
     await user.click(screen.getByRole('button', { name: 'More actions' }));
     await screen.findByRole('menuitem', { name: /Duplicate/ });
     expect(
-      screen.queryByRole('menuitem', { name: /Copy to environments/ })
+      screen.queryByRole('menuitem', { name: /Synchronize environments/ })
     ).not.toBeInTheDocument();
   });
 });

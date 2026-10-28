@@ -37,6 +37,7 @@ import EnvironmentDot from '../common/EnvironmentDot';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import ParameterTypeTag from '../common/ParameterTypeTag';
+import RevealButton from '../common/RevealButton';
 import KmsKeySelect from '../form/KmsKeySelect';
 import styles from './CopyModal.module.css';
 
@@ -254,6 +255,8 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
   const copyable = useCopyTargets(name);
   const { byName } = useParameters();
   const copyValue = useCopyValue();
+  // Shared with the table and compare, so a value revealed there shows here.
+  const revealedNames = useUiStore(state => state.revealed);
   const [picked, setPicked] = useState<ReadonlySet<string>>(
     () => new Set(request.preselectTargets)
   );
@@ -284,6 +287,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
 
   const { source, place, targets } = copyable;
   const secure = source.Type === 'SecureString';
+  const revealed = revealedNames.has(source.Name);
   const supported = isEditableType(source.Type);
   const canCopy = supported && source.Value !== undefined;
   const defaultKey = source.KeyId ?? DEFAULT_KMS_KEY;
@@ -390,7 +394,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
       }}
       title={
         <div className={styles.header}>
-          <div>Copy to environments</div>
+          <div>Synchronize environments</div>
           <Mono type="secondary" size={12} className={styles.sourceName}>
             {source.Name}
           </Mono>
@@ -456,9 +460,16 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
           <MaskedValue
             value={source.Value}
             secure={secure}
-            ellipsis
+            revealed={revealed}
+            ellipsis={!secure || revealed ? { tooltip: source.Value } : true}
             className={styles.sourceValue}
           />
+          {secure && source.Value !== undefined && (
+            <RevealButton
+              revealed={revealed}
+              onToggle={() => uiActions.toggleReveal(source.Name)}
+            />
+          )}
           <ParameterTypeTag type={source.Type} />
         </div>
         {!supported && (

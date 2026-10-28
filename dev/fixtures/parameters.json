@@ -112,6 +112,15 @@
       "LastModifiedUser": "arn:aws:iam::000000000000:user/bob"
     },
     {
+      "Name": "/development/compass/AppServer/Integrations/WebhookSecret",
+      "Type": "SecureString",
+      "Value": "whsec_dev_Qm7rT2xLp9VbN4kZ",
+      "Version": 2,
+      "LastModifiedDate": "2026-09-14T09:41:05.312Z",
+      "LastModifiedUser": "arn:aws:iam::000000000000:user/alice",
+      "KeyId": "alias/app-secrets"
+    },
+    {
       "Name": "/development/compass/AppServer/Tenants/tenant-001/DisplayName",
       "Type": "String",
       "Value": "Tenant 1",

@@ -70,7 +70,7 @@ const openMenu = async (user: ReturnType<typeof userEvent.setup>) => {
 const openDialog = async (user: ReturnType<typeof userEvent.setup>) => {
   await openMenu(user);
   await user.click(
-    screen.getByRole('menuitem', { name: /Copy to environments/ })
+    screen.getByRole('menuitem', { name: /Synchronize environments/ })
   );
   return screen.findByRole('dialog');
 };
@@ -106,13 +106,13 @@ const primary = (dialog: HTMLElement) =>
 
 beforeEach(() => vi.clearAllMocks());
 
-describe('Copy to environments', () => {
+describe('Synchronize environments', () => {
   it("isn't offered for a service with one environment", async () => {
     const user = userEvent.setup();
     setup('/development/solo/Key');
     await openMenu(user);
     expect(
-      screen.queryByRole('menuitem', { name: /Copy to environments/ })
+      screen.queryByRole('menuitem', { name: /Synchronize environments/ })
     ).not.toBeInTheDocument();
   });
 
@@ -126,7 +126,7 @@ describe('Copy to environments', () => {
     ]);
     await openMenu(user);
     expect(
-      screen.getByRole('menuitem', { name: /Copy to environments/ })
+      screen.getByRole('menuitem', { name: /Synchronize environments/ })
     ).toHaveAttribute('aria-disabled', 'true');
   });
 
@@ -340,6 +340,29 @@ describe('Copy to environments', () => {
       within(dialog).queryByRole('combobox', { name: 'Source environment' })
     ).not.toBeInTheDocument();
     expect(targetNames(dialog)).toEqual(['staging', 'production']);
+  });
+
+  it('reveals and hides a SecureString source value', async () => {
+    const user = userEvent.setup();
+    setup('/development/compass/Secret');
+    const dialog = await openDialog(user);
+    expect(dialog).not.toHaveTextContent('dev-secret');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Reveal' }));
+    expect(dialog).toHaveTextContent('dev-secret');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Hide' }));
+    expect(dialog).not.toHaveTextContent('dev-secret');
+  });
+
+  it("doesn't offer to reveal a String source value", async () => {
+    const user = userEvent.setup();
+    setup('/development/compass/Only');
+    const dialog = await openDialog(user);
+    expect(dialog).toHaveTextContent('only');
+    expect(
+      within(dialog).queryByRole('button', { name: 'Reveal' })
+    ).not.toBeInTheDocument();
   });
 
   it('copies from another environment picked as the source', async () => {
