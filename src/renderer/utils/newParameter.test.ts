@@ -297,6 +297,25 @@ describe('initialNaming', () => {
   });
 });
 
+describe('initialNaming with a target', () => {
+  it('starts on the key in that environment, in any view', () => {
+    const target = {
+      service: 'compass',
+      env: 'production',
+      key: 'Integrations/Stripe/SecretKey'
+    };
+    expect(
+      initialNaming({ view: 'paths', scope: '/a/' }, ctx, null, target)
+    ).toEqual({
+      mode: 'structured',
+      service: 'compass',
+      envs: ['production'],
+      key: 'Integrations/Stripe/SecretKey',
+      path: '/production/compass/Integrations/Stripe/SecretKey'
+    });
+  });
+});
+
 describe('envsForService', () => {
   it('keeps the environments the new service has, or picks its first', () => {
     expect(

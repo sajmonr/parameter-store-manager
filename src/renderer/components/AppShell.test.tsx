@@ -133,8 +133,12 @@ describe('AppShell', () => {
     renderApp();
     await screen.findByText('Password');
 
+    // The status bar mentions Esc only while a parameter is open.
+    expect(screen.getByText('↑↓ move')).toBeInTheDocument();
+
     await user.click(within(table()).getByText('Host'));
     const pane = await screen.findByRole('complementary', { name: 'Details' });
+    expect(screen.getByText('↑↓ move · Esc close details')).toBeInTheDocument();
     expect(within(pane).getByText('/dev/app/db/Host')).toBeInTheDocument();
 
     fireEvent.keyDown(window, { key: 'ArrowDown' });
@@ -148,6 +152,7 @@ describe('AppShell', () => {
     expect(
       screen.queryByRole('complementary', { name: 'Details' })
     ).not.toBeInTheDocument();
+    expect(screen.getByText('↑↓ move')).toBeInTheDocument();
   });
 
   it('shows the expired-session screen', async () => {

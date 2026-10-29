@@ -13,9 +13,11 @@ import Sidebar from '../sidebar/Sidebar';
 import ParameterBrowser from '../parameters/ParameterBrowser';
 import DetailHost from '../detail/DetailHost';
 import DeleteModal from '../delete/DeleteModal';
+import CopyModal from '../copy/CopyModal';
 import styles from './ParametersPage.module.css';
 
-// The header, sidebar, table and detail pane, and the delete confirmation.
+// The header, sidebar, table and detail pane, the delete confirmation and
+// the copy dialog.
 const ParametersPage = () => {
   const narrow = useMediaQuery(NARROW_QUERY);
   const siderMax = siderMaxWidth(useWindowWidth(), narrow);
@@ -51,6 +53,7 @@ const ParametersPage = () => {
         <DetailHost narrow={narrow} />
       </Layout>
       <DeleteModal />
+      <CopyModal />
     </Layout>
   );
 };

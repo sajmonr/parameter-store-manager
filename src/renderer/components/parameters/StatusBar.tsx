@@ -1,6 +1,11 @@
 import { useParameters } from '../../state/parameters';
 import type { LoadState } from '../../state/parameters';
-import { useLoaded, useVisibleParameters } from '../../state/views';
+import { useUiStore } from '../../state/ui';
+import {
+  useLoaded,
+  useSelectedParameter,
+  useVisibleParameters
+} from '../../state/views';
 import { plural } from '../../utils/plural';
 import type { Compared } from './ParameterBrowser';
 import SyncStatus from './SyncStatus';
@@ -21,13 +26,23 @@ const statusText = (
   return `${keys.length} of ${plural(comparison.total, 'key')} · ${plural(comparison.environments.length, 'environment')}`;
 };
 
-// The rows listed and the sync state. Comparing lists keys, and the arrow
-// keys don't move between them.
+// The rows listed and the sync state, with the keys that work: the arrow
+// keys move between rows, but not between compared keys, and Esc closes an
+// open parameter.
 const StatusBar = ({ compared }: { compared: Compared | null }) => {
   const { loadState, parameters } = useParameters();
   const visible = useVisibleParameters().length;
   const total = parameters.length;
   const loaded = useLoaded();
+  const paneMode = useUiStore(state => state.paneMode);
+  const selected = useSelectedParameter();
+  // When the pane shows a parameter, as in DetailHost.
+  const detailOpen =
+    paneMode === 'detail' && !!selected && loadState === 'ready';
+  const hints = [
+    !compared && '↑↓ move',
+    detailOpen && 'Esc close details'
+  ].filter(Boolean);
 
   return (
     <div className={styles.bar}>
@@ -35,7 +50,7 @@ const StatusBar = ({ compared }: { compared: Compared | null }) => {
         <span>{statusText(loadState, loaded, visible, total, compared)}</span>
         <SyncStatus />
       </span>
-      <span>{compared ? 'Esc close' : '↑↓ move · Esc close'}</span>
+      {hints.length > 0 && <span>{hints.join(' · ')}</span>}
     </div>
   );
 };

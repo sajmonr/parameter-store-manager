@@ -249,12 +249,13 @@ export const toStructured = (naming: Naming, ctx: LocationContext): Naming => {
   };
 };
 
-// The form's start: the place the user is at, or the duplicated parameter
-// with 'Copy' after its name.
+// The form's start: the place the user is at, the duplicated parameter
+// with 'Copy' after its name, or a `target` key in one environment.
 export const initialNaming = (
   location: Location,
   ctx: LocationContext,
-  source: string | null
+  source: string | null,
+  target: { service: string; env: string; key: string } | null = null
 ): Naming => {
   const { structure, delimiter } = ctx;
   const services = structure.services;
@@ -270,6 +271,15 @@ export const initialNaming = (
     key: '',
     path: pathFolderOf(location, ctx) || rootFolder(delimiter)
   };
+  if (target) {
+    return {
+      mode: 'structured',
+      service: target.service,
+      envs: [target.env],
+      key: target.key,
+      path: pathOf(target.env, target.service, target.key, structure, delimiter)
+    };
+  }
   if (source !== null) {
     const copy = `${source}Copy`;
     const match = parse(source, structure, delimiter);

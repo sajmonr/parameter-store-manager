@@ -87,6 +87,7 @@
   flex: none;
 }
 
+/* A thin scrollbar under the tabs shows they scroll. */
 .tabs {
   flex: 1;
   min-width: 0;
@@ -94,7 +95,29 @@
   align-items: center;
   gap: 12px;
   overflow-x: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  /* Keeps the scrollbar clear of the tabs. */
+  padding-bottom: 4px;
+  margin-bottom: -4px;
+}
+
+/* A cut-off edge fades out. */
+.fadeStart {
+  mask-image: linear-gradient(to right, transparent, #000 24px);
+}
+
+.fadeEnd {
+  mask-image: linear-gradient(to left, transparent, #000 24px);
+}
+
+.fadeStart.fadeEnd {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 24px,
+    #000 calc(100% - 24px),
+    transparent
+  );
 }
 
 .tabs > * {

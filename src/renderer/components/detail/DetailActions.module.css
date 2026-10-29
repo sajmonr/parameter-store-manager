@@ -1,0 +1,8 @@
+/* While its menu is open. Space.Compact stacks its items at z-index 2 and a
+   hovered one at 4, so the open button is lifted like a hovered one for its
+   whole border to show over the shared edge. */
+.open {
+  z-index: 4;
+  border-color: var(--ant-color-primary);
+  color: var(--ant-color-primary);
+}

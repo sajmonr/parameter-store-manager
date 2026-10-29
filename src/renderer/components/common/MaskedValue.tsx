@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import Mono from './Mono';
 import type { MonoProps } from './Mono';
 
@@ -11,20 +12,22 @@ type MaskedValueProps = Omit<MonoProps, 'children'> & {
 };
 
 // A parameter value; SecureString values stay masked until revealed.
-const MaskedValue = ({
-  value,
-  secure,
-  revealed,
-  ...rest
-}: MaskedValueProps) => {
-  if (value === undefined) {
+const MaskedValue = forwardRef<HTMLSpanElement, MaskedValueProps>(
+  ({ value, secure, revealed, ...rest }, ref) => {
+    if (value === undefined) {
+      return (
+        <Mono ref={ref} type="secondary" {...rest}>
+          …
+        </Mono>
+      );
+    }
     return (
-      <Mono type="secondary" {...rest}>
-        …
+      <Mono ref={ref} {...rest}>
+        {secure && !revealed ? MASK : value}
       </Mono>
     );
   }
-  return <Mono {...rest}>{secure && !revealed ? MASK : value}</Mono>;
-};
+);
+MaskedValue.displayName = 'MaskedValue';
 
 export default MaskedValue;

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import type { ComponentProps } from 'react';
 import { Typography } from 'antd';
 
@@ -6,17 +7,22 @@ export type MonoProps = ComponentProps<typeof Typography.Text> & {
   weight?: number;
 };
 
-// Text in the code font, for parameter names, paths and values.
-const Mono = ({ size, weight, style, ...rest }: MonoProps) => (
-  <Typography.Text
-    style={{
-      fontFamily: 'var(--ant-font-family-code)',
-      fontSize: size,
-      fontWeight: weight,
-      ...style
-    }}
-    {...rest}
-  />
+// Text in the code font, for parameter names, paths and values. It takes a
+// ref so a Tooltip around it can find where to show.
+const Mono = forwardRef<HTMLSpanElement, MonoProps>(
+  ({ size, weight, style, ...rest }, ref) => (
+    <Typography.Text
+      ref={ref}
+      style={{
+        fontFamily: 'var(--ant-font-family-code)',
+        fontSize: size,
+        fontWeight: weight,
+        ...style
+      }}
+      {...rest}
+    />
+  )
 );
+Mono.displayName = 'Mono';
 
 export default Mono;

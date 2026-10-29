@@ -7,10 +7,12 @@ import {
   FolderOpenOutlined,
   FolderOutlined,
   LockOutlined,
+  RetweetOutlined,
   SearchOutlined,
   WarningOutlined
 } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
+import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../../state/parameters';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
@@ -23,8 +25,10 @@ import type {
 } from '../../utils/compare';
 import { leafOf } from '../../utils/paths';
 import { plural } from '../../utils/plural';
+import CopyButton from '../common/CopyButton';
 import EnvironmentDot from '../common/EnvironmentDot';
 import CompareProgress from './CompareProgress';
+import NotSetCell from './NotSetCell';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
@@ -38,14 +42,52 @@ const cx = (...classes: (string | false | null | undefined)[]) =>
 
 interface ValueCellProps {
   env: string;
-  parameter: ParameterEntry | undefined;
+  parameter: ParameterEntry;
   unreadable: boolean;
   selected: boolean;
   revealed: boolean;
 }
 
+// Opens Synchronize environments for a key that differs or is missing
+// somewhere, from the first environment whose value can be copied.
+const SyncAction = ({
+  row,
+  environments
+}: {
+  row: CompareKey;
+  environments: StructureEnvironment[];
+}) => {
+  const present = environments.flatMap(({ segment }) => {
+    const parameter = row.cells.get(segment);
+    return parameter ? [parameter] : [];
+  });
+  const source =
+    present.find(p => isEditableType(p.Type) && p.Value !== undefined) ??
+    present[0];
+  let reason = 'Synchronize environments';
+  if (!source || !isEditableType(source.Type)) {
+    reason = `${source?.Type ?? 'This type'} is not supported yet`;
+  } else if (source.Value === undefined) {
+    reason = "Can't read the value";
+  }
+  return (
+    <Tooltip title={reason}>
+      <Button
+        type="text"
+        size="small"
+        icon={<RetweetOutlined />}
+        aria-label="Synchronize environments"
+        disabled={reason !== 'Synchronize environments'}
+        onClick={() =>
+          source && uiActions.openCopyDialog(source.Name, { pickSource: true })
+        }
+      />
+    </Tooltip>
+  );
+};
+
 // The key's value in one environment. Clicking it opens the parameter;
-// revealing a SecureString doesn't.
+// revealing a SecureString or copying the value doesn't.
 const ValueCell = ({
   env,
   parameter,
@@ -53,16 +95,6 @@ const ValueCell = ({
   selected,
   revealed
 }: ValueCellProps) => {
-  if (!parameter) {
-    return (
-      <div role="cell" className={styles.cell}>
-        <Tooltip title={`Not set in ${env}`}>
-          <span className={styles.notSet}>Not set</span>
-        </Tooltip>
-      </div>
-    );
-  }
-
   const { Name, Value } = parameter;
   const secure = parameter.Type === 'SecureString';
   let value: ReactNode;
@@ -103,7 +135,7 @@ const ValueCell = ({
       tabIndex={0}
       onClick={() => uiActions.selectParameter(Name)}
       onKeyDown={event => {
-        // Not from the reveal button inside.
+        // Not from the buttons inside.
         if (event.target !== event.currentTarget) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -111,19 +143,20 @@ const ValueCell = ({
       }}
     >
       {value}
-      {secure && (
-        <span className={styles.secure}>
+      <span className={styles.actions}>
+        {secure && (
           <Tooltip title="SecureString">
             <LockOutlined className={styles.lock} aria-label="SecureString" />
           </Tooltip>
-          {Value !== undefined && (
-            <RevealButton
-              revealed={revealed}
-              onToggle={() => uiActions.toggleReveal(Name)}
-            />
-          )}
-        </span>
-      )}
+        )}
+        {secure && Value !== undefined && (
+          <RevealButton
+            revealed={revealed}
+            onToggle={() => uiActions.toggleReveal(Name)}
+          />
+        )}
+        {!unreadable && <CopyButton text={Value} />}
+      </span>
     </div>
   );
 };
@@ -182,18 +215,32 @@ const KeyRow = memo(
                 </Tag>
               </Tooltip>
             )}
+            {(differs || missing.length > 0) && (
+              <SyncAction row={row} environments={environments} />
+            )}
           </span>
         </div>
-        {environments.map(({ segment }) => {
+        {environments.map(env => {
+          const { segment } = env;
           const parameter = cells.get(segment);
+          if (!parameter) {
+            return (
+              <NotSetCell
+                key={segment}
+                env={env}
+                row={row}
+                environments={environments}
+              />
+            );
+          }
           return (
             <ValueCell
               key={segment}
               env={segment}
               parameter={parameter}
               unreadable={unreadable.includes(segment)}
-              selected={!!parameter && parameter.Name === selectedName}
-              revealed={!!parameter && revealed.has(parameter.Name)}
+              selected={parameter.Name === selectedName}
+              revealed={revealed.has(parameter.Name)}
             />
           );
         })}
