@@ -1,8 +1,8 @@
 // Parameter names are paths split by the path delimiter setting. A folder is a
-import { SSM_PATH_SEPARATOR } from '../../shared/aws';
-import { byLocale } from '../../shared/sort';
 // name prefix that ends with the delimiter, such as '/app/db/'. The empty
 // string stands for "all parameters".
+import { SSM_PATH_SEPARATOR } from '../../shared/aws';
+import { byLocale } from '../../shared/sort';
 
 export interface FolderNode {
   key: string;
@@ -94,3 +94,6 @@ export const buildFolderTree = (names: string[], delimiter: string) => {
 
   return { roots: sort(roots), keys: [...nodes.keys()] };
 };
+
+// The file name of a path from the save dialog, on any platform.
+export const baseName = (filePath: string) => filePath.split(/[/\\]/).pop();

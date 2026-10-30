@@ -5,7 +5,8 @@ import {
   SwapOutlined,
   UnorderedListOutlined
 } from '@ant-design/icons';
-import { describeProgress, useExportStore } from '../../state/export';
+import { useExportStore } from '../../state/export';
+import { countOf, describeExportProgress } from '../../utils/progress';
 import { useImportStore } from '../../state/import';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { Page } from '../../state/ui';
@@ -66,9 +67,9 @@ const ImportExportItem = () => {
   const label = 'Import & export';
   let tooltip: string | undefined;
   if (importing) {
-    tooltip = `${label}: Importing ${imported.toLocaleString()} of ${toImport.toLocaleString()}…`;
+    tooltip = `${label}: Importing ${countOf(imported, toImport)}…`;
   } else if (progress) {
-    tooltip = `${label}: ${describeProgress(progress)}`;
+    tooltip = `${label}: ${describeExportProgress(progress)}`;
   }
   return (
     <RailItem

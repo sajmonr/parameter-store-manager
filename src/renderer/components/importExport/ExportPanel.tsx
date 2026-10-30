@@ -13,12 +13,9 @@ import {
   Typography
 } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
-import {
-  describeProgress,
-  exportActions,
-  exportsType,
-  useExportStore
-} from '../../state/export';
+import { exportActions, useExportStore } from '../../state/export';
+import { exportsType } from '../../utils/exportRows';
+import { describeExportProgress } from '../../utils/progress';
 import type { FormatId } from '../../../shared/fileFormats';
 import { useParameters } from '../../state/parameters';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
@@ -143,7 +140,7 @@ const ExportPanel = () => {
     });
 
   let status: string | null = null;
-  if (progress) status = describeProgress(progress);
+  if (progress) status = describeExportProgress(progress);
   else if (loading) status = WAITING_FOR_PARAMETERS;
   else if (typing) status = 'Counting…';
 

@@ -26,6 +26,7 @@ import {
   WRITES_PER_SECOND
 } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
+import { countOf } from '../../utils/progress';
 import { useSettingsStore } from '../../state/settings';
 import { fileKeyId } from '../../utils/importFile';
 import { countStatuses, isWritten, planImport } from '../../utils/importPlan';
@@ -160,7 +161,7 @@ const ImportReview = ({
 
   let importLabel: string;
   if (importing) {
-    importLabel = `Importing ${done.toLocaleString()} of ${total.toLocaleString()}…`;
+    importLabel = `Importing ${countOf(done, total)}…`;
   } else if (toWrite.length) {
     importLabel = `Import ${plural(toWrite.length, 'parameter')}`;
   } else {
@@ -272,7 +273,7 @@ const ImportReview = ({
           <Alert
             type="error"
             showIcon
-            title={`Imported ${lastRun.written.toLocaleString()} of ${lastRun.total.toLocaleString()}. ${failed.size.toLocaleString()} failed.`}
+            title={`Imported ${countOf(lastRun.written, lastRun.total)}. ${failed.size.toLocaleString()} failed.`}
             action={
               <Button
                 size="small"

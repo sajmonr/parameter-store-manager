@@ -4,34 +4,21 @@
 import { create } from 'zustand';
 import type { ApiError } from '../clients/call';
 import { feedback } from '../feedback';
-import { accountService, filesService, parametersService } from '../services';
-import type { ParameterMetadata } from '../services';
+import { accountService, filesService } from '../services';
 import { describeError } from '../utils/awsErrors';
 import { parametersToCsv } from '../utils/csv';
-import type { CsvParameter } from '../utils/csv';
 import { exportFileName } from '../utils/exportFileName';
-import { fileKeyId } from '../utils/importFile';
+import { exportRows, toExported } from '../utils/exportRows';
+import type { Fetched, Listed } from '../utils/exportRows';
 import { toJsonExport } from '../utils/jsonExport';
-import type { ExportedParameter } from '../utils/jsonExport';
-import { isEditableType, isSecureType } from '../../shared/parameterTypes';
+import { baseName } from '../utils/paths';
 import { plural } from '../utils/plural';
+import type { ExportProgress } from '../utils/progress';
 import { createPathMatcher, literalPrefix } from '../utils/search';
-import { MAX_NAMES_PER_REQUEST } from '../../main/endpoints/parameters/getParameterValues/getParameterValues.contract';
 import type { FormatId } from '../../shared/fileFormats';
-import { chunk } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
-import { ssmReads } from './ssmRateLimit';
-import { byString } from '../../shared/sort';
-
-export type ExportProgress =
-  | { phase: 'listing'; found: number }
-  | { phase: 'values'; done: number; total: number }
-  | { phase: 'saving' };
-
-// The file a format writes. JSON leaves out StringLists, which Import can't
-// create yet.
-export const exportsType = (format: FormatId, type: string | undefined) =>
-  format === 'csv' || isEditableType(type);
+import { sourceGuard } from './sourceGuard';
+import { describeAllPages, readValueBatches } from './ssmReads';
 
 export interface ExportOptions {
   format: FormatId;
@@ -56,20 +43,15 @@ interface ExportResult {
 export const SOURCE_CHANGED =
   'The profile or region changed during the export. Export again.';
 
-type Listed = ParameterMetadata & { Name: string };
-
 // Throws when the export was cancelled or the profile or region changed since
 // it started: the rest would come from a different account or region.
 type Check = () => void;
 
 const sourceCheck = (signal: AbortSignal): Check => {
-  const { profile, ssmRegion } = getSettings();
+  const checkSource = sourceGuard(SOURCE_CHANGED);
   return () => {
     signal.throwIfAborted();
-    const now = getSettings();
-    if (now.profile !== profile || now.ssmRegion !== ssmRegion) {
-      throw new Error(SOURCE_CHANGED);
-    }
+    checkSource();
   };
 };
 
@@ -82,23 +64,15 @@ const listParameters = async (
   const matcher = createPathMatcher(path, getPathDelimiter());
   const beginsWith = literalPrefix(path) || undefined;
   const listed: Listed[] = [];
-  let nextToken: string | undefined;
-  do {
-    const page = await parametersService.describe(nextToken, beginsWith);
+  await describeAllPages(parameters => {
     check();
-    page.parameters.forEach(p => {
+    parameters.forEach(p => {
       if (p.Name && matcher.test(p.Name)) listed.push({ ...p, Name: p.Name });
     });
     onProgress({ phase: 'listing', found: listed.length });
-    ({ nextToken } = page);
-  } while (nextToken);
+  }, beginsWith);
   return listed;
 };
-
-interface Fetched {
-  Type?: string;
-  Value?: string;
-}
 
 // The type and value of every name, and the names deleted since they were
 // listed. SecureStrings are only decrypted when their values are included.
@@ -118,12 +92,12 @@ const loadValues = async (
     check();
   };
   await Promise.all(
-    chunk(names, MAX_NAMES_PER_REQUEST).map(async batch => {
+    readValueBatches(names, {
+      decrypt: includeSecureValues,
+      check: checkBatch
+    }).map(async ({ batch, values }) => {
       try {
-        const res = await ssmReads.schedule(
-          () => parametersService.getValues(batch, includeSecureValues),
-          { check: checkBatch }
-        );
+        const res = await values;
         check();
         res.parameters.forEach(
           ({ Name, Type, Value }) => Name && fetched.set(Name, { Type, Value })
@@ -139,15 +113,6 @@ const loadValues = async (
   );
   return { fetched, deleted };
 };
-
-// A row as the JSON file holds it; only Strings and SecureStrings get here.
-const toExported = (row: CsvParameter): ExportedParameter => ({
-  name: row.Name,
-  type: row.Type as ExportedParameter['type'],
-  value: row.Value ?? null,
-  description: row.Description ?? '',
-  keyId: fileKeyId(row.KeyId)
-});
 
 // The account ID, or the profile name when it can't be read.
 const accountLabel = async () => {
@@ -169,23 +134,13 @@ const exportParameters = async (
     check
   );
 
-  const rows = listed
-    .filter(p => !deleted.has(p.Name))
-    .sort(byString(parameter => parameter.Name))
-    .map((p): CsvParameter => {
-      // The type as of the value fetch: the parameter may have been
-      // recreated as a SecureString since it was listed.
-      const { Type = p.Type, Value } = fetched.get(p.Name) ?? {};
-      const secure = isSecureType(Type);
-      return {
-        Name: p.Name,
-        Value: secure && !includeSecureValues ? undefined : Value,
-        Type,
-        Description: p.Description,
-        KeyId: secure ? p.KeyId : undefined
-      };
-    })
-    .filter(row => exportsType(format, row.Type));
+  const rows = exportRows({
+    listed,
+    fetched,
+    deleted,
+    format,
+    includeSecureValues
+  });
 
   onProgress({ phase: 'saving' });
   const date = new Date();
@@ -209,19 +164,6 @@ const exportParameters = async (
   const filePath = await filesService.save(fileName, content);
   return { filePath, count: rows.length };
 };
-
-export const describeProgress = (progress: ExportProgress) => {
-  if (progress.phase === 'listing') {
-    return `Listing parameters… ${progress.found.toLocaleString()} found`;
-  }
-  if (progress.phase === 'values') {
-    return `Fetching values… ${progress.done.toLocaleString()} / ${progress.total.toLocaleString()}`;
-  }
-  return 'Saving…';
-};
-
-// The file name of a path from the save dialog, on any platform.
-const baseName = (filePath: string) => filePath.split(/[/\\]/).pop();
 
 export interface ExportState {
   running: boolean;

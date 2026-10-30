@@ -1,7 +1,7 @@
 // Compare mode: one service's keys side by side across its environments,
 // with the keys whose values differ and the keys some environment lacks.
 import type { StructureEnvironment } from '../../shared/structure';
-import type { ParameterEntry } from '../state/parameters';
+import type { ParameterEntry } from './parameterList';
 import { rowsFor, serviceEnvironments } from './location';
 import type { LocationContext, ServiceLocation } from './location';
 import { folderOf } from './paths';

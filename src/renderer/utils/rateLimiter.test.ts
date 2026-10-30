@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRateLimiter } from './ssmRateLimit';
+import { createRateLimiter } from './rateLimiter';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());

@@ -7,7 +7,7 @@ import {
   isSecureType
 } from '../../shared/parameterTypes';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
-import type { ParameterEntry } from '../state/parameters';
+import type { ParameterEntry } from './parameterList';
 import { plural } from './plural';
 
 // 'new' has no parameter with the key yet; 'same' already has the value.

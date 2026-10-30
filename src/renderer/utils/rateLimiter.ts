@@ -1,7 +1,5 @@
-// Limits how fast the app reads from SSM. GetParameter, GetParameters and
-// GetParametersByPath share one budget per account and region (40 calls/s by
-// default) with every other caller, including production services, so the
-// app keeps well under it.
+// Limits how many calls start per second and how many run at once. Calls
+// wait in a queue, in order, until the limit lets them go.
 
 export interface RateLimit {
   // Calls started in any one second.
@@ -90,10 +88,3 @@ export const createRateLimiter = ({ perSecond, concurrency }: RateLimit) => {
 
   return { schedule };
 };
-
-// About half the default budget.
-export const SSM_READ_LIMIT: RateLimit = { perSecond: 20, concurrency: 4 };
-
-// Every GetParameters call the renderer makes goes through this one, so a
-// load and an export running together share the cap.
-export const ssmReads = createRateLimiter(SSM_READ_LIMIT);

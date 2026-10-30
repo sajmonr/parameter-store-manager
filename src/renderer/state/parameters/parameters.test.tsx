@@ -2,20 +2,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
-import * as api from '../test/mockServices';
-import { feedback } from '../feedback';
-import { createWrapper } from '../test/render';
-import { createTestState, makeParameter } from '../test/testState';
-import {
-  useDeleteParameters,
-  useParameters,
-  usePutParameter
-} from './parameters';
-import { useSettingsStore } from './settings';
-import { uiActions } from './ui';
-import { useSelectedParameter } from './views';
+import * as api from '../../test/mockServices';
+import { feedback } from '../../feedback';
+import { createWrapper } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
+import { useDeleteParameters, useParameters, usePutParameter } from '.';
+import { useSettingsStore } from '../settings';
+import { uiActions } from '../ui';
+import { useSelectedParameter } from '../views';
 
-vi.mock('../services', () => import('../test/mockServices'));
+vi.mock('../../services', () => import('../../test/mockServices'));
 
 type Page = Awaited<ReturnType<typeof api.parametersService.describe>>;
 
