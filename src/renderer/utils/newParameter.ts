@@ -5,12 +5,11 @@ import type { Structure } from '../../shared/structure';
 import {
   isEnvironmentLocation,
   isServiceLocation,
-  pathFolderOf,
-  serviceEnvironments
+  pathFolderOf
 } from './location';
 import type { Location, LocationContext } from './location';
 import { folderOf, foldersOf, leafOf, rootFolder } from './paths';
-import { parse, pathOf } from './structure';
+import { environmentsOf, parse, pathOf } from './structure';
 import type { Match } from './structure';
 import { compareLocale } from '../../shared/sort';
 
@@ -84,13 +83,6 @@ export const nameErrorOf = (
   }
   if (text && !leafOf(rest, delimiter)) return NAME_ERRORS.noName;
   return null;
-};
-
-// The service's environments in the configured order, or none when the
-// service isn't configured.
-export const environmentsOf = (service: string, structure: Structure) => {
-  const configured = structure.services.find(s => s.segment === service);
-  return configured ? serviceEnvironments(configured, structure) : [];
 };
 
 // The full names the form creates, in the configured environment order.

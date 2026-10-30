@@ -31,7 +31,6 @@ import { uiActions } from '../../state/ui';
 import type { NewParameterPrefill } from '../../state/ui';
 import { useFolderSet, useLocation, useNameSet } from '../../state/views';
 import {
-  environmentsOf,
   envsForService,
   initialNaming,
   isValueValid,
@@ -45,7 +44,12 @@ import {
   toStructured
 } from '../../utils/newParameter';
 import type { NameError, Naming } from '../../utils/newParameter';
-import { parse, pathOf } from '../../utils/structure';
+import {
+  environmentColor,
+  environmentsOf,
+  parse,
+  pathOf
+} from '../../utils/structure';
 import { isSubmitShortcut, submitShortcutLabel } from '../../utils/keys';
 import PaneHeader from '../detail/PaneHeader';
 import CreatePreview, { breakable } from './CreatePreview';
@@ -208,10 +212,7 @@ const ParameterForm = ({
 
   const rows: PreviewRow[] = targets.map(name => {
     const match = parse(name, structure, delimiter);
-    const color = match
-      ? (structure.environments.find(e => e.segment === match.env)?.color ??
-        null)
-      : null;
+    const color = match ? environmentColor(structure, match.env) : null;
     let meta: string | null = null;
     if (!structured && structure.enabled) {
       meta = match ? `${match.service} · ${match.env}` : OTHER_PATHS_LABEL;

@@ -6,7 +6,6 @@ import {
   pathFolderOf,
   relativeFolder,
   rowsFor,
-  serviceEnvironments,
   validate
 } from '../utils/location';
 import { compare } from '../utils/compare';
@@ -18,7 +17,14 @@ import {
   buildEnvironmentsTree,
   buildServicesTree
 } from '../utils/servicesTree';
-import { parse, pathOf, structureNames } from '../utils/structure';
+import {
+  environmentsOf,
+  findService,
+  parse,
+  pathOf,
+  serviceEnvironments,
+  structureNames
+} from '../utils/structure';
 import type { StructuredNames } from '../utils/structure';
 import type { Location } from '../utils/location';
 import type { Structure } from '../../shared/structure';
@@ -136,11 +142,7 @@ export const useEnvironmentTabs = () => {
   const context = useLocationContext();
   return useMemo(() => {
     if (!isServiceLocation(location)) return [];
-    const service = context.structure.services.find(
-      s => s.segment === location.service
-    );
-    if (!service) return [];
-    return serviceEnvironments(service, context.structure).map(env => ({
+    return environmentsOf(location.service, context.structure).map(env => ({
       ...env,
       count: rowsFor({ ...location, env: env.segment }, matched, context).length
     }));
@@ -326,8 +328,7 @@ export const useParameterPlace = (name: string) => {
   return useMemo(() => {
     const { structure, delimiter } = context;
     const match = parse(name, structure, delimiter);
-    const service =
-      match && structure.services.find(s => s.segment === match.service);
+    const service = match && findService(structure, match.service);
     if (!match || !service) return null;
     const environments = serviceEnvironments(service, structure).map(env => {
       const path = pathOf(

@@ -2,7 +2,8 @@
 // with the keys whose values differ and the keys some environment lacks.
 import type { StructureEnvironment } from '../../shared/structure';
 import type { ParameterEntry } from './parameterList';
-import { rowsFor, serviceEnvironments } from './location';
+import { rowsFor } from './location';
+import { environmentsOf } from './structure';
 import type { LocationContext, ServiceLocation } from './location';
 import { folderOf } from './paths';
 import type { Matcher } from './search';
@@ -67,8 +68,7 @@ export const compare = (
   loading = false
 ): Comparison => {
   const { structure, delimiter } = ctx;
-  const service = structure.services.find(s => s.segment === location.service);
-  const environments = service ? serviceEnvironments(service, structure) : [];
+  const environments = environmentsOf(location.service, structure);
 
   const cellsByKey = new Map<string, Map<string, ParameterEntry>>();
   environments.forEach(({ segment: env }) => {

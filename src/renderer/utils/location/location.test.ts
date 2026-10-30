@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_STRUCTURE } from '../../shared/structure';
-import type { Structure } from '../../shared/structure';
+import { DEFAULT_STRUCTURE } from '../../../shared/structure';
+import type { Structure } from '../../../shared/structure';
 import {
   contains,
   convert,
-  envFor,
   environmentNodeKey,
   locationInEnv,
   locationOf,
@@ -16,14 +15,14 @@ import {
   treeKeyOf,
   treeKeysTo,
   validate
-} from './location';
+} from '.';
 import type {
   EnvironmentLocation,
   Location,
   LocationContext,
   ServiceLocation
-} from './location';
-import { parse } from './structure';
+} from '.';
+import { parse } from '../structure';
 
 const structure: Structure = {
   ...DEFAULT_STRUCTURE,
@@ -453,20 +452,6 @@ describe('locationInEnv', () => {
     expect(
       locationInEnv({ view: 'paths', scope: '/random/' }, staging, ctx)
     ).toEqual({ view: 'paths', scope: '/staging/compass/AppServer/' });
-  });
-});
-
-describe('envFor', () => {
-  const compass = structure.services[0]!;
-  it('keeps the preferred environment, else the first in configured order', () => {
-    expect(envFor(compass, 'staging', structure)).toBe('staging');
-    expect(envFor(compass, 'production', structure)).toBe('development');
-    expect(envFor(compass, null, structure)).toBe('development');
-    // In the order of the environments, not of the service's list.
-    expect(envFor(structure.services[1]!, null, structure)).toBe('staging');
-    expect(
-      envFor({ segment: 'none', environments: [] }, 'staging', structure)
-    ).toBe('');
   });
 });
 

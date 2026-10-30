@@ -8,7 +8,11 @@ import { isEnvironmentLocation, isOtherLocation } from '../../utils/location';
 import type { Location, LocationContext } from '../../utils/location';
 import type { Comparison } from '../../utils/compare';
 import { folderChain } from '../../utils/paths';
-import { environmentColorOf, layoutPattern } from '../../utils/structure';
+import {
+  environmentColor,
+  environmentColorOf,
+  layoutPattern
+} from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import SelectionBar from './SelectionBar';
 import ServiceBar from './ServiceBar';
@@ -21,7 +25,7 @@ interface Crumb {
   location: Location;
 }
 
-const envLabel = (env: string, color: string | undefined) =>
+const envLabel = (env: string, color: string | null) =>
   color ? (
     <span className={styles.env}>
       <EnvironmentDot color={color} />
@@ -45,7 +49,7 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
         const color = environmentColorOf(key, structure, delimiter);
         return {
           key,
-          label: envLabel(label, color ?? undefined),
+          label: envLabel(label, color),
           location: { view: 'paths', scope: key } as const
         };
       })
@@ -68,7 +72,7 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   }
   if (isEnvironmentLocation(location)) {
     const { env, service } = location;
-    const color = structure.environments.find(e => e.segment === env)?.color;
+    const color = environmentColor(structure, env);
     const crumbs: Crumb[] = [
       {
         key: 'env',

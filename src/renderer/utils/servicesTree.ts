@@ -3,12 +3,8 @@
 // folders. Both end with Other paths and its folders.
 import { buildFolderTree, foldersOf } from './paths';
 import type { FolderNode } from './paths';
-import {
-  envFor,
-  environmentNodeKey,
-  otherNodeKey,
-  serviceNodeKey
-} from './location';
+import { envFor } from './structure';
+import { environmentNodeKey, otherNodeKey, serviceNodeKey } from './location';
 import type { GroupedView, Location, LocationContext } from './location';
 import { parse } from './structure';
 import { OTHER_PATHS_ROOT_LABEL } from './labels';
