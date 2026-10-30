@@ -2,6 +2,7 @@
 import { fileKeyId } from './importFile';
 import type { ImportEntry } from './importFile';
 import { PARAMETER_TYPE, isSecureType } from '../../shared/parameterTypes';
+import { plural } from './plural';
 
 // new: the name doesn't exist. changed: it exists and the value,
 // description or KMS key differ. unchanged: they are all equal. skipped: a
@@ -80,4 +81,20 @@ export const countStatuses = (rows: ImportRow[]) => {
     counts[row.status] += 1;
   });
   return counts;
+};
+
+// AWS's default PutParameter limit, which sets how long an import takes.
+export const WRITES_PER_SECOND = 3;
+// From this many writes, the review says how long the import will take.
+export const SLOW_IMPORT_WRITES = 100;
+
+// How long writing `count` parameters takes at best: "about 35 seconds",
+// "about 2 minutes".
+export const importDuration = (count: number) => {
+  const seconds = count / WRITES_PER_SECOND;
+  if (seconds < 60) {
+    const rounded = Math.max(5, Math.round(seconds / 5) * 5);
+    return `about ${rounded} seconds`;
+  }
+  return `about ${plural(Math.round(seconds / 60), 'minute')}`;
 };

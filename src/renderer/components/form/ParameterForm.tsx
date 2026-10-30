@@ -51,7 +51,8 @@ import {
 } from '../../utils/structure';
 import { isSubmitShortcut, submitShortcutLabel } from '../../utils/keys';
 import PaneHeader from '../detail/PaneHeader';
-import CreatePreview, { breakable } from './CreatePreview';
+import { breakable } from '../../utils/paths';
+import CreatePreview from './CreatePreview';
 import type { PreviewRow } from './CreatePreview';
 import EnvironmentPicker from './EnvironmentPicker';
 import KmsKeySelect from './KmsKeySelect';

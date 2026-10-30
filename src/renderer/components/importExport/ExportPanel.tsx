@@ -30,7 +30,7 @@ import { plural } from '../../utils/plural';
 import { createPathMatcher, createPrefixMatcher } from '../../utils/search';
 import Mono from '../common/Mono';
 import FormatCards from './FormatCards';
-import { formatById } from './formats';
+import { formatById } from '../../utils/formats';
 import styles from './ExportPanel.module.css';
 import { WAITING_FOR_PARAMETERS } from '../../utils/labels';
 import { compareLocale } from '../../../shared/sort';

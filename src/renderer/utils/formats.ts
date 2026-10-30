@@ -1,17 +1,15 @@
 // The file formats of the Import & export page. The page is built from this
 // list, so a format is added here and in the code that writes and reads it.
-import type { ReactNode } from 'react';
-import { CodeOutlined, FileTextOutlined } from '@ant-design/icons';
-import { FILE_FORMATS } from '../../../shared/fileFormats';
-import type { FormatId } from '../../../shared/fileFormats';
-import { parseCsvExport } from '../../utils/csv';
-import type { ParseResult } from '../../utils/importFile';
-import { parseJsonExport } from '../../utils/jsonExport';
+// Their icons are in components/importExport/formatIcons.
+import { FILE_FORMATS } from '../../shared/fileFormats';
+import type { FormatId } from '../../shared/fileFormats';
+import { parseCsvExport } from './csv';
+import type { ParseResult } from './importFile';
+import { parseJsonExport } from './jsonExport';
 
 export type Format = {
   id: FormatId;
   label: string;
-  icon: ReactNode;
   description: string;
   canExport: boolean;
   // columns: the export shows the columns it writes. fixed: it always writes
@@ -26,7 +24,6 @@ export const FORMATS: Format[] = [
   {
     id: 'csv',
     label: FILE_FORMATS.csv,
-    icon: <FileTextOutlined />,
     description: 'For spreadsheets and review.',
     canExport: true,
     canImport: true,
@@ -36,7 +33,6 @@ export const FORMATS: Format[] = [
   {
     id: 'json',
     label: FILE_FORMATS.json,
-    icon: <CodeOutlined />,
     description: 'For structured backups and restores.',
     canExport: true,
     canImport: true,

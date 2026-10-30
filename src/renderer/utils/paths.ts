@@ -106,3 +106,8 @@ export const folderSet = (names: Iterable<string>, delimiter: string) => {
   }
   return folders;
 };
+
+// A zero-width space after each delimiter lets the path wrap there, and only
+// there.
+export const breakable = (name: string, delimiter: string) =>
+  name.split(delimiter).join(`${delimiter}\u200b`);

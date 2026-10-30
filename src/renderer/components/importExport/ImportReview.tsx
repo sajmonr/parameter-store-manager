@@ -18,24 +18,25 @@ import {
   LockOutlined
 } from '@ant-design/icons';
 import { DEFAULT_KMS_KEY, isSecureType } from '../../../shared/parameterTypes';
-import {
-  importActions,
-  importDuration,
-  SLOW_IMPORT_WRITES,
-  useImportStore,
-  WRITES_PER_SECOND
-} from '../../state/import';
+import { importActions, useImportStore } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { countOf } from '../../utils/progress';
 import { useSettingsStore } from '../../state/settings';
 import { fileKeyId } from '../../utils/importFile';
-import { countStatuses, isWritten, planImport } from '../../utils/importPlan';
+import {
+  countStatuses,
+  importDuration,
+  isWritten,
+  planImport,
+  SLOW_IMPORT_WRITES,
+  WRITES_PER_SECOND
+} from '../../utils/importPlan';
 import type { ImportRow, ImportStatus } from '../../utils/importPlan';
 import { plural } from '../../utils/plural';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
-import { formatById } from './formats';
+import { FORMAT_ICONS } from './formatIcons';
 import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
 import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
@@ -172,9 +173,7 @@ const ImportReview = ({
     <Card
       title={
         <Flex align="center" gap={10}>
-          <span className={styles.fileIcon}>
-            {formatById(file.format).icon}
-          </span>
+          <span className={styles.fileIcon}>{FORMAT_ICONS[file.format]}</span>
           <Flex vertical className={styles.fileTitle}>
             <Mono ellipsis={{ tooltip: file.name }}>{file.name}</Mono>
             <Typography.Text type="secondary" className={styles.meta}>

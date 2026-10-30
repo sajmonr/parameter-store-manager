@@ -1,5 +1,4 @@
 import { Empty, Tree } from 'antd';
-import { FolderOpenOutlined, FolderOutlined } from '@ant-design/icons';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import {
@@ -11,17 +10,10 @@ import useElementSize from '../../hooks/useElementSize';
 import { environmentColorOf } from '../../utils/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import HighlightText from '../common/HighlightText';
+import { folderIcon } from './icons';
 import TreeNodeMenu from './TreeNodeMenu';
 import useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
-
-export const folderIcon = ({
-  expanded,
-  isLeaf
-}: {
-  expanded?: boolean;
-  isLeaf?: boolean;
-}) => (expanded && !isLeaf ? <FolderOpenOutlined /> : <FolderOutlined />);
 
 // The Paths view: folders of the parameters that match the search, with
 // match counts. Selecting a folder scopes the table to it; selecting it again

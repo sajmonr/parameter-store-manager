@@ -7,13 +7,9 @@ import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useCheckContext, useLocation } from '../../state/views';
-import {
-  groupByService,
-  isEnvironmentLocation,
-  isServiceLocation,
-  isWholeEnvironment
-} from '../../utils/location';
-import type { Location } from '../../utils/location';
+import { isEnvironmentLocation, isServiceLocation } from '../../utils/location';
+import { isGroupRow, tableRowsOf } from '../../utils/tableRows';
+import type { TableRow as Row } from '../../utils/tableRows';
 import useElementSize from '../../hooks/useElementSize';
 import usePageVisible from '../../hooks/usePageVisible';
 import NameCell from './NameCell';
@@ -26,43 +22,11 @@ import {
   TABLE_LOCK_COLUMN_WIDTH
 } from '../../utils/layout';
 
-// A whole environment's rows come under a header row per service.
-interface GroupRow {
-  // The row key; parameter names can't contain brackets.
-  Name: string;
-  service: string;
-  count: number;
-}
-
-type Row = ParameterEntry | GroupRow;
-
-const isGroupRow = (row: Row): row is GroupRow => 'service' in row;
-
 // A group row spans every column.
 const spanGroupRow = (columns: number) => (row: Row) => ({
   colSpan: isGroupRow(row) ? columns : 1
 });
 const hideInGroupRow = (row: Row) => ({ colSpan: isGroupRow(row) ? 0 : 1 });
-
-// The parameters, with a header row before each service's when `location`
-// is a whole environment.
-const rowsOf = (
-  parameters: ParameterEntry[],
-  location: Location,
-  context: ReturnType<typeof useLocationContext>
-): Row[] => {
-  if (!isWholeEnvironment(location)) return parameters;
-  return groupByService(parameters, context).flatMap(
-    ({ service, parameters: rows }) => [
-      {
-        Name: JSON.stringify(['group', service]),
-        service,
-        count: rows.length
-      },
-      ...rows
-    ]
-  );
-};
 
 // ↑/↓ move the selection unless the user is typing or using another widget.
 const isArrowNavigationTarget = (target: EventTarget | null) =>
@@ -97,7 +61,7 @@ const ParameterTable = ({
       ? 'Key'
       : 'Name';
   const rows = useMemo(
-    () => rowsOf(parameters, location, context),
+    () => tableRowsOf(parameters, location, context),
     [parameters, location, context]
   );
   const pageVisible = usePageVisible();

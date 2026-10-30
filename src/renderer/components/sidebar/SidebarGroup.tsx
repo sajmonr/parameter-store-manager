@@ -7,7 +7,7 @@ import type { Location } from '../../utils/location';
 import type { SidebarNode } from '../../utils/servicesTree';
 import EnvironmentDot from '../common/EnvironmentDot';
 import HighlightText from '../common/HighlightText';
-import { folderIcon } from './FolderTree';
+import { folderIcon } from './icons';
 import TreeNodeMenu from './TreeNodeMenu';
 import type useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';

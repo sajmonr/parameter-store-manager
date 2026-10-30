@@ -4,7 +4,6 @@
 import { create } from 'zustand';
 import type { QueryClient } from '@tanstack/react-query';
 import { settleEach } from '../utils/batch';
-import { plural } from '../utils/plural';
 import type { EditableParameterType } from '../../shared/parameterTypes';
 import type { ImportEntry } from '../utils/importFile';
 import { putParameter } from './parameters';
@@ -14,22 +13,6 @@ import { sourceGuard } from './sourceGuard';
 // with every other writer, so a large import stays under it. A throttled
 // write is retried by the SDK client (adaptive mode, see main/aws.ts).
 export const IMPORT_CONCURRENCY = 2;
-
-// AWS's default PutParameter limit, which sets how long an import takes.
-export const WRITES_PER_SECOND = 3;
-// From this many writes, the review says how long the import will take.
-export const SLOW_IMPORT_WRITES = 100;
-
-// How long writing `count` parameters takes at best: "about 35 seconds",
-// "about 2 minutes".
-export const importDuration = (count: number) => {
-  const seconds = count / WRITES_PER_SECOND;
-  if (seconds < 60) {
-    const rounded = Math.max(5, Math.round(seconds / 5) * 5);
-    return `about ${rounded} seconds`;
-  }
-  return `about ${plural(Math.round(seconds / 60), 'minute')}`;
-};
 
 export const IMPORT_SOURCE_CHANGED =
   'The profile or region changed during the import.';

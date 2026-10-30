@@ -5,7 +5,7 @@ import ExportPanel from '../importExport/ExportPanel';
 import ImportPanel from '../importExport/ImportPanel';
 import OptionCards from '../importExport/OptionCards';
 import type { CardOption } from '../importExport/OptionCards';
-import type { Mode } from '../importExport/formats';
+import type { Mode } from '../../utils/formats';
 import PageHeading from './PageHeading';
 import styles from './Page.module.css';
 import { cx } from '../../utils/classNames';

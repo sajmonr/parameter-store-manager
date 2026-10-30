@@ -4,6 +4,7 @@ import type { Structure } from '../../shared/structure';
 import {
   addEnvironment,
   addService,
+  delimiterError,
   moveEnvironment,
   nextColor,
   removeEnvironment,
@@ -138,5 +139,24 @@ describe('services', () => {
       'production'
     ]);
     expect(next.services[1]).toBe(structure.services[1]);
+  });
+});
+
+describe('delimiterError', () => {
+  const structure: Structure = {
+    ...DEFAULT_STRUCTURE,
+    services: [{ segment: 'my.app', environments: [] }]
+  };
+
+  it('needs a delimiter without spaces', () => {
+    expect(delimiterError('', structure)).toBe('Enter a delimiter.');
+    expect(delimiterError('/ ', structure)).toBe(
+      "The delimiter can't contain spaces."
+    );
+  });
+
+  it("can't split a configured segment", () => {
+    expect(delimiterError('.', structure)).toBe('"my.app" contains ".".');
+    expect(delimiterError('/', structure)).toBeNull();
   });
 });

@@ -8,7 +8,7 @@ import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import type { ImportFile } from '../../utils/importFile';
 import FormatCards from './FormatCards';
-import { FORMATS, formatById } from './formats';
+import { FORMATS, formatById } from '../../utils/formats';
 import ImportReview from './ImportReview';
 import styles from './ImportPanel.module.css';
 

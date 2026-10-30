@@ -10,7 +10,7 @@ import {
   useVisibleParameters
 } from '../../state/views';
 import { filterKeys } from '../../utils/compare';
-import type { CompareKey, Comparison } from '../../utils/compare';
+import type { Compared } from '../../utils/compare';
 import CompareGrid from './CompareGrid';
 import ParameterBreadcrumb from './ParameterBreadcrumb';
 import ParameterTable from './ParameterTable';
@@ -20,16 +20,6 @@ import NoResults from '../states/NoResults';
 import EmptyFolder from '../states/EmptyFolder';
 import EmptyAccount from '../states/EmptyAccount';
 import ConnectionError from '../states/ConnectionError';
-
-// What compare mode lists: the comparison and the keys its filter keeps,
-// which aren't shown until a load has listed every name (`ready`). `failed`
-// when the first load stopped before it did.
-export interface Compared {
-  comparison: Comparison;
-  keys: CompareKey[];
-  ready: boolean;
-  failed: boolean;
-}
 
 const renderContent = (
   loadState: LoadState,

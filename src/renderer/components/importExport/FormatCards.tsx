@@ -1,6 +1,7 @@
 import type { FormatId } from '../../../shared/fileFormats';
-import { FORMATS, isAvailable } from './formats';
-import type { Format, Mode } from './formats';
+import { FORMATS, isAvailable } from '../../utils/formats';
+import { FORMAT_ICONS } from './formatIcons';
+import type { Format, Mode } from '../../utils/formats';
 import OptionCards from './OptionCards';
 
 interface FormatCardsProps {
@@ -29,7 +30,7 @@ const FormatCards = ({
     options={formats.map(format => ({
       value: format.id,
       label: format.label,
-      icon: format.icon,
+      icon: FORMAT_ICONS[format.id],
       description: format.description,
       unavailable: isAvailable(format, mode)
         ? undefined

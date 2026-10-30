@@ -42,6 +42,16 @@ export interface Comparison {
   counts: Record<CompareFilter, number>;
 }
 
+// What compare mode lists: the comparison and the keys its filter keeps,
+// which aren't shown until a load has listed every name (`ready`). `failed`
+// when the first load stopped before it did.
+export interface Compared {
+  comparison: Comparison;
+  keys: CompareKey[];
+  ready: boolean;
+  failed: boolean;
+}
+
 const isDiffering = (key: CompareKey) => key.differs;
 const isMissing = (key: CompareKey) => key.missing.length > 0;
 

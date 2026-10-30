@@ -2,6 +2,7 @@ import { Button, Typography } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
+import { breakable } from '../../utils/paths';
 import Mono from '../common/Mono';
 import styles from './CreatePreview.module.css';
 import { cx } from '../../utils/classNames';
@@ -17,11 +18,6 @@ export interface PreviewRow {
   created?: boolean;
   error?: string;
 }
-
-// A zero-width space after each delimiter lets the path wrap there, and only
-// there.
-export const breakable = (name: string, delimiter: string) =>
-  name.split(delimiter).join(`${delimiter}\u200b`);
 
 const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
   <li className={styles.row}>

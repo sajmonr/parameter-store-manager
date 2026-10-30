@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { Card, Form, Segmented } from 'antd';
 import { DesktopOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
 import type { Theme } from '../../../shared/availableSettings';
-import { delimiterConflict } from '../../../shared/structure';
-import type { ParameterView, Structure } from '../../../shared/structure';
+import { delimiterError } from '../../utils/structureEdits';
+import type { ParameterView } from '../../../shared/structure';
 import { useSettingsStore } from '../../state/settings';
 import { saveSettingsAndApply } from '../../state/settingsChanges';
 import SettingInput from './SettingInput';
@@ -16,20 +16,6 @@ const themeOptions: { value: Theme; label: string; icon: ReactNode }[] = [
   { value: 'light', label: 'Light', icon: <SunOutlined /> },
   { value: 'dark', label: 'Dark', icon: <MoonOutlined /> }
 ];
-
-// Configured segments can't contain the delimiter, or paths would split
-// inside them.
-const delimiterError = (delimiter: string, structure: Structure) => {
-  if (!delimiter) return 'Enter a delimiter.';
-  if (/\s/.test(delimiter)) return "The delimiter can't contain spaces.";
-  const segment = delimiterConflict(structure, delimiter);
-  if (segment) {
-    return segment.includes(delimiter)
-      ? `"${segment}" contains "${delimiter}".`
-      : `"${segment}" ends with part of "${delimiter}".`;
-  }
-  return null;
-};
 
 const DisplaySection = () => {
   const pathDelimiter = useSettingsStore(settings => settings.pathDelimiter);
