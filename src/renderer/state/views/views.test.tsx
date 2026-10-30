@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { DEFAULT_STRUCTURE } from '../../shared/structure';
-import type { Structure } from '../../shared/structure';
-import { createWrapper } from '../test/render';
-import { createTestState, makeParameter } from '../test/testState';
-import { useSettingsStore } from './settings';
-import { useStructuredParameters } from './views';
+import { DEFAULT_STRUCTURE } from '../../../shared/structure';
+import type { Structure } from '../../../shared/structure';
+import { createWrapper } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
+import { useSettingsStore } from '../settings';
+import { useStructuredParameters } from '.';
 
 const structure: Structure = {
   ...DEFAULT_STRUCTURE,
