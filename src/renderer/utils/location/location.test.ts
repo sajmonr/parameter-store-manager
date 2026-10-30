@@ -7,6 +7,8 @@ import {
   environmentNodeKey,
   locationInEnv,
   locationOf,
+  mainAreaLists,
+  nextLastEnv,
   otherNodeKey,
   pathFolderOf,
   relativeFolder,
@@ -604,5 +606,27 @@ describe('tree keys', () => {
       environmentNodeKey('development', 'compass'),
       environmentNodeKey('development', 'compass', 'A/')
     ]);
+  });
+});
+
+describe('mainAreaLists', () => {
+  it("lists only the location's environment unless comparing", () => {
+    const staging = '/staging/compass/AppServer/Port';
+    expect(mainAreaLists(compassDev(), staging, ctx, false)).toBe(false);
+    expect(mainAreaLists(compassDev(), staging, ctx, true)).toBe(true);
+    expect(mainAreaLists(compassDev(), '/random/thing', ctx, true)).toBe(false);
+  });
+});
+
+describe('nextLastEnv', () => {
+  it('takes the environment of a grouped location', () => {
+    expect(nextLastEnv(compassDev(), 'staging')).toBe('development');
+    expect(nextLastEnv(devEnv(), null)).toBe('development');
+    expect(nextLastEnv({ view: 'paths', scope: '' }, 'staging')).toBe(
+      'staging'
+    );
+    expect(
+      nextLastEnv({ view: 'services', other: true, folder: '' }, 'staging')
+    ).toBe('staging');
   });
 });

@@ -88,3 +88,11 @@ export const placeIn = (
   view === 'services'
     ? { view, service, env, folder }
     : { view, env, service: service || null, folder: service ? folder : '' };
+
+// The environment other services open on after going to `location`: its
+// own, when it has one.
+export const nextLastEnv = (location: Location, lastEnv: string | null) =>
+  (isServiceLocation(location) || isEnvironmentLocation(location)) &&
+  location.env
+    ? location.env
+    : lastEnv;

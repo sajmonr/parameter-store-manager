@@ -1,19 +1,19 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { DEFAULT_STRUCTURE } from '../../shared/structure';
-import type { Structure } from '../../shared/structure';
-import { createWrapper } from '../test/render';
-import { createTestState, makeParameter } from '../test/testState';
-import { environmentNodeKey, serviceNodeKey } from '../utils/location';
-import { useSettingsStore } from './settings';
-import { getLocation, uiActions, useUiStore } from './ui';
+import { DEFAULT_STRUCTURE } from '../../../shared/structure';
+import type { Structure } from '../../../shared/structure';
+import { createWrapper } from '../../test/render';
+import { createTestState, makeParameter } from '../../test/testState';
+import { environmentNodeKey, serviceNodeKey } from '../../utils/location';
+import { useSettingsStore } from '../settings';
+import { getLocation, uiActions, useUiStore } from '.';
 import {
   useMatchedFolderTree,
   useSelectedParameter,
   useServicesTree,
   useVisibleParameters
-} from './views';
+} from '../views';
 
 const names = [
   '/dev/app/db/Password',

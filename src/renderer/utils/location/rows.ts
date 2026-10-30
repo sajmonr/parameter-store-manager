@@ -104,3 +104,18 @@ export const locationInEnv = (
   }
   return locationOf(name, location.view, ctx);
 };
+
+// Whether the main area lists `name` at `location`. Comparing, it lists the
+// service's keys in each of its environments, not only the location's.
+export const mainAreaLists = (
+  location: Location,
+  name: string,
+  ctx: LocationContext,
+  comparing: boolean
+) => {
+  if (comparing && isServiceLocation(location)) {
+    const match = parse(name, ctx.structure, ctx.delimiter);
+    return !!match && contains({ ...location, env: match.env }, name, ctx);
+  }
+  return contains(location, name, ctx);
+};
