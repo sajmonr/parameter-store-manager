@@ -11,7 +11,7 @@ import {
 } from './location';
 import type { GroupedView, Location, LocationContext } from './location';
 import { parse } from './structure';
-import { OTHER_PATHS_LABEL } from './labels';
+import { OTHER_PATHS_ROOT_LABEL } from './labels';
 
 export interface SidebarNode {
   key: string;
@@ -92,7 +92,7 @@ const otherPathsNode = (
   return node(
     {
       key: otherNodeKey(),
-      label: OTHER_PATHS_LABEL,
+      label: OTHER_PATHS_ROOT_LABEL,
       count: names.length,
       kind: 'other',
       location: { view, other: true, folder: '' }

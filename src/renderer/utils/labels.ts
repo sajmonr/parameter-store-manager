@@ -17,6 +17,9 @@ export const viewOptions = PARAMETER_VIEWS.map(view => ({
 // Names whose path doesn't match the structure.
 export const OTHER_PATHS_LABEL = 'Other paths';
 
+// The node for all of Other paths, under its heading in the sidebar.
+export const OTHER_PATHS_ROOT_LABEL = 'Root';
+
 // An environment without the key.
 export const NOT_SET_LABEL = 'Not set';
 
