@@ -7,6 +7,7 @@ import usePageVisible from '../../hooks/usePageVisible';
 import ParameterDetail from './ParameterDetail';
 import ParameterForm from '../form/ParameterForm';
 import styles from './DetailHost.module.css';
+import { DRAWER_WIDTH } from '../../utils/layout';
 
 // Hosts the selected parameter or the new-parameter form: docked on the
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
@@ -43,7 +44,7 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
         onClose={close}
         getContainer={false}
         placement="right"
-        size={420}
+        size={DRAWER_WIDTH}
         closable={false}
         keyboard={false}
         styles={{ body: { padding: 0 } }}

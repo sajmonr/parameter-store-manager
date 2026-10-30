@@ -14,6 +14,10 @@ import PageHeading from './PageHeading';
 import pageStyles from './Page.module.css';
 import styles from './SettingsPage.module.css';
 import { cx } from '../../utils/classNames';
+import {
+  SETTINGS_MAX_WIDTH,
+  SETTINGS_WIDE_MAX_WIDTH
+} from '../../utils/layout';
 
 interface SectionInfo {
   key: SettingsSection;
@@ -42,7 +46,7 @@ const sections: SectionInfo[] = [
     description:
       'Tell the app how your parameter paths are built so it can group them by service and environment. This only changes how the app reads paths. Nothing is renamed in AWS.',
     Content: ServicesSection,
-    maxWidth: 880
+    maxWidth: SETTINGS_WIDE_MAX_WIDTH
   },
   {
     key: 'display',
@@ -84,7 +88,8 @@ const SettingsPage = () => {
           className={pageStyles.content}
           style={{
             maxWidth:
-              sections.find(section => section.key === current)?.maxWidth ?? 680
+              sections.find(section => section.key === current)?.maxWidth ??
+              SETTINGS_MAX_WIDTH
           }}
         >
           {/* All sections stay mounted, so each keeps its local state. */}

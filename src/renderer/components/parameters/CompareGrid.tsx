@@ -36,9 +36,10 @@ import styles from './CompareGrid.module.css';
 import { COUNT_PLACEHOLDER, NOT_SET_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { isActivateKey } from '../../utils/keys';
-
-const KEY_COLUMN_WIDTH = 300;
-const MIN_ENV_COLUMN_WIDTH = 200;
+import {
+  COMPARE_KEY_COLUMN_WIDTH,
+  COMPARE_MIN_ENV_COLUMN_WIDTH
+} from '../../utils/layout';
 
 interface ValueCellProps {
   env: string;
@@ -366,7 +367,7 @@ interface CompareGridProps {
 
 // The service's keys under the folder, one column per environment. The
 // header row and the key column stay put while the values scroll; the
-// columns never get narrower than 200px, so many environments scroll
+// columns never get narrower than COMPARE_MIN_ENV_COLUMN_WIDTH, so many environments scroll
 // sideways. The environments are known from the settings, so the header
 // shows from the start and only the rows wait for the first load.
 const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
@@ -392,8 +393,10 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
   if (ready && !keys.length) return emptyStateOf(comparison, filter);
 
   const style = {
-    '--compare-columns': `${KEY_COLUMN_WIDTH}px repeat(${environments.length}, minmax(${MIN_ENV_COLUMN_WIDTH}px, 1fr))`,
-    minWidth: KEY_COLUMN_WIDTH + MIN_ENV_COLUMN_WIDTH * environments.length
+    '--compare-columns': `${COMPARE_KEY_COLUMN_WIDTH}px repeat(${environments.length}, minmax(${COMPARE_MIN_ENV_COLUMN_WIDTH}px, 1fr))`,
+    minWidth:
+      COMPARE_KEY_COLUMN_WIDTH +
+      COMPARE_MIN_ENV_COLUMN_WIDTH * environments.length
   } as CSSProperties;
 
   return (

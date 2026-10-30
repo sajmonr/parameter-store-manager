@@ -46,6 +46,7 @@ import styles from './CopyModal.module.css';
 import { KMS_KEY_LABEL, NOT_SET_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { toggleIn } from '../../utils/sets';
+import { COPY_MODAL_WIDTH } from '../../utils/layout';
 
 // With more other environments than this, the list can be filtered.
 const FILTER_THRESHOLD = 5;
@@ -383,7 +384,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
     <Modal
       open={open}
       afterClose={afterClose}
-      width={640}
+      width={COPY_MODAL_WIDTH}
       style={{ top: 80, maxWidth: 'calc(100% - 32px)' }}
       styles={{
         container: {

@@ -20,11 +20,11 @@ import NameCell from './NameCell';
 import ValueCell from './ValueCell';
 import styles from './ParameterTable.module.css';
 import { isSecure } from '../../../shared/parameterTypes';
-
-// Height of the small table's header row; the rest of the space scrolls.
-const HEADER_HEIGHT = 39;
-const LOCK_COLUMN_WIDTH = 40;
-const CHECKBOX_COLUMN_WIDTH = 28;
+import {
+  TABLE_CHECKBOX_COLUMN_WIDTH,
+  TABLE_HEADER_HEIGHT,
+  TABLE_LOCK_COLUMN_WIDTH
+} from '../../utils/layout';
 
 // A whole environment's rows come under a header row per service.
 interface GroupRow {
@@ -141,7 +141,7 @@ const ParameterTable = ({
         title: nameTitle,
         key: 'name',
         width: Math.round(
-          (width - CHECKBOX_COLUMN_WIDTH - LOCK_COLUMN_WIDTH) * 0.45
+          (width - TABLE_CHECKBOX_COLUMN_WIDTH - TABLE_LOCK_COLUMN_WIDTH) * 0.45
         ),
         onCell: spanGroupRow(3),
         render: (_, row) =>
@@ -170,7 +170,7 @@ const ParameterTable = ({
       },
       {
         key: 'lock',
-        width: LOCK_COLUMN_WIDTH,
+        width: TABLE_LOCK_COLUMN_WIDTH,
         align: 'center',
         onCell: hideInGroupRow,
         render: (_, parameter) =>
@@ -198,7 +198,7 @@ const ParameterTable = ({
           pagination={false}
           rowKey="Name"
           rowSelection={{
-            columnWidth: CHECKBOX_COLUMN_WIDTH,
+            columnWidth: TABLE_CHECKBOX_COLUMN_WIDTH,
             selectedRowKeys: checked,
             onChange: keys =>
               uiActions.setChecked(checkContext, keys.map(String)),
@@ -225,7 +225,7 @@ const ParameterTable = ({
           columns={columns}
           dataSource={rows}
           locale={placeholder ? { emptyText: placeholder } : undefined}
-          scroll={{ x: width, y: height - HEADER_HEIGHT }}
+          scroll={{ x: width, y: height - TABLE_HEADER_HEIGHT }}
           rowClassName={row => {
             if (isGroupRow(row)) return styles.groupRow ?? '';
             return (row.Name === selectedName && styles.selected) || '';

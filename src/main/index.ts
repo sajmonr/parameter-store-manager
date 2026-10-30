@@ -11,6 +11,12 @@ import { registerEndpoints } from './endpoints';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
 import { isFakeSource } from './source';
 import { sendEvent } from './events';
+import {
+  WINDOW_HEIGHT,
+  WINDOW_MIN_HEIGHT,
+  WINDOW_MIN_WIDTH,
+  WINDOW_WIDTH
+} from '../shared/layout';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -49,12 +55,10 @@ const createWindow = () => {
     title: isFakeSource()
       ? 'Parameter Store Manager — FAKE'
       : 'Parameter Store Manager',
-    width: 1280,
-    height: 800,
-    // Below 1100px the detail pane becomes a drawer; below this the table
-    // and folder tree get too narrow to read.
-    minWidth: 900,
-    minHeight: 600,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    minWidth: WINDOW_MIN_WIDTH,
+    minHeight: WINDOW_MIN_HEIGHT,
     backgroundColor: windowBackground(),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),

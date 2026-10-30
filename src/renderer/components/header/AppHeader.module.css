@@ -1,5 +1,5 @@
 .header {
-  height: 52px;
+  height: var(--header-height);
   padding: 0 16px;
   line-height: normal;
   background: var(--ant-color-bg-container);

@@ -5,7 +5,7 @@
 }
 
 .row {
-  height: 52px;
+  height: var(--header-height);
   display: flex;
   flex-wrap: nowrap;
   align-items: center;

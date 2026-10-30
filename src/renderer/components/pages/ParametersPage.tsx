@@ -4,6 +4,9 @@ import useResizableWidth from '../../hooks/useResizableWidth';
 import useWindowWidth from '../../hooks/useWindowWidth';
 import {
   NARROW_QUERY,
+  SIDER_DEFAULT_WIDTH,
+  SIDER_NARROW_DEFAULT_WIDTH,
+  SIDER_WIDTH_STORAGE_KEY,
   SIDER_MIN_WIDTH,
   siderMaxWidth
 } from '../../utils/layout';
@@ -22,8 +25,8 @@ const ParametersPage = () => {
   const narrow = useMediaQuery(NARROW_QUERY);
   const siderMax = siderMaxWidth(useWindowWidth(), narrow);
   const sider = useResizableWidth({
-    storageKey: 'siderWidth',
-    defaultWidth: narrow ? 220 : 240,
+    storageKey: SIDER_WIDTH_STORAGE_KEY,
+    defaultWidth: narrow ? SIDER_NARROW_DEFAULT_WIDTH : SIDER_DEFAULT_WIDTH,
     min: SIDER_MIN_WIDTH,
     max: siderMax
   });
