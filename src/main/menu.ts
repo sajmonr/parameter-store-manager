@@ -3,6 +3,7 @@ import type { BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import { resetFakeData } from './fake/fakeAws';
 import { isFakeSource } from './source';
 import { checkInteractively } from './updates';
+import { sendEvent } from './events';
 
 export default class MenuBuilder {
   constructor(
@@ -48,7 +49,7 @@ export default class MenuBuilder {
 
   // The renderer opens the Settings page.
   openSettings() {
-    this.mainWindow.webContents.send('menu.openSettings');
+    sendEvent(this.mainWindow.webContents, 'menu.openSettings');
   }
 
   // Only with the fake source. A reset puts the fixture's parameters back

@@ -10,6 +10,7 @@ import MenuBuilder from './menu';
 import { registerEndpoints } from './endpoints';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
 import { isFakeSource } from './source';
+import { sendEvent } from './events';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -115,7 +116,8 @@ app.whenReady().then(async () => {
   nativeTheme.themeSource = getSetting(availableSettings.theme);
   onSettingsChange(settings => {
     nativeTheme.themeSource = settings[availableSettings.theme];
-    if (mainWindow) mainWindow.webContents.send('settings.changed', settings);
+    if (mainWindow)
+      sendEvent(mainWindow.webContents, 'settings.changed', settings);
   });
   // Fires for both a theme setting change and an OS appearance change.
   nativeTheme.on('updated', () => {

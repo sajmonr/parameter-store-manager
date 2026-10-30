@@ -10,4 +10,10 @@ export interface IpcEvents {
 
 export type IpcEvent = keyof IpcEvents;
 
-export const IPC_EVENTS: IpcEvent[] = ['settings.changed', 'menu.openSettings'];
+// Every event, listed once so the preload can refuse unknown ones. Keyed by
+// event, so TypeScript catches one that is added to IpcEvents but not here.
+const KNOWN_EVENTS: Record<IpcEvent, true> = {
+  'settings.changed': true,
+  'menu.openSettings': true
+};
+export const IPC_EVENTS = Object.keys(KNOWN_EVENTS) as IpcEvent[];
