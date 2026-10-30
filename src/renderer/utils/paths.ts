@@ -97,3 +97,12 @@ export const buildFolderTree = (names: string[], delimiter: string) => {
 
 // The file name of a path from the save dialog, on any platform.
 export const baseName = (filePath: string) => filePath.split(/[/\\]/).pop();
+
+// Every folder of the names.
+export const folderSet = (names: Iterable<string>, delimiter: string) => {
+  const folders = new Set<string>();
+  for (const name of names) {
+    foldersOf(name, delimiter).forEach(folder => folders.add(folder));
+  }
+  return folders;
+};

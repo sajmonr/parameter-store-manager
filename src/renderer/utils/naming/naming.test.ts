@@ -1,21 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_STRUCTURE } from '../../shared/structure';
-import type { Structure } from '../../shared/structure';
-import type { LocationContext } from './location';
+import { DEFAULT_STRUCTURE } from '../../../shared/structure';
+import type { Structure } from '../../../shared/structure';
+import type { LocationContext } from '../location';
+import { folderSet } from '../paths';
 import {
   envsForService,
-  folderSet,
   initialNaming,
-  isValueValid,
-  MAX_VALUE_LENGTH,
   missingFolders,
   nameErrorOf,
   suggestionsFor,
   targetsOf,
   toPath,
   toStructured
-} from './newParameter';
-import type { Naming } from './newParameter';
+} from '.';
+import type { Naming } from '.';
 
 const structure: Structure = {
   ...DEFAULT_STRUCTURE,
@@ -324,13 +322,5 @@ describe('envsForService', () => {
     expect(envsForService('billing', ['development'], structure)).toEqual([
       'staging'
     ]);
-  });
-});
-
-describe('isValueValid', () => {
-  it('needs a value within the limit', () => {
-    expect(isValueValid('')).toBe(false);
-    expect(isValueValid('x'.repeat(MAX_VALUE_LENGTH))).toBe(true);
-    expect(isValueValid('x'.repeat(MAX_VALUE_LENGTH + 1))).toBe(false);
   });
 });

@@ -33,8 +33,6 @@ import { useFolderSet, useLocation, useNameSet } from '../../state/views';
 import {
   envsForService,
   initialNaming,
-  isValueValid,
-  MAX_VALUE_LENGTH,
   missingFolders,
   NAME_ERRORS,
   nameErrorOf,
@@ -42,8 +40,9 @@ import {
   targetsOf,
   toPath,
   toStructured
-} from '../../utils/newParameter';
-import type { NameError, Naming } from '../../utils/newParameter';
+} from '../../utils/naming';
+import type { NameError, Naming } from '../../utils/naming';
+import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/parameterValue';
 import {
   environmentColor,
   environmentsOf,

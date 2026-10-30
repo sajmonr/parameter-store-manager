@@ -6,7 +6,7 @@ import { usePutParameter } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { leafOf } from '../../utils/paths';
-import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/newParameter';
+import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/parameterValue';
 import { isSubmitShortcut } from '../../utils/keys';
 import styles from './ValueEditor.module.css';
 import { DESCRIPTION_PLACEHOLDER } from '../../utils/labels';

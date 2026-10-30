@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Input, Tooltip } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
-import type { Suggestion } from '../../utils/newParameter';
+import type { Suggestion } from '../../utils/naming';
 import styles from './NameField.module.css';
 
 interface NameFieldProps {

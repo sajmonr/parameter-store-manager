@@ -10,7 +10,7 @@ import {
 } from '../utils/location';
 import { compare } from '../utils/compare';
 import { copyTargets } from '../utils/copyValue';
-import { folderSet } from '../utils/newParameter';
+import { folderSet } from '../utils/paths';
 import { buildFolderTree } from '../utils/paths';
 import { createMatcher } from '../utils/search';
 import {
