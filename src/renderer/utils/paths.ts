@@ -1,5 +1,6 @@
 // Parameter names are paths split by the path delimiter setting. A folder is a
 import { SSM_PATH_SEPARATOR } from '../../shared/aws';
+import { byLocale } from '../../shared/sort';
 // name prefix that ends with the delimiter, such as '/app/db/'. The empty
 // string stands for "all parameters".
 
@@ -86,7 +87,7 @@ export const buildFolderTree = (names: string[], delimiter: string) => {
   });
 
   const sort = (list: FolderNode[]): FolderNode[] => {
-    list.sort((a, b) => a.label.localeCompare(b.label));
+    list.sort(byLocale(node => node.label));
     list.forEach(node => sort(node.children));
     return list;
   };

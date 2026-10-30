@@ -38,6 +38,7 @@ import { formatById } from './formats';
 import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
 import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
 
 interface StatusStyle {
   label: string;
@@ -197,13 +198,14 @@ const ImportReview = ({
             status => ALWAYS_COUNTED.has(status) || counts[status]
           ).map(status => {
             const active = shown === status;
-            const classes = [styles.statButton];
-            if (shown && !active) classes.push(styles.statInactive);
             return (
               <Tooltip key={status} title={STATUSES[status].tooltip}>
                 <button
                   type="button"
-                  className={classes.join(' ')}
+                  className={cx(
+                    styles.statButton,
+                    shown && !active && styles.statInactive
+                  )}
                   aria-pressed={active}
                   // A status that has gone to 0 can still be turned off.
                   disabled={!counts[status] && !active}
@@ -439,8 +441,6 @@ const ReviewRow = ({
 }) => {
   const { entry, status } = row;
   const { label, color, tooltip } = STATUSES[status];
-  const classes = [styles.row];
-  if (!written) classes.push(styles.dimmed);
   const main = (
     <div className={styles.rowMain}>
       <span className={styles.statusColumn}>
@@ -465,7 +465,7 @@ const ReviewRow = ({
     </div>
   );
   return (
-    <li className={classes.join(' ')}>
+    <li className={cx(styles.row, !written && styles.dimmed)}>
       {error ? <Tooltip title={error}>{main}</Tooltip> : main}
       <RowDetails row={row} />
     </li>

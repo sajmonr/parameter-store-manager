@@ -17,3 +17,16 @@ export const isSettingsShortcut = (event: {
 }) => event.key === ',' && (event.metaKey || event.ctrlKey);
 
 export const settingsShortcutLabel = isMac ? '⌘,' : 'Ctrl+,';
+
+// Enter or Space, the keys that press a button.
+export const isActivateKey = (event: { key: string }) =>
+  event.key === 'Enter' || event.key === ' ';
+
+// A keydown handler that makes an element act like a button.
+export const onActivateKey =
+  (activate: () => void) =>
+  (event: { key: string; preventDefault: () => void }) => {
+    if (!isActivateKey(event)) return;
+    event.preventDefault();
+    activate();
+  };

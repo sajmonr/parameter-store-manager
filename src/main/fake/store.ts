@@ -29,6 +29,7 @@ import {
 } from '../../shared/parameterTypes';
 import { DESCRIBE_PAGE_SIZE } from '../endpoints/parameters/describeParameters/describeParameters.contract';
 import { SSM_PATH_SEPARATOR } from '../../shared/aws';
+import { byString } from '../../shared/sort';
 
 export interface FakeParameter {
   Name: string;
@@ -133,7 +134,7 @@ export class FakeParameterStore {
     const prefix = beginsWithOf(input);
     const matching = this.load()
       .parameters.filter(p => p.Name.startsWith(prefix))
-      .sort((a, b) => (a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0));
+      .sort(byString(parameter => parameter.Name));
     const start = Number(input.NextToken ?? 0);
     if (!Number.isInteger(start) || start < 0) {
       throw awsError('InvalidNextToken', 'The specified token is not valid.');

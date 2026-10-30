@@ -9,6 +9,7 @@ import type {
 } from '../../shared/structure';
 import { folderLabel, folderOf, foldersOf, rootFolder } from './paths';
 import { parse, pathOf } from './structure';
+import { byString } from '../../shared/sort';
 
 export interface PathsLocation {
   view: 'paths';
@@ -237,10 +238,7 @@ export const contains = (
   );
 };
 
-const byKey = (a: { key: string }, b: { key: string }) => {
-  if (a.key === b.key) return 0;
-  return a.key < b.key ? -1 : 1;
-};
+const byKey = byString((row: { key: string }) => row.key);
 
 // The parameters of an environment by service, in the configured service
 // order, each service's sorted by key. Names that don't parse are left out.

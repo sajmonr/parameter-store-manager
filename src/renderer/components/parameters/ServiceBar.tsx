@@ -11,9 +11,7 @@ import EnvironmentTabs from './EnvironmentTabs';
 import ModeSwitch from './ModeSwitch';
 import useHorizontalScroll from '../../hooks/useHorizontalScroll';
 import styles from './ParameterBreadcrumb.module.css';
-
-const cx = (...classes: (string | false | null | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import { cx } from '../../utils/classNames';
 
 // A service's second breadcrumb row: its environment tabs, or the compare
 // filter while comparing, and the switch between the two. The tabs scroll

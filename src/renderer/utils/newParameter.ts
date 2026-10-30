@@ -12,6 +12,7 @@ import type { Location, LocationContext } from './location';
 import { folderOf, foldersOf, leafOf, rootFolder } from './paths';
 import { parse, pathOf } from './structure';
 import type { Match } from './structure';
+import { compareLocale } from '../../shared/sort';
 
 // SSM limits standard-tier values to 4 KB.
 export const MAX_VALUE_LENGTH = 4096;
@@ -165,7 +166,7 @@ export const suggestionsFor = (
     });
   });
   return [...children]
-    .sort((a, b) => a.localeCompare(b))
+    .sort(compareLocale)
     .slice(0, MAX_SUGGESTIONS)
     .map(child => ({ parent, child }));
 };

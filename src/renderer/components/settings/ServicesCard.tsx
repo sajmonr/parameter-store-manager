@@ -33,6 +33,7 @@ import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
 
 // Typed into the add row, and checked when added.
 const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -70,7 +71,7 @@ const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
           placeholder="service-name"
           value={name}
           status={error ? 'error' : undefined}
-          className={`${styles.mono} ${styles.serviceInput}`}
+          className={cx(styles.mono, styles.serviceInput)}
           onChange={event => {
             setName(event.target.value);
             setError(null);

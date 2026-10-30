@@ -4,6 +4,7 @@ import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
 import Mono from '../common/Mono';
 import styles from './CreatePreview.module.css';
+import { cx } from '../../utils/classNames';
 
 export interface PreviewRow {
   name: string;
@@ -37,7 +38,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
     )}
     {row.created && (
       <div className={styles.status}>
-        <span className={`${styles.tag} ${styles.created}`}>
+        <span className={cx(styles.tag, styles.created)}>
           <CheckCircleFilled />
           Created
         </span>
@@ -50,7 +51,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
     )}
     {row.exists && !row.created && (
       <div className={styles.status}>
-        <span className={`${styles.tag} ${styles.exists}`}>
+        <span className={cx(styles.tag, styles.exists)}>
           <CloseCircleFilled />
           Already exists
         </span>

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Tooltip, Typography } from 'antd';
 import styles from './OptionCards.module.css';
+import { cx } from '../../utils/classNames';
 
 export interface CardOption<T extends string> {
   value: T;
@@ -43,9 +44,6 @@ const OptionCards = <T extends string>({
   >
     {options.map(option => {
       const selected = option.value === value;
-      const classes = [styles.card];
-      if (selected) classes.push(styles.selected);
-      if (option.unavailable) classes.push(styles.unavailable);
       const card = (
         <button
           key={option.value}
@@ -54,7 +52,11 @@ const OptionCards = <T extends string>({
           aria-label={`${option.label}: ${option.description}`}
           aria-checked={selected}
           aria-disabled={!!option.unavailable || disabled}
-          className={classes.join(' ')}
+          className={cx(
+            styles.card,
+            selected && styles.selected,
+            option.unavailable && styles.unavailable
+          )}
           onClick={() => {
             if (!option.unavailable && !disabled) onChange(option.value);
           }}

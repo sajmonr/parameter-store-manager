@@ -8,6 +8,7 @@ import SidebarGroup from './SidebarGroup';
 import useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
 import { OTHER_PATHS_LABEL, VIEW_LABELS } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
 
 // The Services view: each service with its folders, counted in the
 // environment it opens on, then the names that don't fit the structure.
@@ -27,7 +28,7 @@ const ServicesTree = () => {
   const other = useMemo(() => (tree.other ? [tree.other] : []), [tree.other]);
 
   return (
-    <div className={`${styles.container} ${styles.scroll}`}>
+    <div className={cx(styles.container, styles.scroll)}>
       {tree.services.length > 0 && (
         <SidebarGroup
           title={VIEW_LABELS.services}

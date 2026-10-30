@@ -8,6 +8,7 @@ import type { CardOption } from '../importExport/OptionCards';
 import type { Mode } from '../importExport/formats';
 import PageHeading from './PageHeading';
 import styles from './Page.module.css';
+import { cx } from '../../utils/classNames';
 
 const MODES: CardOption<Mode>[] = [
   {
@@ -32,7 +33,7 @@ const ImportExportPage = () => {
   const importing = useImportStore(state => state.running);
   return (
     <div className={styles.scroll}>
-      <div className={`${styles.content} ${styles.wide}`}>
+      <div className={cx(styles.content, styles.wide)}>
         <PageHeading
           title="Import & export"
           description="Move parameters between this account and a file."

@@ -36,6 +36,8 @@ import FormatCards from './FormatCards';
 import { formatById } from './formats';
 import styles from './ExportPanel.module.css';
 import { WAITING_FOR_PARAMETERS } from '../../utils/labels';
+import { compareLocale } from '../../../shared/sort';
+import { cx } from '../../utils/classNames';
 
 type Scope = 'all' | 'path';
 
@@ -67,7 +69,7 @@ const suggestFolders = (folders: string[], path: string, delimiter: string) => {
   return folders
     .filter(folder => folder !== matcher.query && matcher.test(folder))
     .map(folder => ({ folder, depth: foldersOf(folder, delimiter).length }))
-    .sort((a, b) => a.depth - b.depth || a.folder.localeCompare(b.folder))
+    .sort((a, b) => a.depth - b.depth || compareLocale(a.folder, b.folder))
     .slice(0, MAX_PATH_SUGGESTIONS)
     .map(({ folder }) => folder);
 };
@@ -147,7 +149,7 @@ const ExportPanel = () => {
 
   const pathOption = (
     <div
-      className={`${styles.option} ${byPath ? styles.optionSelected : ''}`}
+      className={cx(styles.option, byPath && styles.optionSelected)}
       onClick={() => !exporting && setScope('path')}
     >
       <Radio value="path">Path or glob</Radio>
@@ -182,7 +184,7 @@ const ExportPanel = () => {
 
   const allOption = (
     <div
-      className={`${styles.option} ${byPath ? '' : styles.optionSelected}`}
+      className={cx(styles.option, !byPath && styles.optionSelected)}
       onClick={() => !exporting && setScope('all')}
     >
       <Radio value="all">All parameters</Radio>

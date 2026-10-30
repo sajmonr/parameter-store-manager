@@ -21,6 +21,7 @@ import { createMatcher } from '../utils/search';
 import { parse } from '../utils/structure';
 import { useImportStore } from './import';
 import { getLocationContext, getSettings } from './settings';
+import { toggleIn } from '../utils/sets';
 
 export type PaneMode = 'detail' | 'new';
 
@@ -232,11 +233,7 @@ const setCompareFilter = (compareFilter: CompareFilter) =>
 const clearRevealed = () => set({ revealed: initialUiState.revealed });
 
 const toggleReveal = (name: string) =>
-  set(state => {
-    const revealed = new Set(state.revealed);
-    if (!revealed.delete(name)) revealed.add(name);
-    return { revealed };
-  });
+  set(state => ({ revealed: toggleIn(state.revealed, name) }));
 
 // Opens the delete confirmation.
 const requestDelete = (pendingDelete: DeleteRequest) => set({ pendingDelete });

@@ -15,6 +15,7 @@ import {
   NOT_AN_EXPORT
 } from './importFile';
 import type { ImportEntry, ParseResult } from './importFile';
+import { byString } from '../../shared/sort';
 
 export const EXPORT_FORMAT = 'parameter-store-manager';
 export const EXPORT_VERSION = 1;
@@ -56,7 +57,7 @@ export const toJsonExport = ({
     exportedAt: date.toISOString().replace(/\.\d{3}Z$/, 'Z'),
     region,
     decrypted,
-    parameters: [...parameters].sort((a, b) => (a.name < b.name ? -1 : 1))
+    parameters: [...parameters].sort(byString(parameter => parameter.name))
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 };

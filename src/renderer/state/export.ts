@@ -21,6 +21,7 @@ import type { FormatId } from '../../shared/fileFormats';
 import { chunk } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
 import { ssmReads } from './ssmRateLimit';
+import { byString } from '../../shared/sort';
 
 export type ExportProgress =
   | { phase: 'listing'; found: number }
@@ -170,7 +171,7 @@ const exportParameters = async (
 
   const rows = listed
     .filter(p => !deleted.has(p.Name))
-    .sort((a, b) => (a.Name < b.Name ? -1 : 1))
+    .sort(byString(parameter => parameter.Name))
     .map((p): CsvParameter => {
       // The type as of the value fetch: the parameter may have been
       // recreated as a SecureString since it was listed.

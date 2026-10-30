@@ -7,6 +7,7 @@ import type { LocationContext, ServiceLocation } from './location';
 import { folderOf } from './paths';
 import type { Matcher } from './search';
 import { parse } from './structure';
+import { compareStrings } from '../../shared/sort';
 
 export type CompareFilter = 'all' | 'differs' | 'missing';
 
@@ -47,11 +48,8 @@ export const filterKeys = (keys: CompareKey[], filter: CompareFilter) => {
   return keys;
 };
 
-const byFolderThenKey = (a: CompareKey, b: CompareKey) => {
-  if (a.folder !== b.folder) return a.folder < b.folder ? -1 : 1;
-  if (a.key === b.key) return 0;
-  return a.key < b.key ? -1 : 1;
-};
+const byFolderThenKey = (a: CompareKey, b: CompareKey) =>
+  compareStrings(a.folder, b.folder) || compareStrings(a.key, b.key);
 
 // The raw stored string and the type: nothing is normalised.
 const valueId = ({ Type, Value }: ParameterEntry) =>

@@ -34,12 +34,11 @@ import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
 import styles from './CompareGrid.module.css';
 import { COUNT_PLACEHOLDER, NOT_SET_LABEL } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
+import { isActivateKey } from '../../utils/keys';
 
 const KEY_COLUMN_WIDTH = 300;
 const MIN_ENV_COLUMN_WIDTH = 200;
-
-const cx = (...classes: (string | false | null | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
 
 interface ValueCellProps {
   env: string;
@@ -138,7 +137,7 @@ const ValueCell = ({
       onKeyDown={event => {
         // Not from the buttons inside.
         if (event.target !== event.currentTarget) return;
-        if (event.key !== 'Enter' && event.key !== ' ') return;
+        if (!isActivateKey(event)) return;
         event.preventDefault();
         uiActions.selectParameter(Name);
       }}

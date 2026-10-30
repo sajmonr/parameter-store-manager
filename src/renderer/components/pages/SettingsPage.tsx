@@ -13,6 +13,7 @@ import ServicesSection from '../settings/ServicesSection';
 import PageHeading from './PageHeading';
 import pageStyles from './Page.module.css';
 import styles from './SettingsPage.module.css';
+import { cx } from '../../utils/classNames';
 
 interface SectionInfo {
   key: SettingsSection;
@@ -78,7 +79,7 @@ const SettingsPage = () => {
           styles={{ root: { borderInlineEnd: 'none' } }}
         />
       </nav>
-      <div className={`${pageStyles.scroll} ${styles.main}`}>
+      <div className={cx(pageStyles.scroll, styles.main)}>
         <div
           className={pageStyles.content}
           style={{

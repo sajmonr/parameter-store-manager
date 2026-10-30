@@ -44,6 +44,8 @@ import RevealButton from '../common/RevealButton';
 import KmsKeySelect from '../form/KmsKeySelect';
 import styles from './CopyModal.module.css';
 import { KMS_KEY_LABEL, NOT_SET_LABEL } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
+import { toggleIn } from '../../utils/sets';
 
 // With more other environments than this, the list can be filtered.
 const FILTER_THRESHOLD = 5;
@@ -53,9 +55,6 @@ const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   overwrites: { color: 'gold', label: 'Overwrites' },
   same: { label: 'Same value' }
 };
-
-const cx = (...classes: (string | false | null | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
 
 interface TargetRowProps {
   source: ParameterEntry;
@@ -323,11 +322,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
   };
 
   const toggle = (segment: string) =>
-    setPicked(current => {
-      const next = new Set(current);
-      if (!next.delete(segment)) next.add(segment);
-      return next;
-    });
+    setPicked(current => toggleIn(current, segment));
 
   const selectAll = (checked: boolean) =>
     setPicked(current => {
