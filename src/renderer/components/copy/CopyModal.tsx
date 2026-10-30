@@ -20,7 +20,6 @@ import {
 } from '@ant-design/icons';
 import {
   DEFAULT_KMS_KEY,
-  PARAMETER_TYPE,
   isEditableType,
   isSecure,
   isSecureType
@@ -31,8 +30,22 @@ import { usePathDelimiter } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { CopyRequest } from '../../state/ui';
 import { useCopyTargets } from '../../state/views';
-import { copyRequest, copySummary, isUnencrypted } from '../../utils/copyValue';
-import type { CopyStatus, CopyTarget } from '../../utils/copyValue';
+import {
+  copyButtonLabel,
+  copyRequest,
+  copySummary,
+  filterTargets,
+  isEncrypted,
+  isUnencrypted,
+  selectAllState,
+  selectionOf,
+  sourceEnvironments
+} from '../../utils/copyValue';
+import type {
+  CopyStatus,
+  CopyTarget,
+  SourceEnvironment
+} from '../../utils/copyValue';
 import { leafOf } from '../../utils/paths';
 import { plural } from '../../utils/plural';
 import useEscape from '../../hooks/useEscape';
@@ -47,9 +60,6 @@ import { KMS_KEY_LABEL, NOT_SET_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { toggleIn } from '../../utils/sets';
 import { COPY_MODAL_WIDTH } from '../../utils/layout';
-
-// With more other environments than this, the list can be filtered.
-const FILTER_THRESHOLD = 5;
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   new: { color: 'green', label: 'New' },
@@ -141,15 +151,13 @@ const TargetRow = ({
             so the secret will be saved unencrypted.
           </Typography.Text>
         )}
-        {!same &&
-          sourceType === PARAMETER_TYPE.String &&
-          isSecureType(targetType) && (
-            <Typography.Text type="secondary" className={styles.note}>
-              <InfoCircleOutlined /> This environment stores it as a
-              SecureString, so the value will be encrypted with{' '}
-              <Mono size={12}>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
-            </Typography.Text>
-          )}
+        {!same && isEncrypted(source, target) && (
+          <Typography.Text type="secondary" className={styles.note}>
+            <InfoCircleOutlined /> This environment stores it as a SecureString,
+            so the value will be encrypted with{' '}
+            <Mono size={12}>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
+          </Typography.Text>
+        )}
         {status === 'new' && selected && isSecureType(sourceType) && (
           <Flex
             align="center"
@@ -187,18 +195,8 @@ interface Outcome {
   failed: CopyTarget[];
 }
 
-interface SourceOption {
-  segment: string;
-  color: string;
-  // The key's name in this environment, and its type there.
-  name: string;
-  type: string | undefined;
-}
-
 interface SourcePickerProps {
-  // The environments that have the key. A type the app can't save is listed
-  // but can't be picked.
-  options: SourceOption[];
+  options: SourceEnvironment[];
   value: string;
   onChange: (name: string) => void;
   // Asks the user to check the source.
@@ -297,14 +295,9 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
   const supported = isEditableType(source.Type);
   const canCopy = supported && source.Value !== undefined;
   const defaultKey = source.KeyId ?? DEFAULT_KMS_KEY;
-  const selectable = targets.filter(t => t.status !== 'same');
-  // A target that got the value since it was picked is no longer selected.
-  const selected = selectable.filter(t => picked.has(t.segment));
-  const filtering = targets.length > FILTER_THRESHOLD;
-  const query = filtering ? filter.trim().toLowerCase() : '';
-  const listed = targets.filter(t => t.segment.toLowerCase().includes(query));
-  const listedSelectable = listed.filter(t => t.status !== 'same');
-  const listedSelected = listedSelectable.filter(t => picked.has(t.segment));
+  const { selectable, selected } = selectionOf(targets, picked);
+  const { filtering, listed } = filterTargets(targets, filter);
+  const allState = selectAllState(listed, picked);
 
   // Another environment's value: the old source becomes a target, the new
   // one isn't, and the key defaults follow the new source's key.
@@ -328,7 +321,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
   const selectAll = (checked: boolean) =>
     setPicked(current => {
       const next = new Set(current);
-      listedSelectable.forEach(t =>
+      allState.selectable.forEach(t =>
         checked ? next.add(t.segment) : next.delete(t.segment)
       );
       return next;
@@ -368,17 +361,10 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
 
   const summary = copySummary(source, selected);
   const count = selected.length;
-  let okText = 'Copy';
-  if (progress) {
-    okText = `Copying ${Math.min(progress.done + 1, progress.total)} of ${progress.total}…`;
-  } else if (count) {
-    okText = `Copy to ${plural(count, 'environment')}`;
-  }
+  const okText = copyButtonLabel(progress, count);
 
   const sourceEnv = place.environments.find(e => e.state === 'current')!;
-  const sources = place.environments.flatMap(e =>
-    e.state === 'missing' ? [] : [{ ...e, type: byName.get(e.name)?.Type }]
-  );
+  const sources = sourceEnvironments(place.environments, byName);
 
   return (
     <Modal
@@ -506,15 +492,9 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
         )}
         <Flex align="center" gap={12} className={styles.toolbar}>
           <Checkbox
-            checked={
-              listedSelectable.length > 0 &&
-              listedSelected.length === listedSelectable.length
-            }
-            indeterminate={
-              listedSelected.length > 0 &&
-              listedSelected.length < listedSelectable.length
-            }
-            disabled={!listedSelectable.length || copying}
+            checked={allState.checked}
+            indeterminate={allState.indeterminate}
+            disabled={!allState.selectable.length || copying}
             onChange={event => selectAll(event.target.checked)}
           >
             Select all

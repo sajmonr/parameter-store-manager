@@ -2,6 +2,7 @@
 // same service. Only the value is copied: each target keeps its type,
 // description and KMS key.
 import {
+  PARAMETER_TYPE,
   isEditableType,
   isSecure,
   isSecureType
@@ -53,6 +54,11 @@ export const copyTargets = (
       return { segment, color, name, parameter, status };
     });
 
+// Whether a copy to `target` encrypts a String's value: the target exists
+// as a SecureString and keeps its type.
+export const isEncrypted = (source: ParameterEntry, target: CopyTarget) =>
+  source.Type === PARAMETER_TYPE.String && isSecureType(target.parameter?.Type);
+
 // Whether a copy to `target` saves a SecureString unencrypted: the target
 // exists as a String or a StringList, and keeps its type.
 export const isUnencrypted = (source: ParameterEntry, target: CopyTarget) =>
@@ -103,4 +109,74 @@ export const copySummary = (source: ParameterEntry, targets: CopyTarget[]) => {
     unencrypted && `${unencrypted} unencrypted`
   ].filter(Boolean);
   return { text: parts.join(' · '), overwrites };
+};
+
+// An environment the value can be copied from: one that has the key, with
+// its type there. A type the app can't save is listed but can't be picked.
+export interface SourceEnvironment {
+  segment: string;
+  color: string;
+  name: string;
+  type: string | undefined;
+}
+
+export const sourceEnvironments = (
+  environments: CopyEnvironment[],
+  byName: ReadonlyMap<string, ParameterEntry>
+): SourceEnvironment[] =>
+  environments.flatMap(({ segment, color, name, state }) =>
+    state === 'missing'
+      ? []
+      : [{ segment, color, name, type: byName.get(name)?.Type }]
+  );
+
+// With more targets than this, the list can be filtered.
+export const FILTER_THRESHOLD = 5;
+
+// The targets whose environment contains the filter text, ignoring case.
+// Short lists aren't filtered.
+export const filterTargets = (targets: CopyTarget[], filter: string) => {
+  const filtering = targets.length > FILTER_THRESHOLD;
+  const query = filtering ? filter.trim().toLowerCase() : '';
+  return {
+    filtering,
+    listed: targets.filter(t => t.segment.toLowerCase().includes(query))
+  };
+};
+
+// The targets that can be picked, and the picked ones among them: a target
+// that got the value since it was picked is no longer selected.
+export const selectionOf = (
+  targets: CopyTarget[],
+  picked: ReadonlySet<string>
+) => {
+  const selectable = targets.filter(t => t.status !== 'same');
+  return {
+    selectable,
+    selected: selectable.filter(t => picked.has(t.segment))
+  };
+};
+
+// The "Select all" checkbox over the listed targets.
+export const selectAllState = (
+  listed: CopyTarget[],
+  picked: ReadonlySet<string>
+) => {
+  const { selectable, selected } = selectionOf(listed, picked);
+  return {
+    selectable,
+    checked: selectable.length > 0 && selected.length === selectable.length,
+    indeterminate: selected.length > 0 && selected.length < selectable.length
+  };
+};
+
+// The copy button: the copy under way, or how many it copies to.
+export const copyButtonLabel = (
+  progress: { done: number; total: number } | undefined,
+  count: number
+) => {
+  if (progress) {
+    return `Copying ${Math.min(progress.done + 1, progress.total)} of ${progress.total}…`;
+  }
+  return count ? `Copy to ${plural(count, 'environment')}` : 'Copy';
 };

@@ -12,19 +12,27 @@ import {
   WarningOutlined
 } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
-import { isEditableType, isSecure } from '../../../shared/parameterTypes';
+import { isSecure } from '../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../state/parameters';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
-import { compareRows, isFolderRow } from '../../utils/compare';
+import {
+  compareRows,
+  copyBlockReason,
+  copySourceOf,
+  countsByEnvironment,
+  emptyReasonOf,
+  isFolderRow,
+  rowHas
+} from '../../utils/compare';
 import type {
   CompareFilter,
   CompareKey,
-  Comparison
+  Comparison,
+  EmptyReason
 } from '../../utils/compare';
 import { leafOf } from '../../utils/paths';
-import { plural } from '../../utils/plural';
 import CopyButton from '../common/CopyButton';
 import EnvironmentDot from '../common/EnvironmentDot';
 import CompareProgress from './CompareProgress';
@@ -49,6 +57,8 @@ interface ValueCellProps {
   revealed: boolean;
 }
 
+const SYNC_LABEL = 'Synchronize environments';
+
 // Opens Synchronize environments for a key that differs or is missing
 // somewhere, from the first environment whose value can be copied.
 const SyncAction = ({
@@ -58,27 +68,16 @@ const SyncAction = ({
   row: CompareKey;
   environments: StructureEnvironment[];
 }) => {
-  const present = environments.flatMap(({ segment }) => {
-    const parameter = row.cells.get(segment);
-    return parameter ? [parameter] : [];
-  });
-  const source =
-    present.find(p => isEditableType(p.Type) && p.Value !== undefined) ??
-    present[0];
-  let reason = 'Synchronize environments';
-  if (!source || !isEditableType(source.Type)) {
-    reason = `${source?.Type ?? 'This type'} is not supported yet`;
-  } else if (source.Value === undefined) {
-    reason = "Can't read the value";
-  }
+  const source = copySourceOf(row, environments);
+  const blocked = copyBlockReason(source);
   return (
-    <Tooltip title={reason}>
+    <Tooltip title={blocked ?? SYNC_LABEL}>
       <Button
         type="text"
         size="small"
         icon={<RetweetOutlined />}
-        aria-label="Synchronize environments"
-        disabled={reason !== 'Synchronize environments'}
+        aria-label={SYNC_LABEL}
+        disabled={!!blocked}
         onClick={() =>
           source && uiActions.openCopyDialog(source.Name, { pickSource: true })
         }
@@ -258,42 +257,18 @@ const EmptyState = ({ icon, text }: { icon: ReactNode; text: string }) => (
   </div>
 );
 
+const EMPTY_ICONS: Record<EmptyReason, ReactNode> = {
+  noKeys: <FolderOpenOutlined />,
+  noMatches: <SearchOutlined />,
+  allSet: <CheckCircleOutlined />,
+  uncompared: <WarningOutlined />,
+  allSame: <CheckCircleOutlined />
+};
+
 // Why the filter lists nothing.
 const emptyStateOf = (comparison: Comparison, filter: CompareFilter) => {
-  if (!comparison.total) {
-    return (
-      <EmptyState icon={<FolderOpenOutlined />} text="No keys in this folder" />
-    );
-  }
-  if (!comparison.keys.length) {
-    return (
-      <EmptyState icon={<SearchOutlined />} text="No keys match the search" />
-    );
-  }
-  if (filter === 'missing') {
-    return (
-      <EmptyState
-        icon={<CheckCircleOutlined />}
-        text="Every key is set in each environment"
-      />
-    );
-  }
-  // Values that didn't load weren't compared, so they may differ.
-  const uncompared = comparison.keys.filter(k => k.unreadable.length).length;
-  if (uncompared) {
-    return (
-      <EmptyState
-        icon={<WarningOutlined />}
-        text={`No differences in the values that loaded. ${plural(uncompared, 'key')} couldn't be compared.`}
-      />
-    );
-  }
-  return (
-    <EmptyState
-      icon={<CheckCircleOutlined />}
-      text="Every key has the same value in each environment"
-    />
-  );
+  const { reason, text } = emptyReasonOf(comparison, filter);
+  return <EmptyState icon={EMPTY_ICONS[reason]} text={text} />;
 };
 
 // Widths of the key and value placeholders, so rows don't look identical.
@@ -381,14 +356,7 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
 
   // Like the filter's counts: the keys matching the search, before the
   // filter.
-  const counts = useMemo(
-    () =>
-      environments.map(
-        ({ segment }) =>
-          comparison.keys.filter(key => key.cells.has(segment)).length
-      ),
-    [comparison, environments]
-  );
+  const counts = useMemo(() => countsByEnvironment(comparison), [comparison]);
 
   if (ready && !keys.length) return emptyStateOf(comparison, filter);
 
@@ -441,15 +409,12 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
                   </div>
                 );
               }
-              const own = [...row.cells.values()].some(
-                p => p.Name === selectedName
-              );
               return (
                 <KeyRow
                   key={row.key}
                   row={row}
                   environments={environments}
-                  selectedName={own ? selectedName : null}
+                  selectedName={rowHas(row, selectedName) ? selectedName : null}
                   revealed={revealed}
                 />
               );
