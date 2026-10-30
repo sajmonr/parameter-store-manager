@@ -95,7 +95,7 @@ describe('Services view', () => {
     expect(within(sidebar()).getAllByText('Services')).toHaveLength(2);
     expect(within(sidebar()).getByText('compass')).toBeInTheDocument();
     expect(within(sidebar()).getByText('AppServer')).toBeInTheDocument();
-    expect(within(sidebar()).getByText('Other paths')).toBeInTheDocument();
+    expect(within(sidebar()).getByTitle('Other paths')).toBeInTheDocument();
     expect(rowNames()).toEqual([
       '/development/compass/AppServer/Port',
       '/development/compass/AppServer/Title',
@@ -135,7 +135,7 @@ describe('Services view', () => {
     renderApp();
     await screen.findByText('Port');
 
-    await user.click(within(sidebar()).getByText('Other paths'));
+    await user.click(within(sidebar()).getByTitle('Other paths'));
     expect(rowNames()).toEqual(['/random/Thing']);
     expect(
       screen.getByText("Don't match /{environment}/{service}/…")
@@ -177,7 +177,7 @@ describe('Services view', () => {
 
     await user.type(screen.getByLabelText('Search parameters'), 'Thing');
     expect(within(sidebar()).queryByText('compass')).not.toBeInTheDocument();
-    expect(within(sidebar()).getByText('Other paths')).toBeInTheDocument();
+    expect(within(sidebar()).getByTitle('Other paths')).toBeInTheDocument();
   });
 
   it('starts a new parameter in the selected folder', async () => {

@@ -35,6 +35,7 @@ import Mono from '../common/Mono';
 import FormatCards from './FormatCards';
 import { formatById } from './formats';
 import styles from './ExportPanel.module.css';
+import { WAITING_FOR_PARAMETERS } from '../../utils/labels';
 
 type Scope = 'all' | 'path';
 
@@ -141,7 +142,7 @@ const ExportPanel = () => {
 
   let status: string | null = null;
   if (progress) status = describeProgress(progress);
-  else if (loading) status = 'Waiting for parameters to finish loading…';
+  else if (loading) status = WAITING_FOR_PARAMETERS;
   else if (typing) status = 'Counting…';
 
   const pathOption = (

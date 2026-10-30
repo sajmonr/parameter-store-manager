@@ -4,6 +4,7 @@ import { useLoaded } from '../../state/views';
 import type { useEnvironmentTabs } from '../../state/views';
 import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './ParameterBreadcrumb.module.css';
+import { COUNT_PLACEHOLDER } from '../../utils/labels';
 
 // The service's environments, with the matches in each at the selected
 // folder (a dash until the first load ends). Switching keeps the service and
@@ -27,7 +28,9 @@ const EnvironmentTabs = ({
           <span className={styles.env}>
             <EnvironmentDot color={color} />
             {segment}
-            <span className={styles.tabCount}>{loaded ? count : '–'}</span>
+            <span className={styles.tabCount}>
+              {loaded ? count : COUNT_PLACEHOLDER}
+            </span>
           </span>
         )
       }))}

@@ -11,6 +11,7 @@ import { folderIcon } from './FolderTree';
 import TreeNodeMenu from './TreeNodeMenu';
 import type useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
+import { COUNT_PLACEHOLDER } from '../../utils/labels';
 
 type GroupTreeNode = SidebarNode & TreeDataNode & { children: GroupTreeNode[] };
 
@@ -87,7 +88,7 @@ const SidebarGroup = ({
                     : `${styles.count} ${styles.empty}`
                 }
               >
-                {loaded ? node.count : '–'}
+                {loaded ? node.count : COUNT_PLACEHOLDER}
               </span>
             </span>
           </TreeNodeMenu>

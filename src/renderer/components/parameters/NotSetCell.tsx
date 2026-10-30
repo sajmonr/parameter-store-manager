@@ -5,6 +5,7 @@ import type { CompareKey } from '../../utils/compare';
 import { parse } from '../../utils/structure';
 import SetMissingMenu from '../setMissing/SetMissingMenu';
 import styles from './CompareGrid.module.css';
+import { NOT_SET_LABEL } from '../../utils/labels';
 
 interface NotSetCellProps {
   // The environment without the key.
@@ -43,7 +44,7 @@ const NotSetCell = ({ env, row, environments }: NotSetCellProps) => {
             // Not a click on the cell.
             onClick={event => event.stopPropagation()}
           >
-            Not set
+            {NOT_SET_LABEL}
             <PlusOutlined className={styles.notSetIcon} />
           </button>
         )}

@@ -32,6 +32,7 @@ import EnvironmentDot from '../common/EnvironmentDot';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 // Typed into the add row, and checked when added.
 const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -140,7 +141,9 @@ const ServicesCard = () => {
               <span className={styles.count}>{count}</span>
             ) : (
               count > 0 && (
-                <span className={styles.inOther}>{count} in Other</span>
+                <span className={styles.inOther}>
+                  {count} in {OTHER_PATHS_LABEL}
+                </span>
               )
             )}
           </Flex>
@@ -173,7 +176,7 @@ const ServicesCard = () => {
       render: (_, { segment }) => (
         <Popconfirm
           title={`Remove ${segment}?`}
-          description="Its parameters will appear under Other paths."
+          description={`Its parameters will appear under ${OTHER_PATHS_LABEL}.`}
           okText="Remove"
           okButtonProps={{ danger: true }}
           onConfirm={() => update(current => removeService(current, segment))}
@@ -192,7 +195,7 @@ const ServicesCard = () => {
   return (
     <SettingsCard
       title="Services"
-      description="Check the environments each service is deployed to. Unchecked combinations are listed under Other paths."
+      description={`Check the environments each service is deployed to. Unchecked combinations are listed under ${OTHER_PATHS_LABEL}.`}
       flush
     >
       <Table<StructureService>

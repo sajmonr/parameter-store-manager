@@ -33,6 +33,7 @@ import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
 import styles from './CompareGrid.module.css';
+import { COUNT_PLACEHOLDER, NOT_SET_LABEL } from '../../utils/labels';
 
 const KEY_COLUMN_WIDTH = 300;
 const MIN_ENV_COLUMN_WIDTH = 200;
@@ -209,7 +210,7 @@ const KeyRow = memo(
               </Tooltip>
             )}
             {missing.length > 0 && (
-              <Tooltip title={`Not set in ${missing.join(', ')}`}>
+              <Tooltip title={`${NOT_SET_LABEL} in ${missing.join(', ')}`}>
                 <Tag color="red" className={styles.tag}>
                   Missing
                 </Tag>
@@ -415,7 +416,7 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
                 <EnvironmentDot color={color} />
                 <span className={styles.envName}>{segment}</span>
                 <span className={styles.envCount}>
-                  {ready ? counts[index] : '–'}
+                  {ready ? counts[index] : COUNT_PLACEHOLDER}
                 </span>
               </div>
             ))}

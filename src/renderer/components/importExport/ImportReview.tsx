@@ -37,6 +37,7 @@ import RevealButton from '../common/RevealButton';
 import { formatById } from './formats';
 import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
+import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
 
 interface StatusStyle {
   label: string;
@@ -284,7 +285,7 @@ const ImportReview = ({
         <Flex justify="flex-end" align="center" gap={8}>
           {loading && !importing && (
             <Typography.Text type="secondary" className={styles.status}>
-              Waiting for parameters to finish loading…
+              {WAITING_FOR_PARAMETERS}
             </Typography.Text>
           )}
           <Button disabled={importing} onClick={onClose}>
@@ -306,7 +307,6 @@ const ImportReview = ({
 
 // One entry of the file. Entries that won't be written are dimmed; failed
 // ones show the AWS error on hover.
-const KEY_LABEL = 'KMS key';
 
 // A KMS key as SSM shows it: null is the default key.
 const keyName = (keyId: string | null | undefined) =>
@@ -417,7 +417,7 @@ const RowDetails = ({ row }: { row: ImportRow }) => {
       )}
       {changes.includes('keyId') && (
         <FieldChange
-          label={KEY_LABEL}
+          label={KMS_KEY_LABEL}
           from={keyName(existing.KeyId)}
           to={keyName(entry.keyId)}
         />

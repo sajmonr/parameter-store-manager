@@ -44,6 +44,7 @@ import SegmentInput from './SegmentInput';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 interface EnvironmentRow {
   key: string;
@@ -236,7 +237,7 @@ const EnvironmentsCard = () => {
         ) : (
           <Popconfirm
             title={`Remove ${row.segment}?`}
-            description="Its parameters will appear under Other paths."
+            description={`Its parameters will appear under ${OTHER_PATHS_LABEL}.`}
             okText="Remove"
             okButtonProps={{ danger: true }}
             onConfirm={() =>

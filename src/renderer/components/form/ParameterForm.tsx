@@ -54,6 +54,11 @@ import EnvironmentPicker from './EnvironmentPicker';
 import KmsKeySelect from './KmsKeySelect';
 import NameField from './NameField';
 import styles from './ParameterForm.module.css';
+import {
+  DESCRIPTION_PLACEHOLDER,
+  KMS_KEY_LABEL,
+  OTHER_PATHS_LABEL
+} from '../../utils/labels';
 
 const typeOptions = [
   { value: PARAMETER_TYPE.String, label: PARAMETER_TYPE.String },
@@ -209,7 +214,7 @@ const ParameterForm = ({
       : null;
     let meta: string | null = null;
     if (!structured && structure.enabled) {
-      meta = match ? `${match.service} · ${match.env}` : 'Other paths';
+      meta = match ? `${match.service} · ${match.env}` : OTHER_PATHS_LABEL;
     }
     return {
       name,
@@ -411,13 +416,13 @@ const ParameterForm = ({
         </Form.Item>
         {rows.length > 0 && <CreatePreview rows={rows} delimiter={delimiter} />}
         <Form.Item name="description" label={optional('Description')}>
-          <Input placeholder="What reads this value?" />
+          <Input placeholder={DESCRIPTION_PLACEHOLDER} />
         </Form.Item>
         <Form.Item name="type" label="Type" required>
           <Segmented options={typeOptions} />
         </Form.Item>
         {isSecureType(type) && (
-          <Form.Item name="kmsKey" label="KMS key" required>
+          <Form.Item name="kmsKey" label={KMS_KEY_LABEL} required>
             <KmsKeySelect />
           </Form.Item>
         )}

@@ -394,7 +394,9 @@ describe('Services', () => {
         name: 'assessment in production'
       })
     ).not.toBeChecked();
-    expect(within(assessment).getByText('1 in Other')).toBeInTheDocument();
+    expect(
+      within(assessment).getByText('1 in Other paths')
+    ).toBeInTheDocument();
   });
 
   it('matches the counts useStructuredParameters gives', () => {
@@ -420,7 +422,9 @@ describe('Services', () => {
         'production'
       ])
     );
-    expect(within(row('compass')).getByText('1 in Other')).toBeInTheDocument();
+    expect(
+      within(row('compass')).getByText('1 in Other paths')
+    ).toBeInTheDocument();
     expect(
       screen.getByText('4 of 7 parameters match. 3 appear under Other paths.')
     ).toBeInTheDocument();

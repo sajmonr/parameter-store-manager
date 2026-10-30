@@ -17,6 +17,7 @@ import ValueEditor from './ValueEditor';
 import ParameterMeta from './ParameterMeta';
 import EnvironmentChips from './EnvironmentChips';
 import { isSecure } from '../../../shared/parameterTypes';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 // The selected parameter. Rendered with key={name}, so editing and the
 // revealed value reset when the selection changes. With the structure on, it
@@ -96,7 +97,7 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
         <Alert
           type="info"
           showIcon
-          title={`This path doesn't match ${layoutPattern(structure.layout, delimiter)}, so it's listed under Other paths.`}
+          title={`This path doesn't match ${layoutPattern(structure.layout, delimiter)}, so it's listed under ${OTHER_PATHS_LABEL}.`}
         />
       )}
     </>

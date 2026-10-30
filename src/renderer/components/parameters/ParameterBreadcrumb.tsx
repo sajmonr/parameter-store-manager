@@ -13,6 +13,7 @@ import EnvironmentDot from '../common/EnvironmentDot';
 import SelectionBar from './SelectionBar';
 import ServiceBar from './ServiceBar';
 import styles from './ParameterBreadcrumb.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 interface Crumb {
   key: string;
@@ -53,7 +54,11 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   const folders = folderChain(location.folder, delimiter);
   if (isOtherLocation(location)) {
     return [
-      { key: '', label: 'Other paths', location: { ...location, folder: '' } },
+      {
+        key: '',
+        label: OTHER_PATHS_LABEL,
+        location: { ...location, folder: '' }
+      },
       ...folders.map(({ key, label }) => ({
         key,
         label,

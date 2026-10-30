@@ -9,6 +9,7 @@ import { leafOf } from '../../utils/paths';
 import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/newParameter';
 import { isSubmitShortcut } from '../../utils/keys';
 import styles from './ValueEditor.module.css';
+import { DESCRIPTION_PLACEHOLDER } from '../../utils/labels';
 
 // Inline edit of the value and description. The name, type and KMS key
 // can't be changed here.
@@ -79,7 +80,7 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
           id={`${id}-description`}
           value={description}
           onChange={event => setDescription(event.target.value)}
-          placeholder="What reads this value?"
+          placeholder={DESCRIPTION_PLACEHOLDER}
         />
       </Form.Item>
       <Flex align="center" gap={8}>

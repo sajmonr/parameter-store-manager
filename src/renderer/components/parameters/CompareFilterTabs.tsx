@@ -5,6 +5,7 @@ import type { CompareFilter, Comparison } from '../../utils/compare';
 import { plural } from '../../utils/plural';
 import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './ParameterBreadcrumb.module.css';
+import { COUNT_PLACEHOLDER } from '../../utils/labels';
 
 const FILTERS: { value: CompareFilter; label: string; color?: string }[] = [
   { value: 'all', label: 'All' },
@@ -31,7 +32,7 @@ const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
               {color && <EnvironmentDot color={color} />}
               {label}
               <span className={styles.tabCount}>
-                {ready ? comparison.counts[value] : '–'}
+                {ready ? comparison.counts[value] : COUNT_PLACEHOLDER}
               </span>
             </span>
           )

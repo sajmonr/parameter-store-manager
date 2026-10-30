@@ -10,6 +10,7 @@ import { plural } from '../../utils/plural';
 import type { Compared } from './ParameterBrowser';
 import SyncStatus from './SyncStatus';
 import styles from './StatusBar.module.css';
+import { EMPTY_VALUE } from '../../utils/labels';
 
 // Counts wait for the first load, like the sidebar's and the tabs'.
 const statusText = (
@@ -20,7 +21,7 @@ const statusText = (
   compared: Compared | null
 ) => {
   if (loadState === 'loading' || !loaded) return 'Loading…';
-  if (loadState !== 'ready') return '—';
+  if (loadState !== 'ready') return EMPTY_VALUE;
   if (!compared) return `${visible} of ${total} parameters`;
   const { comparison, keys } = compared;
   return `${keys.length} of ${plural(comparison.total, 'key')} · ${plural(comparison.environments.length, 'environment')}`;

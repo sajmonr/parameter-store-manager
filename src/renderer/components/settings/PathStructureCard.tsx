@@ -9,6 +9,7 @@ import { layoutPattern } from '../../utils/structure';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 const layouts: { value: Layout; caption: string }[] = [
   { value: 'env-first', caption: 'Environment convention' },
@@ -109,14 +110,14 @@ const PathStructureCard = () => {
             type="success"
             showIcon
             className={styles.stats}
-            title={`${matches.size} of ${total} parameters match. ${total - matches.size} appear under Other paths.`}
+            title={`${matches.size} of ${total} parameters match. ${total - matches.size} appear under ${OTHER_PATHS_LABEL}.`}
           />
         ) : (
           <Alert
             type="warning"
             showIcon
             className={styles.stats}
-            title={`No parameters match this structure. All ${total} will appear under Other paths.`}
+            title={`No parameters match this structure. All ${total} will appear under ${OTHER_PATHS_LABEL}.`}
           />
         ))}
     </SettingsCard>

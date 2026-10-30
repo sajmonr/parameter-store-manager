@@ -43,6 +43,7 @@ import ParameterTypeTag from '../common/ParameterTypeTag';
 import RevealButton from '../common/RevealButton';
 import KmsKeySelect from '../form/KmsKeySelect';
 import styles from './CopyModal.module.css';
+import { KMS_KEY_LABEL, NOT_SET_LABEL } from '../../utils/labels';
 
 // With more other environments than this, the list can be filtered.
 const FILTER_THRESHOLD = 5;
@@ -131,7 +132,7 @@ const TargetRow = ({
               className={styles.currentValue}
             />
           ) : (
-            <Typography.Text type="secondary">Not set</Typography.Text>
+            <Typography.Text type="secondary">{NOT_SET_LABEL}</Typography.Text>
           )}
         </div>
         {!same && isUnencrypted(source, target) && (
@@ -157,7 +158,7 @@ const TargetRow = ({
             // Picking a key doesn't toggle the row.
             onClick={event => event.stopPropagation()}
           >
-            <Typography.Text type="secondary">KMS key</Typography.Text>
+            <Typography.Text type="secondary">{KMS_KEY_LABEL}</Typography.Text>
             <KmsKeySelect
               size="small"
               value={kmsKey}

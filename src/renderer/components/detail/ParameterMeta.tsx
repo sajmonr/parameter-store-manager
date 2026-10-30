@@ -4,6 +4,7 @@ import type { ParameterEntry } from '../../state/parameters';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
 import { isSecureType } from '../../../shared/parameterTypes';
+import { EMPTY_VALUE, KMS_KEY_LABEL } from '../../utils/labels';
 
 const dateFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -34,8 +35,8 @@ const ParameterMeta = ({ parameter, environments }: ParameterMetaProps) => {
     },
     {
       key: 'kms',
-      label: 'KMS key',
-      children: isSecureType(Type) ? <Mono>{KeyId}</Mono> : '—'
+      label: KMS_KEY_LABEL,
+      children: isSecureType(Type) ? <Mono>{KeyId}</Mono> : EMPTY_VALUE
     },
     { key: 'version', label: 'Version', children: Version },
     {
