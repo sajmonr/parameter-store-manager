@@ -22,6 +22,11 @@ import type {
   ParameterType,
   PutParameterCommandInput
 } from '@aws-sdk/client-ssm';
+import {
+  DEFAULT_KMS_KEY,
+  DEFAULT_PARAMETER_TYPE,
+  isSecureType
+} from '../../shared/parameterTypes';
 
 export interface FakeParameter {
   Name: string;
@@ -166,13 +171,13 @@ export class FakeParameterStore {
         'The parameter already exists. To overwrite this value, set the overwrite option in the request to true.'
       );
     }
-    const type = Type ?? existing?.Type ?? 'String';
+    const type = Type ?? existing?.Type ?? DEFAULT_PARAMETER_TYPE;
     const parameter: FakeParameter = {
       Name,
       Type: type,
       Value,
       Description: Description ?? existing?.Description,
-      KeyId: type === 'SecureString' ? (KeyId ?? 'alias/aws/ssm') : undefined,
+      KeyId: isSecureType(type) ? (KeyId ?? DEFAULT_KMS_KEY) : undefined,
       Version: (existing?.Version ?? 0) + 1,
       LastModifiedDate: new Date().toISOString(),
       LastModifiedUser: 'arn:aws:iam::000000000000:user/fake-developer'

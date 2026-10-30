@@ -19,6 +19,7 @@ import usePageVisible from '../../hooks/usePageVisible';
 import NameCell from './NameCell';
 import ValueCell from './ValueCell';
 import styles from './ParameterTable.module.css';
+import { isSecure } from '../../../shared/parameterTypes';
 
 // Height of the small table's header row; the rest of the space scrolls.
 const HEADER_HEIGHT = 39;
@@ -36,9 +37,6 @@ interface GroupRow {
 type Row = ParameterEntry | GroupRow;
 
 const isGroupRow = (row: Row): row is GroupRow => 'service' in row;
-
-const isSecure = (parameter: ParameterEntry) =>
-  parameter.Type === 'SecureString';
 
 // A group row spans every column.
 const spanGroupRow = (columns: number) => (row: Row) => ({

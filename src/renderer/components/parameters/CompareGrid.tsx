@@ -12,7 +12,7 @@ import {
   WarningOutlined
 } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
-import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { isEditableType, isSecure } from '../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../state/parameters';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
@@ -96,7 +96,7 @@ const ValueCell = ({
   revealed
 }: ValueCellProps) => {
   const { Name, Value } = parameter;
-  const secure = parameter.Type === 'SecureString';
+  const secure = isSecure(parameter);
   let value: ReactNode;
   if (unreadable) {
     value = (

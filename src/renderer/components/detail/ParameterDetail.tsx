@@ -16,6 +16,7 @@ import ValueWell from './ValueWell';
 import ValueEditor from './ValueEditor';
 import ParameterMeta from './ParameterMeta';
 import EnvironmentChips from './EnvironmentChips';
+import { isSecure } from '../../../shared/parameterTypes';
 
 // The selected parameter. Rendered with key={name}, so editing and the
 // revealed value reset when the selection changes. With the structure on, it
@@ -72,7 +73,7 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
           />
           <ValueWell
             value={parameter.Value}
-            secure={parameter.Type === 'SecureString'}
+            secure={isSecure(parameter)}
             revealed={revealed}
             onToggleReveal={() => setRevealed(r => !r)}
           />

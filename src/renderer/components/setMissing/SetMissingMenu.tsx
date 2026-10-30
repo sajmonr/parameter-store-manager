@@ -4,7 +4,10 @@ import { Dropdown, Tooltip, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import { CopyOutlined, EditOutlined } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
-import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import {
+  DEFAULT_PARAMETER_TYPE,
+  isEditableType
+} from '../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
@@ -159,7 +162,9 @@ const SetMissingMenu = ({
     if (key === 'new') {
       uiActions.openNewParameter({
         target: { service, env: target.segment, key: parameterKey },
-        type: isEditableType(template.Type) ? template.Type : 'String',
+        type: isEditableType(template.Type)
+          ? template.Type
+          : DEFAULT_PARAMETER_TYPE,
         description: template.Description ?? '',
         kmsKey: template.KeyId,
         value: '',

@@ -20,8 +20,11 @@ import {
 } from '@ant-design/icons';
 import {
   DEFAULT_KMS_KEY,
-  isEditableType
-} from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+  PARAMETER_TYPE,
+  isEditableType,
+  isSecure,
+  isSecureType
+} from '../../../shared/parameterTypes';
 import { useCopyValue, useParameters } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
@@ -110,7 +113,7 @@ const TargetRow = ({
         {keepsType && (
           <Tag
             className={styles.tag}
-            icon={targetType === 'SecureString' ? <LockOutlined /> : undefined}
+            icon={isSecureType(targetType) ? <LockOutlined /> : undefined}
           >
             Keeps {targetType}
           </Tag>
@@ -122,7 +125,7 @@ const TargetRow = ({
           {parameter ? (
             <MaskedValue
               value={parameter.Value}
-              secure={targetType === 'SecureString'}
+              secure={isSecureType(targetType)}
               size={12}
               ellipsis
               className={styles.currentValue}
@@ -137,14 +140,16 @@ const TargetRow = ({
             so the secret will be saved unencrypted.
           </Typography.Text>
         )}
-        {!same && sourceType === 'String' && targetType === 'SecureString' && (
-          <Typography.Text type="secondary" className={styles.note}>
-            <InfoCircleOutlined /> This environment stores it as a SecureString,
-            so the value will be encrypted with{' '}
-            <Mono size={12}>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
-          </Typography.Text>
-        )}
-        {status === 'new' && selected && sourceType === 'SecureString' && (
+        {!same &&
+          sourceType === PARAMETER_TYPE.String &&
+          isSecureType(targetType) && (
+            <Typography.Text type="secondary" className={styles.note}>
+              <InfoCircleOutlined /> This environment stores it as a
+              SecureString, so the value will be encrypted with{' '}
+              <Mono size={12}>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
+            </Typography.Text>
+          )}
+        {status === 'new' && selected && isSecureType(sourceType) && (
           <Flex
             align="center"
             gap={8}
@@ -286,7 +291,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
   }
 
   const { source, place, targets } = copyable;
-  const secure = source.Type === 'SecureString';
+  const secure = isSecure(source);
   const revealed = revealedNames.has(source.Name);
   const supported = isEditableType(source.Type);
   const canCopy = supported && source.Value !== undefined;

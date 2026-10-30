@@ -1,6 +1,7 @@
 // What importing a file would do to the loaded parameters.
 import { fileKeyId } from './importFile';
 import type { ImportEntry } from './importFile';
+import { PARAMETER_TYPE, isSecureType } from '../../shared/parameterTypes';
 
 // new: the name doesn't exist. changed: it exists and the value,
 // description or KMS key differ. unchanged: they are all equal. skipped: a
@@ -36,10 +37,7 @@ const changesOf = (entry: ImportEntry, existing: Existing): ChangedField[] => {
   if ((existing.Description ?? '') !== entry.description) {
     changes.push('description');
   }
-  if (
-    entry.type === 'SecureString' &&
-    fileKeyId(existing.KeyId) !== entry.keyId
-  ) {
+  if (isSecureType(entry.type) && fileKeyId(existing.KeyId) !== entry.keyId) {
     changes.push('keyId');
   }
   return changes;
@@ -52,7 +50,7 @@ const rowOf = (entry: ImportEntry, existing?: Existing): ImportRow => {
     existing,
     changes
   });
-  if (entry.type === 'StringList') return row('unsupported');
+  if (entry.type === PARAMETER_TYPE.StringList) return row('unsupported');
   if (entry.value === null) return row('skipped');
   if (!existing) return row('new');
   if (existing.Type !== entry.type) return row('typeChange');

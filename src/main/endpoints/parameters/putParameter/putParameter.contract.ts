@@ -1,16 +1,7 @@
 import { z } from 'zod';
 import type { ParameterTier } from '@aws-sdk/client-ssm';
 import { defineContract } from '../../../../shared/contract';
-
-// The types the app can save; StringList parameters are shown but not edited.
-export const PARAMETER_TYPES = ['String', 'SecureString'] as const;
-export type EditableParameterType = (typeof PARAMETER_TYPES)[number];
-
-// The key SSM encrypts a SecureString with when none is given.
-export const DEFAULT_KMS_KEY = 'alias/aws/ssm';
-
-export const isEditableType = (type: unknown): type is EditableParameterType =>
-  (PARAMETER_TYPES as readonly unknown[]).includes(type);
+import { PARAMETER_TYPES } from '../../../../shared/parameterTypes';
 
 export interface PutParameterResponse {
   version?: number;

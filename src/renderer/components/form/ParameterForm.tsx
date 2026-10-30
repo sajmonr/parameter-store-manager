@@ -18,8 +18,13 @@ import {
   LockOutlined
 } from '@ant-design/icons';
 import type { ReactNode } from 'react';
-import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
-import type { EditableParameterType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import {
+  DEFAULT_KMS_KEY,
+  DEFAULT_PARAMETER_TYPE,
+  PARAMETER_TYPE,
+  isSecureType
+} from '../../../shared/parameterTypes';
+import type { EditableParameterType } from '../../../shared/parameterTypes';
 import { useCreateParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
@@ -51,11 +56,17 @@ import NameField from './NameField';
 import styles from './ParameterForm.module.css';
 
 const typeOptions = [
-  { value: 'String', label: 'String' },
-  { value: 'SecureString', label: 'SecureString', icon: <LockOutlined /> },
+  { value: PARAMETER_TYPE.String, label: PARAMETER_TYPE.String },
   {
-    value: 'StringList',
-    label: <Tooltip title="Not supported yet">StringList</Tooltip>,
+    value: PARAMETER_TYPE.SecureString,
+    label: PARAMETER_TYPE.SecureString,
+    icon: <LockOutlined />
+  },
+  {
+    value: PARAMETER_TYPE.StringList,
+    label: (
+      <Tooltip title="Not supported yet">{PARAMETER_TYPE.StringList}</Tooltip>
+    ),
     disabled: true
   }
 ];
@@ -130,7 +141,7 @@ const ParameterForm = ({
 
   const [initialValues] = useState<FormValues>(() => ({
     description: prefill?.description ?? '',
-    type: prefill?.type ?? 'String',
+    type: prefill?.type ?? DEFAULT_PARAMETER_TYPE,
     value: prefill?.value ?? '',
     kmsKey: prefill?.kmsKey || DEFAULT_KMS_KEY
   }));
@@ -405,7 +416,7 @@ const ParameterForm = ({
         <Form.Item name="type" label="Type" required>
           <Segmented options={typeOptions} />
         </Form.Item>
-        {type === 'SecureString' && (
+        {isSecureType(type) && (
           <Form.Item name="kmsKey" label="KMS key" required>
             <KmsKeySelect />
           </Form.Item>

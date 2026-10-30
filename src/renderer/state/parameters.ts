@@ -15,6 +15,7 @@ import { classifyFetchError, describeError } from '../utils/awsErrors';
 import type { FetchErrorKind } from '../utils/awsErrors';
 import { getSettings, useSettingsStore } from './settings';
 import { ssmReads } from './ssmRateLimit';
+import { isSecureType } from '../../shared/parameterTypes';
 
 // The metadata from DescribeParameters, plus the value fields from
 // GetParameters once they are loaded.
@@ -320,7 +321,7 @@ const withPut = (
   const byName = new Map(list.byName);
   const previous = byName.get(name);
   let keyId = previous?.KeyId;
-  if (type) keyId = type === 'SecureString' ? kmsKey : undefined;
+  if (type) keyId = isSecureType(type) ? kmsKey : undefined;
   byName.set(name, {
     ...previous,
     Name: name,

@@ -6,7 +6,7 @@ import pAll from 'p-all';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ApiError } from '../clients/call';
 import { describeError } from '../utils/awsErrors';
-import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import type { EditableParameterType } from '../../shared/parameterTypes';
 import type { ImportEntry } from '../utils/importFile';
 import { putParameter } from './parameters';
 import { getSettings } from './settings';

@@ -1,6 +1,6 @@
 // UI state shared by the header, folder tree, table and detail pane.
 import { create } from 'zustand';
-import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import type { EditableParameterType } from '../../shared/parameterTypes';
 import {
   contains,
   convert,

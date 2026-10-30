@@ -17,7 +17,7 @@ import {
   CloseOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { DEFAULT_KMS_KEY, isSecureType } from '../../../shared/parameterTypes';
 import {
   importActions,
   importDuration,
@@ -372,7 +372,7 @@ const FieldChange = ({
 const RowDetails = ({ row }: { row: ImportRow }) => {
   const [revealed, setRevealed] = useState(false);
   const { entry, status, existing, changes } = row;
-  const secure = entry.type === 'SecureString';
+  const secure = isSecureType(entry.type);
   const reveal = secure ? (
     <RevealButton
       revealed={revealed}
@@ -458,7 +458,7 @@ const ReviewRow = ({
       >
         {entry.name}
       </Mono>
-      {entry.type === 'SecureString' && (
+      {isSecureType(entry.type) && (
         <LockOutlined aria-label="SecureString" className={styles.lock} />
       )}
     </div>

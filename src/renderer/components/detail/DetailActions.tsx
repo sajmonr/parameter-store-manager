@@ -8,7 +8,7 @@ import {
   EllipsisOutlined,
   RetweetOutlined
 } from '@ant-design/icons';
-import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { isEditableType } from '../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../state/parameters';
 import { uiActions } from '../../state/ui';
 import { useCopyTargets } from '../../state/views';

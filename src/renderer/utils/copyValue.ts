@@ -1,7 +1,11 @@
 // Copying one parameter's value to its key in other environments of the
 // same service. Only the value is copied: each target keeps its type,
 // description and KMS key.
-import { isEditableType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import {
+  isEditableType,
+  isSecure,
+  isSecureType
+} from '../../shared/parameterTypes';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import type { ParameterEntry } from '../state/parameters';
 import { plural } from './plural';
@@ -52,9 +56,7 @@ export const copyTargets = (
 // Whether a copy to `target` saves a SecureString unencrypted: the target
 // exists as a String or a StringList, and keeps its type.
 export const isUnencrypted = (source: ParameterEntry, target: CopyTarget) =>
-  source.Type === 'SecureString' &&
-  !!target.parameter &&
-  target.parameter.Type !== 'SecureString';
+  isSecure(source) && !!target.parameter && !isSecure(target.parameter);
 
 // The save for one target. A new parameter gets the source's type, with
 // `kmsKey` for a SecureString, and no description. An existing one is
@@ -76,7 +78,7 @@ export const copyRequest = (
       name: target.name,
       type,
       value,
-      ...(type === 'SecureString' && { kmsKey }),
+      ...(isSecureType(type) && { kmsKey }),
       overwrite: false
     };
   }
@@ -84,7 +86,7 @@ export const copyRequest = (
   return {
     name: target.name,
     ...(type && { type }),
-    ...(type === 'SecureString' && { kmsKey: parameter.KeyId }),
+    ...(isSecureType(type) && { kmsKey: parameter.KeyId }),
     value,
     overwrite: true
   };

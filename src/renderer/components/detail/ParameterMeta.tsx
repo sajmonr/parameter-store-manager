@@ -3,6 +3,7 @@ import { Descriptions, Typography } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
+import { isSecureType } from '../../../shared/parameterTypes';
 
 const dateFormat: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -34,7 +35,7 @@ const ParameterMeta = ({ parameter, environments }: ParameterMetaProps) => {
     {
       key: 'kms',
       label: 'KMS key',
-      children: Type === 'SecureString' ? <Mono>{KeyId}</Mono> : '—'
+      children: isSecureType(Type) ? <Mono>{KeyId}</Mono> : '—'
     },
     { key: 'version', label: 'Version', children: Version },
     {

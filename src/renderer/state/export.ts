@@ -13,7 +13,7 @@ import { exportFileName } from '../utils/exportFileName';
 import { fileKeyId } from '../utils/importFile';
 import { toJsonExport } from '../utils/jsonExport';
 import type { ExportedParameter } from '../utils/jsonExport';
-import { isEditableType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { isEditableType, isSecureType } from '../../shared/parameterTypes';
 import { plural } from '../utils/plural';
 import { createPathMatcher, literalPrefix } from '../utils/search';
 import { chunk, VALUES_BATCH_SIZE } from './parameters';
@@ -175,7 +175,7 @@ const exportParameters = async (
       // The type as of the value fetch: the parameter may have been
       // recreated as a SecureString since it was listed.
       const { Type = p.Type, Value } = fetched.get(p.Name) ?? {};
-      const secure = Type === 'SecureString';
+      const secure = isSecureType(Type);
       return {
         Name: p.Name,
         Value: secure && !includeSecureValues ? undefined : Value,

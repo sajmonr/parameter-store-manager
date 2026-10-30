@@ -2,6 +2,7 @@ import { PutParameterCommand } from '@aws-sdk/client-ssm';
 import { ssm } from '../../../aws';
 import { defineEndpoint } from '../../endpoint';
 import { putParameterContract } from './putParameter.contract';
+import { isSecureType } from '../../../../shared/parameterTypes';
 
 export default defineEndpoint(
   putParameterContract,
@@ -12,7 +13,7 @@ export default defineEndpoint(
         Type: type,
         Value: value,
         Description: description,
-        KeyId: type === 'SecureString' ? kmsKey : undefined,
+        KeyId: isSecureType(type) ? kmsKey : undefined,
         Overwrite: overwrite,
         // AWS rejects tags together with Overwrite.
         Tags: overwrite

@@ -1,11 +1,15 @@
 // A file read for import, whatever its format, and the checks every format
 // shares. Any invalid entry fails the whole file, so a file is either
 // imported as written or not at all.
-import { DEFAULT_KMS_KEY } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
-import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { DEFAULT_KMS_KEY } from '../../shared/parameterTypes';
+import type {
+  EditableParameterType,
+  PARAMETER_TYPE
+} from '../../shared/parameterTypes';
 
 // StringList entries are listed in the review but not imported yet.
-export type ImportType = EditableParameterType | 'StringList';
+export type ImportType =
+  EditableParameterType | typeof PARAMETER_TYPE.StringList;
 
 export interface ImportEntry {
   name: string;

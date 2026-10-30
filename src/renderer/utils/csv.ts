@@ -8,6 +8,11 @@ import {
   NOT_AN_EXPORT
 } from './importFile';
 import type { ImportEntry, ImportType, ParseResult } from './importFile';
+import {
+  ALL_PARAMETER_TYPES,
+  isSecureType,
+  listTypes
+} from '../../shared/parameterTypes';
 
 export interface CsvParameter {
   Name: string;
@@ -98,11 +103,7 @@ export const fromCsv = (text: string): CsvRead => {
   return { ok: true, rows };
 };
 
-const IMPORT_TYPES: readonly string[] = [
-  'String',
-  'SecureString',
-  'StringList'
-];
+const IMPORT_TYPES: readonly string[] = ALL_PARAMETER_TYPES;
 
 // What is wrong with a row, or null when it can be imported.
 const rowProblem = (fields: string[], seen: Set<string>) => {
@@ -113,11 +114,11 @@ const rowProblem = (fields: string[], seen: Set<string>) => {
   const problem = nameProblem(name, seen);
   if (problem) return problem;
   if (!IMPORT_TYPES.includes(type)) {
-    return `${name} has type ${type || '(none)'}, not String, SecureString or StringList`;
+    return `${name} has type ${type || '(none)'}, not ${listTypes(ALL_PARAMETER_TYPES)}`;
   }
   // SSM values are never empty, so an empty one was left out of the export,
   // which only happens to SecureStrings.
-  if (!value && type !== 'SecureString') return `${name} has no value`;
+  if (!value && !isSecureType(type)) return `${name} has no value`;
   return null;
 };
 
@@ -160,7 +161,7 @@ export const parseCsvExport = (text: string): ParseResult => {
       type: type as ImportType,
       value: value || null,
       description: description!,
-      keyId: type === 'SecureString' ? fileKeyId(kmsKey) : null
+      keyId: isSecureType(type) ? fileKeyId(kmsKey) : null
     })
   );
   return {
