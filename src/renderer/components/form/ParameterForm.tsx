@@ -33,15 +33,17 @@ import { useFolderSet, useLocation, useNameSet } from '../../state/views';
 import {
   envsForService,
   initialNaming,
+  listEnvs,
   missingFolders,
   NAME_ERRORS,
   nameErrorOf,
+  nameErrorText,
   suggestionsFor,
   targetsOf,
   toPath,
   toStructured
 } from '../../utils/naming';
-import type { NameError, Naming } from '../../utils/naming';
+import type { Naming } from '../../utils/naming';
 import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/parameterValue';
 import {
   environmentColor,
@@ -98,19 +100,6 @@ const optional = (label: ReactNode) => (
     {label}&nbsp;<Typography.Text type="secondary">(optional)</Typography.Text>
   </>
 );
-
-const nameErrorText = (error: NameError, delimiter: string) =>
-  ({
-    [NAME_ERRORS.spaces]: "Names can't contain spaces.",
-    [NAME_ERRORS.characters]: `Use letters, digits, _ . - and ${delimiter} only.`,
-    [NAME_ERRORS.leadingDelimiter]: `The key starts after the service. Remove the leading ${delimiter}.`,
-    [NAME_ERRORS.notRooted]: `Paths start with ${delimiter}.`,
-    [NAME_ERRORS.emptySegment]: `Folder names can't be empty. Remove the extra ${delimiter}.`,
-    [NAME_ERRORS.noName]: `Add a name after the last ${delimiter}.`
-  })[error];
-
-const listEnvs = (envs: string[]) =>
-  `${envs.join(', ')}. Deselect ${envs.length > 1 ? 'them' : 'it'}`;
 
 // Creates a parameter, or the same key in several environments of a service.
 // `prefill` comes from Duplicate or from setting a missing value; without it

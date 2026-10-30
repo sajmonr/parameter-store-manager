@@ -6,6 +6,8 @@ import { folderSet } from '../paths';
 import {
   envsForService,
   initialNaming,
+  listEnvs,
+  nameErrorText,
   missingFolders,
   nameErrorOf,
   suggestionsFor,
@@ -322,5 +324,16 @@ describe('envsForService', () => {
     expect(envsForService('billing', ['development'], structure)).toEqual([
       'staging'
     ]);
+  });
+});
+
+describe('name messages', () => {
+  it('names the delimiter in the error', () => {
+    expect(nameErrorText('notRooted', '/')).toBe('Paths start with /.');
+  });
+
+  it('lists the environments to deselect', () => {
+    expect(listEnvs(['staging'])).toBe('staging. Deselect it');
+    expect(listEnvs(['dev', 'staging'])).toBe('dev, staging. Deselect them');
   });
 });

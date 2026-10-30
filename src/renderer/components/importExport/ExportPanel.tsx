@@ -25,22 +25,23 @@ import usePageVisible from '../../hooks/usePageVisible';
 import { PARAMETER_TYPE } from '../../../shared/parameterTypes';
 import { CSV_HEADER } from '../../utils/csv';
 import { toJsonExport } from '../../utils/jsonExport';
-import { foldersOf, rootFolder } from '../../utils/paths';
 import { plural } from '../../utils/plural';
-import { createPathMatcher, createPrefixMatcher } from '../../utils/search';
+import {
+  createPathMatcher,
+  globUnder,
+  suggestFolders
+} from '../../utils/search';
 import Mono from '../common/Mono';
 import FormatCards from './FormatCards';
 import { formatById } from '../../utils/formats';
 import styles from './ExportPanel.module.css';
 import { WAITING_FOR_PARAMETERS } from '../../utils/labels';
-import { compareLocale } from '../../../shared/sort';
 import { cx } from '../../utils/classNames';
 
 type Scope = 'all' | 'path';
 
 // The count waits until typing pauses, so it doesn't flicker.
 const COUNT_DEBOUNCE_MS = 250;
-const MAX_PATH_SUGGESTIONS = 20;
 const PREVIEW_SIZE = 5;
 
 // The shape of a JSON export, shown instead of column options.
@@ -58,22 +59,6 @@ const JSON_SAMPLE = toJsonExport({
     }
   ]
 }).trimEnd();
-
-// Folders under what was typed, shallowest first, so the next level down is
-// at the top of the list.
-const suggestFolders = (folders: string[], path: string, delimiter: string) => {
-  const matcher = createPrefixMatcher(path, delimiter);
-  return folders
-    .filter(folder => folder !== matcher.query && matcher.test(folder))
-    .map(folder => ({ folder, depth: foldersOf(folder, delimiter).length }))
-    .sort((a, b) => a.depth - b.depth || compareLocale(a.folder, b.folder))
-    .slice(0, MAX_PATH_SUGGESTIONS)
-    .map(({ folder }) => folder);
-};
-
-// Everything under a folder: /app/prod/** for /app/prod/, /** at the root.
-const globUnder = (folder: string, delimiter: string) =>
-  `${folder || rootFolder(delimiter)}**`;
 
 // Exports parameters to a file. The count is a preview from the loaded
 // parameters; the export itself reads AWS and keeps running when the page is

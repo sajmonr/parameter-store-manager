@@ -4,15 +4,8 @@ import type { ParameterEntry } from '../../state/parameters';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
 import { isSecureType } from '../../../shared/parameterTypes';
+import { formatModified } from '../../utils/dates';
 import { EMPTY_VALUE, KMS_KEY_LABEL } from '../../utils/labels';
-
-const dateFormat: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit'
-};
 
 interface ParameterMetaProps {
   parameter: ParameterEntry;
@@ -44,7 +37,7 @@ const ParameterMeta = ({ parameter, environments }: ParameterMetaProps) => {
       label: 'Last modified',
       children: LastModifiedDate && (
         <>
-          {LastModifiedDate.toLocaleString(undefined, dateFormat)} ·{' '}
+          {formatModified(LastModifiedDate)} ·{' '}
           <TimeAgo date={LastModifiedDate} />
         </>
       )

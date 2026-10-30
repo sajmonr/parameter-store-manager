@@ -17,12 +17,13 @@ import {
   CloseOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { DEFAULT_KMS_KEY, isSecureType } from '../../../shared/parameterTypes';
+import { isSecureType } from '../../../shared/parameterTypes';
 import { importActions, useImportStore } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { countOf } from '../../utils/progress';
 import { useSettingsStore } from '../../state/settings';
-import { fileKeyId } from '../../utils/importFile';
+import { formatExportedAt } from '../../utils/dates';
+import { kmsKeyName } from '../../utils/kms';
 import {
   countStatuses,
   importDuration,
@@ -79,18 +80,6 @@ const STAT_ORDER: ImportStatus[] = [
 ];
 const ALWAYS_COUNTED = new Set<ImportStatus>(['new', 'changed', 'unchanged']);
 
-// null when the file doesn't say, as in a CSV.
-const exportedOn = (exportedAt: string | null) => {
-  if (!exportedAt) return null;
-  const date = new Date(exportedAt);
-  return Number.isNaN(date.getTime())
-    ? null
-    : date.toLocaleString(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      });
-};
-
 interface RunResult {
   written: number;
   total: number;
@@ -134,7 +123,7 @@ const ImportReview = ({
   const fileRegion = file.data.region;
   const meta = [
     plural(parameters.length, 'parameter'),
-    exportedOn(exportedAt) && `exported ${exportedOn(exportedAt)}`,
+    formatExportedAt(exportedAt) && `exported ${formatExportedAt(exportedAt)}`,
     fileRegion
   ].filter(Boolean);
 
@@ -310,10 +299,6 @@ const ImportReview = ({
 // One entry of the file. Entries that won't be written are dimmed; failed
 // ones show the AWS error on hover.
 
-// A KMS key as SSM shows it: null is the default key.
-const keyName = (keyId: string | null | undefined) =>
-  fileKeyId(keyId) ?? DEFAULT_KMS_KEY;
-
 // One field of a row: its new value, after the old one when it changes.
 // An empty value shows as "none"; an old value that didn't load (null)
 // shows as "…", as in the table.
@@ -420,8 +405,8 @@ const RowDetails = ({ row }: { row: ImportRow }) => {
       {changes.includes('keyId') && (
         <FieldChange
           label={KMS_KEY_LABEL}
-          from={keyName(existing.KeyId)}
-          to={keyName(entry.keyId)}
+          from={kmsKeyName(existing.KeyId)}
+          to={kmsKeyName(entry.keyId)}
         />
       )}
     </div>

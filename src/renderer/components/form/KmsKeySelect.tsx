@@ -1,14 +1,9 @@
 import { Flex, Select, Typography } from 'antd';
 import type { SelectProps } from 'antd';
 import { useKmsAliases } from '../../state/kms';
-import {
-  AWS_MANAGED_KEY_PREFIX,
-  DEFAULT_KMS_KEY
-} from '../../../shared/parameterTypes';
+import { DEFAULT_KMS_KEY } from '../../../shared/parameterTypes';
+import { isAwsManaged } from '../../utils/kms';
 import Mono from '../common/Mono';
-
-const isAwsManaged = (alias: string) =>
-  alias.startsWith(AWS_MANAGED_KEY_PREFIX);
 
 type KmsKeySelectProps = SelectProps<string> & {
   // Keys to list even when they aren't selected or don't have an alias.

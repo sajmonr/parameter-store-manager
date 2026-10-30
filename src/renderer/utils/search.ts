@@ -1,5 +1,7 @@
 // The search box takes plain text or a glob. A query is a glob when it has a
 // wildcard (* or ?) or starts with the path delimiter.
+import { foldersOf, rootFolder } from './paths';
+import { compareLocale } from '../../shared/sort';
 
 const escapeRegExp = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
@@ -104,3 +106,25 @@ export const createPathMatcher = (
 // The part of a path before its first wildcard. AWS can filter names on it,
 // and the glob is then applied to what comes back.
 export const literalPrefix = (path: string) => path.trim().split(/[*?]/)[0]!;
+
+const MAX_PATH_SUGGESTIONS = 20;
+
+// Folders under what was typed, shallowest first, so the next level down is
+// at the top of the list.
+export const suggestFolders = (
+  folders: string[],
+  path: string,
+  delimiter: string
+) => {
+  const matcher = createPrefixMatcher(path, delimiter);
+  return folders
+    .filter(folder => folder !== matcher.query && matcher.test(folder))
+    .map(folder => ({ folder, depth: foldersOf(folder, delimiter).length }))
+    .sort((a, b) => a.depth - b.depth || compareLocale(a.folder, b.folder))
+    .slice(0, MAX_PATH_SUGGESTIONS)
+    .map(({ folder }) => folder);
+};
+
+// Everything under a folder: /app/prod/** for /app/prod/, /** at the root.
+export const globUnder = (folder: string, delimiter: string) =>
+  `${folder || rootFolder(delimiter)}**`;
