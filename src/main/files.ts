@@ -6,10 +6,12 @@ import path from 'path';
 import { writeFile } from 'fs/promises';
 import { app, BrowserWindow, dialog } from 'electron';
 import type { SaveDialogOptions } from 'electron';
+import { FILE_FORMATS, formatOfFileName } from '../shared/fileFormats';
 
-const FILTERS: Record<string, SaveDialogOptions['filters']> = {
-  '.csv': [{ name: 'CSV', extensions: ['csv'] }],
-  '.json': [{ name: 'JSON', extensions: ['json'] }]
+// The dialog offers files of the format `fileName` names.
+const filtersFor = (fileName: string): SaveDialogOptions['filters'] => {
+  const format = formatOfFileName(fileName);
+  return format && [{ name: FILE_FORMATS[format], extensions: [format] }];
 };
 
 // Asks where to save `content`, starting in Downloads with `fileName`; the
@@ -18,7 +20,7 @@ const FILTERS: Record<string, SaveDialogOptions['filters']> = {
 export const saveFile = async (fileName: string, content: string) => {
   const options: SaveDialogOptions = {
     defaultPath: path.join(app.getPath('downloads'), path.basename(fileName)),
-    filters: FILTERS[path.extname(fileName).toLowerCase()]
+    filters: filtersFor(path.basename(fileName))
   };
   const window = BrowserWindow.getFocusedWindow();
   const { canceled, filePath } = window

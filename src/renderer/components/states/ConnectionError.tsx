@@ -11,6 +11,7 @@ import type { LoadState } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
+import { profileLabel } from '../../../shared/aws';
 
 const Code = (props: ComponentProps<typeof Typography.Text>) => (
   <Typography.Text code {...props} />
@@ -25,7 +26,7 @@ const ConnectionError = ({
   const profile = useSettingsStore(settings => settings.profile);
   const region = useSettingsStore(settings => settings.ssmRegion);
   const { fetchError: error, refresh } = useParameters();
-  const profileName = profile || 'default';
+  const profileName = profileLabel(profile);
 
   let result: ResultProps;
   if (kind === 'expired') {

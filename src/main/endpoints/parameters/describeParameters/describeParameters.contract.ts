@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { defineContract } from '../../../../shared/contract';
 import type { ParameterMetadataDto } from '../parameter.contract';
 
+// The most parameters SSM returns in one DescribeParameters page.
+export const DESCRIBE_PAGE_SIZE = 50;
+
 export interface DescribeParametersResponse {
   parameters: ParameterMetadataDto[];
   // Set while there are more pages.

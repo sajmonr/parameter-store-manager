@@ -19,13 +19,15 @@ import {
   exportsType,
   useExportStore
 } from '../../state/export';
-import type { FormatId } from '../../state/export';
+import type { FormatId } from '../../../shared/fileFormats';
 import { useParameters } from '../../state/parameters';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
 import { useAllFolderTree, useLocationPath } from '../../state/views';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import usePageVisible from '../../hooks/usePageVisible';
+import { PARAMETER_TYPE } from '../../../shared/parameterTypes';
 import { CSV_HEADER } from '../../utils/csv';
+import { toJsonExport } from '../../utils/jsonExport';
 import { foldersOf, rootFolder } from '../../utils/paths';
 import { plural } from '../../utils/plural';
 import { createPathMatcher, createPrefixMatcher } from '../../utils/search';
@@ -38,26 +40,24 @@ type Scope = 'all' | 'path';
 
 // The count waits until typing pauses, so it doesn't flicker.
 const COUNT_DEBOUNCE_MS = 250;
-const MAX_SUGGESTIONS = 20;
+const MAX_PATH_SUGGESTIONS = 20;
 const PREVIEW_SIZE = 5;
 
 // The shape of a JSON export, shown instead of column options.
-const JSON_SAMPLE = `{
-  "format": "parameter-store-manager",
-  "version": 1,
-  "exportedAt": "2026-10-14T09:12:00Z",
-  "region": "us-east-1",
-  "decrypted": true,
-  "parameters": [
+const JSON_SAMPLE = toJsonExport({
+  region: 'us-east-1',
+  decrypted: true,
+  date: new Date('2026-10-14T09:12:00Z'),
+  parameters: [
     {
-      "name": "/app/prod/Enabled",
-      "type": "String",
-      "value": "true",
-      "description": "",
-      "keyId": null
+      name: '/app/prod/Enabled',
+      type: PARAMETER_TYPE.String,
+      value: 'true',
+      description: '',
+      keyId: null
     }
   ]
-}`;
+}).trimEnd();
 
 // Folders under what was typed, shallowest first, so the next level down is
 // at the top of the list.
@@ -67,7 +67,7 @@ const suggestFolders = (folders: string[], path: string, delimiter: string) => {
     .filter(folder => folder !== matcher.query && matcher.test(folder))
     .map(folder => ({ folder, depth: foldersOf(folder, delimiter).length }))
     .sort((a, b) => a.depth - b.depth || a.folder.localeCompare(b.folder))
-    .slice(0, MAX_SUGGESTIONS)
+    .slice(0, MAX_PATH_SUGGESTIONS)
     .map(({ folder }) => folder);
 };
 

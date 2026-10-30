@@ -7,6 +7,7 @@ import pAll from 'p-all';
 import { create } from 'zustand';
 import type { PutParameterRequest } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
 import { MAX_DELETES_PER_REQUEST } from '../../main/endpoints/parameters/deleteParameters/deleteParameters.contract';
+import { MAX_NAMES_PER_REQUEST } from '../../main/endpoints/parameters/getParameterValues/getParameterValues.contract';
 import type { ApiError } from '../clients/call';
 import { parametersService } from '../services';
 import type { Parameter, ParameterMetadata } from '../services';
@@ -45,9 +46,6 @@ const currentKey = () => {
   return parametersKey(profile, ssmRegion);
 };
 
-// AWS limits GetParameters to 10 names per call.
-export const VALUES_BATCH_SIZE = 10;
-
 export const chunk = <T>(items: T[], size: number) => {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) {
@@ -55,6 +53,11 @@ export const chunk = <T>(items: T[], size: number) => {
   }
   return chunks;
 };
+
+// Parallel writes when creating or copying to several names, and parallel
+// delete batches. Low, since SSM's write limit is shared per account.
+const WRITE_CONCURRENCY = 5;
+const DELETE_CONCURRENCY = 2;
 
 // Each load gets a number; only the latest load may change the cache, so a
 // load for an old profile or region can't overwrite a newer one.
@@ -144,7 +147,7 @@ const loadValues = (
   onBatchDone: (size: number) => void
 ) =>
   Promise.all(
-    chunk(names, VALUES_BATCH_SIZE).map(async batch => {
+    chunk(names, MAX_NAMES_PER_REQUEST).map(async batch => {
       try {
         const { parameters } = await ssmReads.schedule(
           () => parametersService.getValues(batch),
@@ -390,7 +393,7 @@ export const useCreateParameters = () => {
             result.failed.set(request.name, describeError(error as ApiError));
           }
         }),
-        { concurrency: 5 }
+        { concurrency: WRITE_CONCURRENCY }
       );
       return result;
     }
@@ -401,6 +404,8 @@ const isThrottled = ({ name, code }: ApiError) =>
   name === 'ThrottlingException' || code === 'ThrottlingException';
 
 const THROTTLE_RETRIES = 3;
+// Doubled after each retry.
+const THROTTLE_BACKOFF_MS = 1000;
 
 // The SDK already backs off while SSM throttles; when it gives up, the save
 // waits 1, 2 and then 4 seconds and tries again.
@@ -415,7 +420,9 @@ const putWithBackoff = async (
       if (attempt >= THROTTLE_RETRIES || !isThrottled(error as ApiError)) {
         throw error;
       }
-      await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
+      await new Promise(resolve =>
+        setTimeout(resolve, THROTTLE_BACKOFF_MS * 2 ** attempt)
+      );
     }
   }
 };
@@ -450,7 +457,7 @@ export const useCopyValue = () => {
             onDone?.();
           }
         }),
-        { concurrency: 5 }
+        { concurrency: WRITE_CONCURRENCY }
       );
       return result;
     }
@@ -489,7 +496,7 @@ export const useDeleteParameters = () => {
             result.error ??= error as ApiError;
           }
         }),
-        { concurrency: 2 }
+        { concurrency: DELETE_CONCURRENCY }
       );
       return result;
     }

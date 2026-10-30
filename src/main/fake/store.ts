@@ -27,6 +27,8 @@ import {
   DEFAULT_PARAMETER_TYPE,
   isSecureType
 } from '../../shared/parameterTypes';
+import { DESCRIBE_PAGE_SIZE } from '../endpoints/parameters/describeParameters/describeParameters.contract';
+import { SSM_PATH_SEPARATOR } from '../../shared/aws';
 
 export interface FakeParameter {
   Name: string;
@@ -74,7 +76,7 @@ const parameterOf = (parameter: FakeParameter): Parameter => ({
   Value: parameter.Value,
   Version: parameter.Version,
   LastModifiedDate: new Date(parameter.LastModifiedDate),
-  ARN: `${ARN_PREFIX}${parameter.Name.startsWith('/') ? '' : '/'}${parameter.Name}`,
+  ARN: `${ARN_PREFIX}${parameter.Name.startsWith(SSM_PATH_SEPARATOR) ? '' : SSM_PATH_SEPARATOR}${parameter.Name}`,
   DataType: 'text'
 });
 
@@ -92,7 +94,7 @@ export class FakeParameterStore {
     private readonly fixturePath: string,
     private readonly workingPath: string,
     // The most parameters a describe page returns.
-    private readonly pageSize = 50
+    private readonly pageSize = DESCRIBE_PAGE_SIZE
   ) {}
 
   private load(): FakeDataset {

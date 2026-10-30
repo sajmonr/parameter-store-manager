@@ -2,7 +2,8 @@
 // list, so a format is added here and in the code that writes and reads it.
 import type { ReactNode } from 'react';
 import { CodeOutlined, FileTextOutlined } from '@ant-design/icons';
-import type { FormatId } from '../../state/export';
+import { FILE_FORMATS } from '../../../shared/fileFormats';
+import type { FormatId } from '../../../shared/fileFormats';
 import { parseCsvExport } from '../../utils/csv';
 import type { ParseResult } from '../../utils/importFile';
 import { parseJsonExport } from '../../utils/jsonExport';
@@ -24,7 +25,7 @@ export type Format = {
 export const FORMATS: Format[] = [
   {
     id: 'csv',
-    label: 'CSV',
+    label: FILE_FORMATS.csv,
     icon: <FileTextOutlined />,
     description: 'For spreadsheets and review.',
     canExport: true,
@@ -34,7 +35,7 @@ export const FORMATS: Format[] = [
   },
   {
     id: 'json',
-    label: 'JSON',
+    label: FILE_FORMATS.json,
     icon: <CodeOutlined />,
     description: 'For structured backups and restores.',
     canExport: true,

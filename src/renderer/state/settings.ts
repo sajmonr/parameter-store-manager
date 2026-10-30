@@ -26,7 +26,8 @@ export const saveSettings = async (values: Partial<Settings>) =>
 
 export const getSettings = () => useSettingsStore.getState();
 
-const delimiterOf = (settings: Settings) => settings.pathDelimiter || '/';
+const delimiterOf = (settings: Settings) =>
+  settings.pathDelimiter || DEFAULT_SETTINGS.pathDelimiter;
 
 export const getPathDelimiter = () => delimiterOf(getSettings());
 

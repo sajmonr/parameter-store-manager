@@ -22,7 +22,8 @@ import {
   importActions,
   importDuration,
   SLOW_IMPORT_WRITES,
-  useImportStore
+  useImportStore,
+  WRITES_PER_SECOND
 } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
@@ -261,7 +262,7 @@ const ImportReview = ({
             type="warning"
             showIcon
             title={`This import writes ${plural(toWrite.length, 'parameter')}, which takes ${importDuration(toWrite.length)}.`}
-            description="AWS limits writes to 3 per second for the whole account, and you can't leave this page until it finishes."
+            description={`AWS limits writes to ${WRITES_PER_SECOND} per second for the whole account, and you can't leave this page until it finishes.`}
           />
         )}
         {lastRun && failed.size > 0 && !importing && (

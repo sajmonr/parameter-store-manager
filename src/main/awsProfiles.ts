@@ -5,6 +5,7 @@ import type {
   AwsProfile,
   ListProfilesResponse
 } from './endpoints/aws/listProfiles/listProfiles.contract';
+import { DEFAULT_PROFILE_NAME } from '../shared/aws';
 
 // Profile names from the section headers of an AWS shared config file:
 // [default] and [profile name] in ~/.aws/config, [name] in ~/.aws/credentials.
@@ -19,7 +20,7 @@ export const parseProfileNames = (
     if (!match) return;
     const section = match[1]!;
     if (!isConfigFile) names.push(section);
-    else if (section === 'default') names.push(section);
+    else if (section === DEFAULT_PROFILE_NAME) names.push(section);
     else if (/^profile\s/.test(section))
       names.push(section.replace(/^profile\s+/, ''));
   });

@@ -3,9 +3,10 @@ import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
+import { profileLabel } from '../../../shared/aws';
 
 const EmptyAccount = () => {
-  const profile = useSettingsStore(settings => settings.profile) || 'default';
+  const profile = profileLabel(useSettingsStore(settings => settings.profile));
   const region = useSettingsStore(settings => settings.ssmRegion);
 
   return (

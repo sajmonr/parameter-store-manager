@@ -16,7 +16,9 @@ import type { ExportedParameter } from '../utils/jsonExport';
 import { isEditableType, isSecureType } from '../../shared/parameterTypes';
 import { plural } from '../utils/plural';
 import { createPathMatcher, literalPrefix } from '../utils/search';
-import { chunk, VALUES_BATCH_SIZE } from './parameters';
+import { MAX_NAMES_PER_REQUEST } from '../../main/endpoints/parameters/getParameterValues/getParameterValues.contract';
+import type { FormatId } from '../../shared/fileFormats';
+import { chunk } from './parameters';
 import { getPathDelimiter, getSettings } from './settings';
 import { ssmReads } from './ssmRateLimit';
 
@@ -24,8 +26,6 @@ export type ExportProgress =
   | { phase: 'listing'; found: number }
   | { phase: 'values'; done: number; total: number }
   | { phase: 'saving' };
-
-export type FormatId = 'csv' | 'json';
 
 // The file a format writes. JSON leaves out StringLists, which Import can't
 // create yet.
@@ -117,7 +117,7 @@ const loadValues = async (
     check();
   };
   await Promise.all(
-    chunk(names, VALUES_BATCH_SIZE).map(async batch => {
+    chunk(names, MAX_NAMES_PER_REQUEST).map(async batch => {
       try {
         const res = await ssmReads.schedule(
           () => parametersService.getValues(batch, includeSecureValues),

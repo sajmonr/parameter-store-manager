@@ -1,4 +1,4 @@
-import type { FormatId } from '../../state/export';
+import type { FormatId } from '../../../shared/fileFormats';
 import { FORMATS, isAvailable } from './formats';
 import type { Format, Mode } from './formats';
 import OptionCards from './OptionCards';

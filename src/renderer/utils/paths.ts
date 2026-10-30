@@ -1,4 +1,5 @@
 // Parameter names are paths split by the path delimiter setting. A folder is a
+import { SSM_PATH_SEPARATOR } from '../../shared/aws';
 // name prefix that ends with the delimiter, such as '/app/db/'. The empty
 // string stands for "all parameters".
 
@@ -57,7 +58,8 @@ export const shortFolder = (folder: string, delimiter: string) => {
 
 // Where new parameters go when no folder is picked. SSM paths start with '/',
 // so that delimiter gets a root folder; other delimiters have no root prefix.
-export const rootFolder = (delimiter: string) => (delimiter === '/' ? '/' : '');
+export const rootFolder = (delimiter: string) =>
+  delimiter === SSM_PATH_SEPARATOR ? SSM_PATH_SEPARATOR : '';
 
 // Builds the folder hierarchy of `names`. Nodes are sorted by label.
 export const buildFolderTree = (names: string[], delimiter: string) => {

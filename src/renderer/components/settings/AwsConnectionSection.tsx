@@ -8,6 +8,7 @@ import { useSettingsStore } from '../../state/settings';
 import { AWS_REGIONS } from '../../utils/awsRegions';
 import useSaveSettings from './useSaveSettings';
 import styles from './Settings.module.css';
+import { DEFAULT_PROFILE_NAME } from '../../../shared/aws';
 
 const regionOptions = (current: string) =>
   [...new Set([...AWS_REGIONS, current].filter(Boolean))]
@@ -27,11 +28,15 @@ const profileOptions = (
   };
   const names = profiles
     .map(p => p.name)
-    .filter(name => envProfile || name !== 'default');
+    .filter(name => envProfile || name !== DEFAULT_PROFILE_NAME);
   if (current && !names.includes(current)) names.unshift(current);
   const sdkDefault = envProfile
     ? { value: '', name: 'SDK default', suffix: `AWS_PROFILE=${envProfile}` }
-    : { value: '', name: 'default', suffix: sourceText('default') };
+    : {
+        value: '',
+        name: DEFAULT_PROFILE_NAME,
+        suffix: sourceText(DEFAULT_PROFILE_NAME)
+      };
   return [
     sdkDefault,
     ...names.map(name => ({ value: name, name, suffix: sourceText(name) }))

@@ -2,11 +2,16 @@
 // its real SDK clients; a middleware at the first step of each client
 // returns the fake answer, so no request, credential lookup or network call
 // is made. A command the fake doesn't know fails loudly.
+import { DESCRIBE_PAGE_SIZE } from '../endpoints/parameters/describeParameters/describeParameters.contract';
 import type { FakeOptions } from '../source';
 import { awsError, FakeParameterStore } from './store';
 
 let store: FakeParameterStore | null = null;
-let options: FakeOptions = { delayMs: 0, pageSize: 50, error: null };
+let options: FakeOptions = {
+  delayMs: 0,
+  pageSize: DESCRIBE_PAGE_SIZE,
+  error: null
+};
 
 export const startFakeSource = (
   fixturePath: string,

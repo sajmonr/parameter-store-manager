@@ -17,7 +17,7 @@ import { getSettings } from './settings';
 export const IMPORT_CONCURRENCY = 2;
 
 // AWS's default PutParameter limit, which sets how long an import takes.
-const WRITES_PER_SECOND = 3;
+export const WRITES_PER_SECOND = 3;
 // From this many writes, the review says how long the import will take.
 export const SLOW_IMPORT_WRITES = 100;
 

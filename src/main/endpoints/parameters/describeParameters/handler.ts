@@ -1,7 +1,10 @@
 import { DescribeParametersCommand } from '@aws-sdk/client-ssm';
 import { ssm, toPlainParameter } from '../../../aws';
 import { defineEndpoint } from '../../endpoint';
-import { describeParametersContract } from './describeParameters.contract';
+import {
+  DESCRIBE_PAGE_SIZE,
+  describeParametersContract
+} from './describeParameters.contract';
 
 export default defineEndpoint(
   describeParametersContract,
@@ -9,7 +12,7 @@ export default defineEndpoint(
     const res = await ssm().send(
       new DescribeParametersCommand({
         NextToken: nextToken,
-        MaxResults: 50,
+        MaxResults: DESCRIBE_PAGE_SIZE,
         ParameterFilters: beginsWith
           ? [{ Key: 'Name', Option: 'BeginsWith', Values: [beginsWith] }]
           : undefined

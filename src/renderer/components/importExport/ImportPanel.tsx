@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Flex, Typography, Upload } from 'antd';
 import { GlobalOutlined, InboxOutlined } from '@ant-design/icons';
-import type { FormatId } from '../../state/export';
+import { extensionOf, formatOfFileName } from '../../../shared/fileFormats';
+import type { FormatId } from '../../../shared/fileFormats';
 import { useImportStore } from '../../state/import';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
@@ -24,13 +25,13 @@ const DEFAULT_FORMAT =
 
 // Every importable extension: a file is read as the format it names.
 const ACCEPT = FORMATS.filter(format => format.canImport)
-  .map(format => `.${format.id}`)
+  .map(format => extensionOf(format.id))
   .join(',');
 
 // The importable format a file's extension names, if any.
 const formatOfFile = (fileName: string) => {
-  const extension = fileName.split('.').pop()?.toLowerCase();
-  return FORMATS.find(format => format.canImport && format.id === extension);
+  const id = formatOfFileName(fileName);
+  return FORMATS.find(format => format.canImport && format.id === id);
 };
 
 // Step 1 picks a file and checks it; step 2 reviews and imports it. A file
