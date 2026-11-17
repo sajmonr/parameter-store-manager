@@ -28,12 +28,12 @@ import {
   removeService,
   setServiceEnvironment
 } from '../../utils/structureEdits';
-import EnvironmentDot from '../common/EnvironmentDot';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
+import EnvironmentLabel from '../common/EnvironmentLabel';
 
 // Typed into the add row, and checked when added.
 const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -110,10 +110,7 @@ const ServicesCard = () => {
     structure.environments.map(({ segment: env, color }) => ({
       key: `env:${env}`,
       title: (
-        <Flex gap={6} align="center" className={styles.mono}>
-          <EnvironmentDot color={color} />
-          {env}
-        </Flex>
+        <EnvironmentLabel color={color} name={env} className={styles.mono} />
       ),
       render: (_, service) => {
         const checked = service.environments.includes(env);

@@ -172,13 +172,6 @@
   border: 1px solid var(--ant-color-border);
 }
 
-.envName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .envCount {
   flex: none;
   font-size: 12px;

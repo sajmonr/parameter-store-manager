@@ -13,11 +13,11 @@ import {
   environmentColorOf,
   layoutPattern
 } from '../../utils/structure';
-import EnvironmentDot from '../common/EnvironmentDot';
 import SelectionBar from './SelectionBar';
 import ServiceBar from './ServiceBar';
 import styles from './ParameterBreadcrumb.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import EnvironmentLabel from '../common/EnvironmentLabel';
 
 interface Crumb {
   key: string;
@@ -26,14 +26,7 @@ interface Crumb {
 }
 
 const envLabel = (env: string, color: string | null) =>
-  color ? (
-    <span className={styles.env}>
-      <EnvironmentDot color={color} />
-      {env}
-    </span>
-  ) : (
-    env
-  );
+  color ? <EnvironmentLabel color={color} name={env} /> : env;
 
 // The location and each place above it, outermost first.
 const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {

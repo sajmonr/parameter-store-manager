@@ -33,14 +33,13 @@ import type {
 } from '../../utils/compare';
 import { leafOf } from '../../utils/paths';
 import CopyButton from '../common/CopyButton';
-import EnvironmentDot from '../common/EnvironmentDot';
 import CompareProgress from './CompareProgress';
 import NotSetCell from './NotSetCell';
 import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import RevealButton from '../common/RevealButton';
 import styles from './CompareGrid.module.css';
-import { COUNT_PLACEHOLDER, NOT_SET_LABEL } from '../../utils/labels';
+import { NOT_SET_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { isActivateKey } from '../../utils/keys';
 import {
@@ -48,6 +47,7 @@ import {
   COMPARE_MIN_ENV_COLUMN_WIDTH
 } from '../../utils/layout';
 import SecureLockIcon from '../common/SecureLockIcon';
+import EnvironmentLabel from '../common/EnvironmentLabel';
 
 interface ValueCellProps {
   env: string;
@@ -379,11 +379,13 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
             </div>
             {environments.map(({ segment, color }, index) => (
               <div key={segment} role="columnheader" className={styles.cell}>
-                <EnvironmentDot color={color} />
-                <span className={styles.envName}>{segment}</span>
-                <span className={styles.envCount}>
-                  {ready ? counts[index] : COUNT_PLACEHOLDER}
-                </span>
+                <EnvironmentLabel
+                  color={color}
+                  name={segment}
+                  count={counts[index]}
+                  loaded={ready}
+                  ellipsis
+                />
               </div>
             ))}
           </div>
