@@ -56,10 +56,6 @@
   box-shadow: inset 2px 0 0 var(--ant-color-primary);
 }
 
-.lock {
-  color: var(--ant-color-warning);
-}
-
 .table .groupRow > :global(.ant-table-cell),
 .table .groupRow:hover > :global(.ant-table-cell) {
   background: var(--ant-color-fill-quaternary);

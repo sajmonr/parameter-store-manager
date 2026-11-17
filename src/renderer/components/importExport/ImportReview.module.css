@@ -129,10 +129,6 @@
   font-size: 12px;
 }
 
-.lock {
-  color: var(--ant-color-text-secondary);
-}
-
 .status {
   margin-inline-end: auto;
 }

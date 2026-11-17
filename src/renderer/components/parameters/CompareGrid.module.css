@@ -128,10 +128,6 @@
   margin-left: auto;
 }
 
-.lock {
-  color: var(--ant-color-warning);
-}
-
 .chip {
   flex: none;
   padding: 0 8px;

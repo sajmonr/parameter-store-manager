@@ -11,11 +11,7 @@ import {
   Tooltip,
   Typography
 } from 'antd';
-import {
-  ArrowRightOutlined,
-  CloseOutlined,
-  LockOutlined
-} from '@ant-design/icons';
+import { ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
 import { isSecureType } from '../../../shared/parameterTypes';
 import { importActions, useImportStore } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
@@ -42,6 +38,7 @@ import styles from './ImportReview.module.css';
 import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { notifySuccess } from '../../utils/notify';
+import SecureLockIcon from '../common/SecureLockIcon';
 
 interface StatusStyle {
   label: string;
@@ -441,9 +438,7 @@ const ReviewRow = ({
       >
         {entry.name}
       </Mono>
-      {isSecureType(entry.type) && (
-        <LockOutlined aria-label="SecureString" className={styles.lock} />
-      )}
+      {isSecureType(entry.type) && <SecureLockIcon muted />}
     </div>
   );
   return (

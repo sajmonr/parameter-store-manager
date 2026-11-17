@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { GetRef, TableColumnsType } from 'antd';
-import { AppstoreOutlined, LockOutlined } from '@ant-design/icons';
+import { AppstoreOutlined } from '@ant-design/icons';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
@@ -21,6 +21,7 @@ import {
   TABLE_HEADER_HEIGHT,
   TABLE_LOCK_COLUMN_WIDTH
 } from '../../utils/layout';
+import SecureLockIcon from '../common/SecureLockIcon';
 
 // A group row spans every column.
 const spanGroupRow = (columns: number) => (row: Row) => ({
@@ -138,12 +139,7 @@ const ParameterTable = ({
         align: 'center',
         onCell: hideInGroupRow,
         render: (_, parameter) =>
-          !isGroupRow(parameter) &&
-          isSecure(parameter) && (
-            <Tooltip title="SecureString">
-              <LockOutlined className={styles.lock} aria-label="SecureString" />
-            </Tooltip>
-          )
+          !isGroupRow(parameter) && isSecure(parameter) && <SecureLockIcon />
       }
     ],
     [width, selectedName, revealed, nameTitle]

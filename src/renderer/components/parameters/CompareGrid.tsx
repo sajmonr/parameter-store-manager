@@ -6,7 +6,6 @@ import {
   CheckCircleOutlined,
   FolderOpenOutlined,
   FolderOutlined,
-  LockOutlined,
   RetweetOutlined,
   SearchOutlined,
   WarningOutlined
@@ -48,6 +47,7 @@ import {
   COMPARE_KEY_COLUMN_WIDTH,
   COMPARE_MIN_ENV_COLUMN_WIDTH
 } from '../../utils/layout';
+import SecureLockIcon from '../common/SecureLockIcon';
 
 interface ValueCellProps {
   env: string;
@@ -144,11 +144,7 @@ const ValueCell = ({
     >
       {value}
       <span className={styles.actions}>
-        {secure && (
-          <Tooltip title="SecureString">
-            <LockOutlined className={styles.lock} aria-label="SecureString" />
-          </Tooltip>
-        )}
+        {secure && <SecureLockIcon />}
         {secure && Value !== undefined && (
           <RevealButton
             revealed={revealed}
