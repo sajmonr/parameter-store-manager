@@ -137,7 +137,7 @@ const TargetRow = ({
             <MaskedValue
               value={parameter.Value}
               secure={isSecureType(targetType)}
-              size={12}
+              small
               ellipsis
               className={styles.currentValue}
             />
@@ -155,7 +155,7 @@ const TargetRow = ({
           <Typography.Text type="secondary" className={styles.note}>
             <InfoCircleOutlined /> This environment stores it as a SecureString,
             so the value will be encrypted with{' '}
-            <Mono size={12}>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
+            <Mono small>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
           </Typography.Text>
         )}
         {status === 'new' && selected && isSecureType(sourceType) && (
@@ -381,7 +381,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
       title={
         <div className={styles.header}>
           <div>Synchronize environments</div>
-          <Mono type="secondary" size={12} className={styles.sourceName}>
+          <Mono type="secondary" small className={styles.sourceName}>
             {source.Name}
           </Mono>
         </div>

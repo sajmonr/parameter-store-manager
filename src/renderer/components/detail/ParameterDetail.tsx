@@ -50,7 +50,7 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
             </Tag>
             <Tag color={place.color}>{place.env}</Tag>
             {keyFolder && (
-              <Mono type="secondary" size={12}>
+              <Mono type="secondary" small>
                 {keyFolder}
               </Mono>
             )}

@@ -12,6 +12,7 @@ import TreeNodeMenu from './TreeNodeMenu';
 import type useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
 import { COUNT_PLACEHOLDER } from '../../utils/labels';
+import SectionLabel from '../common/SectionLabel';
 
 type GroupTreeNode = SidebarNode & TreeDataNode & { children: GroupTreeNode[] };
 
@@ -58,7 +59,9 @@ const SidebarGroup = ({
   const loaded = useLoaded();
   return (
     <>
-      <div className={styles.group}>{title}</div>
+      <div className={styles.group}>
+        <SectionLabel>{title}</SectionLabel>
+      </div>
       <Tree<GroupTreeNode>
         blockNode
         showIcon

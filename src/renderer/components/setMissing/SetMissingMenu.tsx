@@ -89,7 +89,7 @@ const SetMissingMenu = ({
         Set value in <EnvironmentDot color={target.color} />
         {target.segment}
       </span>
-      <Mono size={12} ellipsis={{ tooltip: path }}>
+      <Mono small ellipsis={{ tooltip: path }}>
         {path}
       </Mono>
     </span>
