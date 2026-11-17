@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
-  App,
   Button,
   Card,
   Flex,
@@ -42,6 +41,7 @@ import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
 import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
+import { notifySuccess } from '../../utils/notify';
 
 interface StatusStyle {
   label: string;
@@ -96,7 +96,6 @@ const ImportReview = ({
   onClose: () => void;
 }) => {
   const client = useQueryClient();
-  const { notification } = App.useApp();
   const { byName, loading } = useParameters();
   const region = useSettingsStore(settings => settings.ssmRegion);
   const importing = useImportStore(state => state.running);
@@ -138,9 +137,7 @@ const ImportReview = ({
       }))
     );
     if (!result.failed.size) {
-      notification.success({
-        title: `Imported ${plural(result.written.length, 'parameter')}`
-      });
+      notifySuccess(`Imported ${plural(result.written.length, 'parameter')}`);
       void refreshParameters(client);
       onClose();
       return;

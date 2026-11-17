@@ -2,10 +2,7 @@
 // may be out of date and may miss values whose load failed. It runs outside
 // any component, so it carries on whichever page is shown.
 import { create } from 'zustand';
-import type { ApiError } from '../clients/call';
-import { feedback } from '../feedback';
 import { accountService, filesService } from '../services';
-import { describeError } from '../utils/awsErrors';
 import { parametersToCsv } from '../utils/csv';
 import { exportFileName } from '../utils/exportFileName';
 import { exportRows, toExported } from '../utils/exportRows';
@@ -19,6 +16,7 @@ import type { FormatId } from '../../shared/fileFormats';
 import { getPathDelimiter, getSettings } from './settings';
 import { sourceGuard } from './sourceGuard';
 import { describeAllPages, readValueBatches } from './ssmReads';
+import { notifyError, notifySuccess } from '../utils/notify';
 
 export interface ExportOptions {
   format: FormatId;
@@ -201,16 +199,13 @@ const start = async (options: ExportOptions) => {
     });
     // null when the save dialog was cancelled.
     if (filePath) {
-      feedback.notification?.success({
-        title: `Saved ${baseName(filePath)} (${plural(count, 'parameter')})`
-      });
+      notifySuccess(
+        `Saved ${baseName(filePath)} (${plural(count, 'parameter')})`
+      );
     }
   } catch (error) {
     if (!current.signal.aborted) {
-      feedback.notification?.error({
-        title: 'Parameters were not exported',
-        description: describeError(error as ApiError)
-      });
+      notifyError('Parameters were not exported', error);
     }
   } finally {
     // A cancelled export may finish after the next one has started.

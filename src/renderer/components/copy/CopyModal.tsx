@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  App,
   Button,
   Checkbox,
   Flex,
@@ -60,6 +59,7 @@ import { KMS_KEY_LABEL, NOT_SET_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { toggleIn } from '../../utils/sets';
 import { COPY_MODAL_WIDTH } from '../../utils/layout';
+import { notifySuccess } from '../../utils/notify';
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   new: { color: 'green', label: 'New' },
@@ -253,7 +253,6 @@ interface CopyDialogProps {
 // The dialog for one opening. It holds the source and the selection, so it
 // is rendered with key={request.id} and starts afresh each time.
 const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
-  const { notification } = App.useApp();
   const delimiter = usePathDelimiter();
   const [name, setName] = useState(request.source);
   const copyable = useCopyTargets(name);
@@ -345,8 +344,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
 
     const failed = rows.filter(t => result.failed.has(t.name));
     if (!failed.length) {
-      notification.success({
-        title: `Copied to ${plural(rows.length, 'environment')}`,
+      notifySuccess(`Copied to ${plural(rows.length, 'environment')}`, {
         description: `${leafOf(source.Name, delimiter)} → ${rows.map(t => t.segment).join(', ')}`
       });
       uiActions.closeCopy();

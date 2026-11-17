@@ -28,7 +28,7 @@ export const FETCH_ERROR_KINDS = {
 export type FetchErrorKind =
   (typeof FETCH_ERROR_KINDS)[keyof typeof FETCH_ERROR_KINDS];
 
-interface ErrorLike {
+export interface ErrorLike {
   name?: string;
   code?: string;
   message?: string;

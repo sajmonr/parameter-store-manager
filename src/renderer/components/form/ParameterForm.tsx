@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  App,
   Button,
   Flex,
   Form,
@@ -65,6 +64,7 @@ import {
   KMS_KEY_LABEL,
   OTHER_PATHS_LABEL
 } from '../../utils/labels';
+import { notifyError, notifySuccess } from '../../utils/notify';
 
 const typeOptions = [
   { value: PARAMETER_TYPE.String, label: PARAMETER_TYPE.String },
@@ -109,7 +109,6 @@ const ParameterForm = ({
 }: {
   prefill: NewParameterPrefill | null;
 }) => {
-  const { notification } = App.useApp();
   const [form] = Form.useForm<FormValues>();
   const context = useLocationContext();
   const { structure, delimiter } = context;
@@ -219,12 +218,11 @@ const ParameterForm = ({
   const finish = (all: string[]) => {
     const [first] = targets.filter(name => all.includes(name));
     if (targets.length > 1) {
-      notification.success({
-        title: `Created in ${targets.length} environments`,
+      notifySuccess(`Created in ${targets.length} environments`, {
         description: naming.key
       });
     } else {
-      notification.success({ title: 'Parameter created', description: first });
+      notifySuccess('Parameter created', { description: first });
     }
     uiActions.showCreatedParameter(first!);
   };
@@ -248,8 +246,7 @@ const ParameterForm = ({
         if (!result.failed.size) {
           finish(all);
         } else if (targets.length === 1) {
-          notification.error({
-            title: 'Parameter was not created',
+          notifyError('Parameter was not created', undefined, {
             description: [...result.failed.values()][0]
           });
         } else {

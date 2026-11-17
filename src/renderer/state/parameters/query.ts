@@ -4,7 +4,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { QueryClient, QueryFunctionContext } from '@tanstack/react-query';
 import type { ApiError } from '../../clients/call';
-import { feedback } from '../../feedback';
 import { classifyFetchError, describeError } from '../../utils/awsErrors';
 import {
   EMPTY_LIST,
@@ -22,6 +21,7 @@ import { currentKey, parametersKey } from './key';
 import type { ParametersKey } from './key';
 import { NO_PROGRESS, useLoadProgress } from './loadProgress';
 import type { LoadProgress } from '../../utils/progress';
+import { notifyError } from '../../utils/notify';
 
 // Each load gets a number; only the latest load may change the cache, so a
 // load for an old profile or region can't overwrite a newer one.
@@ -67,11 +67,10 @@ const loadValues = (
 const notifyLoadError = (error: unknown) => {
   // Expired sessions and denied access get their own screen instead.
   if (classifyFetchError(error as ApiError)) return;
-  feedback.notification?.error({
-    title:
-      'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
-    description: describeError(error as ApiError)
-  });
+  notifyError(
+    'Parameters were not loaded. Check your AWS Connections (~/.aws/credentials, STSKey, or environment variables)',
+    error
+  );
 };
 
 const loadParameters = async ({

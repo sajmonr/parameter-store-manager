@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { App, Button, Flex, Form, Input, Typography } from 'antd';
+import { Button, Flex, Form, Input, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { isEditableType } from '../../../shared/parameterTypes';
 import { usePutParameter } from '../../state/parameters';
@@ -10,6 +10,7 @@ import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/parameterValue';
 import { isSubmitShortcut } from '../../utils/keys';
 import styles from './ValueEditor.module.css';
 import { DESCRIPTION_PLACEHOLDER } from '../../utils/labels';
+import { notifyError, notifySuccess } from '../../utils/notify';
 
 // Inline edit of the value and description. The name, type and KMS key
 // can't be changed here.
@@ -19,7 +20,6 @@ interface ValueEditorProps {
 }
 
 const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
-  const { notification } = App.useApp();
   const delimiter = usePathDelimiter();
   const putParameter = usePutParameter();
   const [value, setValue] = useState(parameter.Value || '');
@@ -41,17 +41,13 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
         overwrite: true
       })
       .then(result => {
-        notification.success({
-          title: 'Parameter saved',
+        notifySuccess('Parameter saved', {
           description: `${leafOf(parameter.Name, delimiter)} · version ${result.version}`
         });
         onDone();
       })
-      .catch(err => {
-        notification.error({
-          title: 'Parameter was not saved',
-          description: err.message || ''
-        });
+      .catch(error => {
+        notifyError('Parameter was not saved', error);
       });
   };
 
