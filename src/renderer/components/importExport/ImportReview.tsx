@@ -39,6 +39,7 @@ import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import { notifySuccess } from '../../utils/notify';
 import SecureLockIcon from '../common/SecureLockIcon';
+import PartialFailureAlert from '../common/PartialFailureAlert';
 
 interface StatusStyle {
   label: string;
@@ -252,19 +253,12 @@ const ImportReview = ({
           />
         )}
         {lastRun && failed.size > 0 && !importing && (
-          <Alert
-            type="error"
-            showIcon
-            title={`Imported ${countOf(lastRun.written, lastRun.total)}. ${failed.size.toLocaleString()} failed.`}
-            action={
-              <Button
-                size="small"
-                disabled={!retryable.length || loading}
-                onClick={() => run(retryable)}
-              >
-                Retry failed
-              </Button>
-            }
+          <PartialFailureAlert
+            verb="Imported"
+            done={lastRun.written}
+            total={lastRun.total}
+            onRetry={() => run(retryable)}
+            retryDisabled={!retryable.length || loading}
           />
         )}
         <Flex justify="flex-end" align="center" gap={8}>

@@ -2,6 +2,7 @@ import { Button, Empty, Space, Typography } from 'antd';
 import { uiActions } from '../../state/ui';
 import { useLocation, useMatcher } from '../../state/views';
 import styles from './StateLayout.module.css';
+import CenteredState from '../common/CenteredState';
 
 const NoResults = () => {
   const { query } = useMatcher();
@@ -19,7 +20,7 @@ const NoResults = () => {
   }
 
   return (
-    <div className={styles.center}>
+    <CenteredState>
       <Empty
         className={styles.content}
         description={
@@ -43,7 +44,7 @@ const NoResults = () => {
           )}
         </Space>
       </Empty>
-    </div>
+    </CenteredState>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   Button,
   Flex,
   Form,
@@ -65,6 +64,7 @@ import {
   OTHER_PATHS_LABEL
 } from '../../utils/labels';
 import { notifyError, notifySuccess } from '../../utils/notify';
+import PartialFailureAlert from '../common/PartialFailureAlert';
 
 const typeOptions = [
   { value: PARAMETER_TYPE.String, label: PARAMETER_TYPE.String },
@@ -434,11 +434,11 @@ const ParameterForm = ({
           />
         </Form.Item>
         {failedCount > 0 && (
-          <Alert
-            type="error"
-            showIcon
+          <PartialFailureAlert
+            verb="Created"
+            done={targets.length - failedCount}
+            total={targets.length}
             className={styles.alert}
-            title={`Created ${targets.length - failedCount} of ${targets.length}. ${failedCount} failed.`}
           />
         )}
         <Flex align="center" gap={8}>

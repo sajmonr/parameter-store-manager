@@ -208,18 +208,6 @@
   box-shadow: var(--ant-box-shadow-secondary);
 }
 
-.empty {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px;
-  text-align: center;
-}
-
 .emptyIcon {
   font-size: 32px;
   color: var(--ant-color-text-tertiary);

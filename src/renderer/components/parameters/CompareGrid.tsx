@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { CSSProperties, ReactNode } from 'react';
-import { Alert, Button, Skeleton, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Button, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   FolderOpenOutlined,
@@ -48,6 +48,8 @@ import {
 } from '../../utils/layout';
 import SecureLockIcon from '../common/SecureLockIcon';
 import EnvironmentLabel from '../common/EnvironmentLabel';
+import SkeletonBar, { PLACEHOLDER_WIDTHS } from '../common/SkeletonBar';
+import CenteredState from '../common/CenteredState';
 
 interface ValueCellProps {
   env: string;
@@ -247,10 +249,10 @@ const KeyRow = memo(
 KeyRow.displayName = 'KeyRow';
 
 const EmptyState = ({ icon, text }: { icon: ReactNode; text: string }) => (
-  <div className={styles.empty}>
+  <CenteredState vertical gap="small">
     <span className={styles.emptyIcon}>{icon}</span>
     <Typography.Text type="secondary">{text}</Typography.Text>
-  </div>
+  </CenteredState>
 );
 
 const EMPTY_ICONS: Record<EmptyReason, ReactNode> = {
@@ -267,36 +269,16 @@ const emptyStateOf = (comparison: Comparison, filter: CompareFilter) => {
   return <EmptyState icon={EMPTY_ICONS[reason]} text={text} />;
 };
 
-// Widths of the key and value placeholders, so rows don't look identical.
-const PLACEHOLDER_ROWS: [key: number, value: number][] = [
-  [40, 55],
-  [60, 30],
-  [35, 70],
-  [50, 40],
-  [45, 60],
-  [30, 35],
-  [55, 50],
-  [40, 45]
-];
-
-const Bar = ({ width }: { width: number }) => (
-  <Skeleton.Input
-    active
-    size="small"
-    style={{ width: `${width}%`, minWidth: 0, height: 14 }}
-  />
-);
-
 // The rows' places during the first load.
 const PlaceholderRows = ({ columns }: { columns: number }) =>
-  PLACEHOLDER_ROWS.map(([key, value], index) => (
+  PLACEHOLDER_WIDTHS.map(([key, value], index) => (
     <div key={index} role="row" className={styles.row}>
       <div className={styles.keyCell}>
-        <Bar width={key} />
+        <SkeletonBar width={key} />
       </div>
       {Array.from({ length: columns }, (_, column) => (
         <div key={column} className={styles.cell}>
-          <Bar width={((value + column * 15) % 60) + 25} />
+          <SkeletonBar width={((value + column * 15) % 60) + 25} />
         </div>
       ))}
     </div>

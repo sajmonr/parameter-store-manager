@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   Button,
   Checkbox,
   Flex,
@@ -60,6 +59,7 @@ import { cx } from '../../utils/classNames';
 import { toggleIn } from '../../utils/sets';
 import { COPY_MODAL_WIDTH } from '../../utils/layout';
 import { notifySuccess } from '../../utils/notify';
+import PartialFailureAlert from '../common/PartialFailureAlert';
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   new: { color: 'green', label: 'New' },
@@ -471,21 +471,15 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
           </Typography.Text>
         )}
         {outcome && (
-          <Alert
-            type="error"
-            showIcon
-            title={`Copied to ${outcome.copied} of ${outcome.total}. ${outcome.failed.length} failed.`}
-            action={
-              <Button
-                size="small"
-                disabled={copying}
-                onClick={() =>
-                  void copy(outcome.failed.filter(t => t.status !== 'same'))
-                }
-              >
-                Retry
-              </Button>
+          <PartialFailureAlert
+            verb="Copied to"
+            done={outcome.copied}
+            total={outcome.total}
+            onRetry={() =>
+              void copy(outcome.failed.filter(t => t.status !== 'same'))
             }
+            retryLabel="Retry"
+            retryDisabled={copying}
           />
         )}
         <Flex align="center" gap={12} className={styles.toolbar}>

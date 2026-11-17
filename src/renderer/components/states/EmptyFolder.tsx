@@ -2,9 +2,10 @@ import { Button, Empty } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
+import CenteredState from '../common/CenteredState';
 
 const EmptyFolder = () => (
-  <div className={styles.center}>
+  <CenteredState>
     <Empty className={styles.content} description="This folder is empty">
       <Button
         type="primary"
@@ -14,7 +15,7 @@ const EmptyFolder = () => (
         New parameter here
       </Button>
     </Empty>
-  </div>
+  </CenteredState>
 );
 
 export default EmptyFolder;

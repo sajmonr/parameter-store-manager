@@ -4,13 +4,14 @@ import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
 import { profileLabel } from '../../../shared/aws';
+import CenteredState from '../common/CenteredState';
 
 const EmptyAccount = () => {
   const profile = profileLabel(useSettingsStore(settings => settings.profile));
   const region = useSettingsStore(settings => settings.ssmRegion);
 
   return (
-    <div className={styles.center}>
+    <CenteredState>
       <Empty
         className={styles.content}
         description={
@@ -40,7 +41,7 @@ const EmptyAccount = () => {
           </Button>
         </Space>
       </Empty>
-    </div>
+    </CenteredState>
   );
 };
 
