@@ -1,74 +1,22 @@
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Card, Flex, Tag, Tooltip, Typography } from 'antd';
-import { ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
-import { isSecureType } from '../../../shared/parameterTypes';
+import { Alert, Button, Card, Flex, Typography } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { importActions, useImportStore } from '../../state/import';
 import { refreshParameters, useParameters } from '../../state/parameters';
-import { countOf } from '../../utils/progress';
 import { useSettingsStore } from '../../state/settings';
-import { formatExportedAt } from '../../utils/dates';
-import { kmsKeyName } from '../../utils/kms';
-import {
-  countStatuses,
-  importDuration,
-  isWritten,
-  planImport,
-  SLOW_IMPORT_WRITES,
-  WRITES_PER_SECOND
-} from '../../utils/importPlan';
+import { countStatuses, isWritten, planImport } from '../../utils/importPlan';
 import type { ImportRow, ImportStatus } from '../../utils/importPlan';
 import { plural } from '../../utils/plural';
-import MaskedValue from '../common/MaskedValue';
-import Mono from '../common/Mono';
-import RevealButton from '../common/RevealButton';
-import { FORMAT_ICONS } from './formatIcons';
 import type { LoadedFile } from './ImportPanel';
 import styles from './ImportReview.module.css';
-import { KMS_KEY_LABEL, WAITING_FOR_PARAMETERS } from '../../utils/labels';
-import { cx } from '../../utils/classNames';
+import { STATUSES } from './review/importStatuses';
+import ReviewFooter from './review/ReviewFooter';
+import ReviewHeader from './review/ReviewHeader';
+import ReviewRow from './review/ReviewRow';
+import StatFilter from './review/StatFilter';
 import { notifySuccess } from '../../utils/notify';
-import SecureLockIcon from '../common/SecureLockIcon';
-import PartialFailureAlert from '../common/PartialFailureAlert';
 import LabeledSwitch from '../common/LabeledSwitch';
-
-interface StatusStyle {
-  label: string;
-  color?: string;
-  // Explains a status that isn't obvious.
-  tooltip?: string;
-}
-
-const STATUSES: Record<ImportStatus, StatusStyle> = {
-  new: { label: 'new', color: 'green' },
-  changed: { label: 'changed', color: 'gold' },
-  unchanged: { label: 'unchanged' },
-  skipped: {
-    label: 'skipped',
-    tooltip: 'Exported without decryption, so the file has no value.'
-  },
-  typeChange: {
-    label: 'type change',
-    tooltip:
-      "It exists with another type. Changing between String and SecureString isn't supported yet."
-  },
-  unsupported: {
-    label: 'unsupported',
-    tooltip: "StringList parameters can't be imported yet."
-  }
-};
-
-// The statuses counted in the stats row; the last three only when present.
-const STAT_ORDER: ImportStatus[] = [
-  'new',
-  'changed',
-  'unchanged',
-  'skipped',
-  'typeChange',
-  'unsupported'
-];
-const ALWAYS_COUNTED = new Set<ImportStatus>(['new', 'changed', 'unchanged']);
 
 interface RunResult {
   written: number;
@@ -99,7 +47,7 @@ const ImportReview = ({
   // what is shown changes, not what is imported.
   const [shown, setShown] = useState<ImportStatus | null>(null);
 
-  const { parameters, exportedAt } = file.data;
+  const { parameters } = file.data;
   // Written entries show as unchanged once the run has saved them.
   const rows = useMemo(
     () => planImport(parameters, byName),
@@ -110,11 +58,6 @@ const ImportReview = ({
   const retryable = toWrite.filter(row => failed.has(row.entry.name));
   const listed = shown ? rows.filter(row => row.status === shown) : rows;
   const fileRegion = file.data.region;
-  const meta = [
-    plural(parameters.length, 'parameter'),
-    formatExportedAt(exportedAt) && `exported ${formatExportedAt(exportedAt)}`,
-    fileRegion
-  ].filter(Boolean);
 
   const run = async (selected: ImportRow[]) => {
     setFailed(new Map());
@@ -136,28 +79,9 @@ const ImportReview = ({
     setLastRun({ written: result.written.length, total: selected.length });
   };
 
-  let importLabel: string;
-  if (importing) {
-    importLabel = `Importing ${countOf(done, total)}…`;
-  } else if (toWrite.length) {
-    importLabel = `Import ${plural(toWrite.length, 'parameter')}`;
-  } else {
-    importLabel = 'Nothing to import';
-  }
-
   return (
     <Card
-      title={
-        <Flex align="center" gap={10}>
-          <span className={styles.fileIcon}>{FORMAT_ICONS[file.format]}</span>
-          <Flex vertical className={styles.fileTitle}>
-            <Mono ellipsis={{ tooltip: file.name }}>{file.name}</Mono>
-            <Typography.Text type="secondary" className={styles.meta}>
-              {meta.join(' · ')}
-            </Typography.Text>
-          </Flex>
-        </Flex>
-      }
+      title={<ReviewHeader file={file} />}
       extra={
         <Button
           type="text"
@@ -169,32 +93,7 @@ const ImportReview = ({
       }
     >
       <Flex vertical gap={16}>
-        <Flex gap={8} wrap role="group" aria-label="Summary">
-          {STAT_ORDER.filter(
-            status => ALWAYS_COUNTED.has(status) || counts[status]
-          ).map(status => {
-            const active = shown === status;
-            return (
-              <Tooltip key={status} title={STATUSES[status].tooltip}>
-                <button
-                  type="button"
-                  className={cx(
-                    styles.statButton,
-                    shown && !active && styles.statInactive
-                  )}
-                  aria-pressed={active}
-                  // A status that has gone to 0 can still be turned off.
-                  disabled={!counts[status] && !active}
-                  onClick={() => setShown(active ? null : status)}
-                >
-                  <Tag color={STATUSES[status].color} className={styles.stat}>
-                    {counts[status].toLocaleString()} {STATUSES[status].label}
-                  </Tag>
-                </button>
-              </Tooltip>
-            );
-          })}
-        </Flex>
+        <StatFilter counts={counts} shown={shown} onShow={setShown} />
         {fileRegion && fileRegion !== region && (
           <Alert
             type="info"
@@ -233,202 +132,19 @@ const ImportReview = ({
             skipped.
           </Typography.Text>
         </Flex>
-        {toWrite.length >= SLOW_IMPORT_WRITES && !importing && (
-          <Alert
-            type="warning"
-            showIcon
-            title={`This import writes ${plural(toWrite.length, 'parameter')}, which takes ${importDuration(toWrite.length)}.`}
-            description={`AWS limits writes to ${WRITES_PER_SECOND} per second for the whole account, and you can't leave this page until it finishes.`}
-          />
-        )}
-        {lastRun && failed.size > 0 && !importing && (
-          <PartialFailureAlert
-            verb="Imported"
-            done={lastRun.written}
-            total={lastRun.total}
-            onRetry={() => run(retryable)}
-            retryDisabled={!retryable.length || loading}
-          />
-        )}
-        <Flex justify="flex-end" align="center" gap={8}>
-          {loading && !importing && (
-            <Typography.Text type="secondary" className={styles.status}>
-              {WAITING_FOR_PARAMETERS}
-            </Typography.Text>
-          )}
-          <Button disabled={importing} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            type="primary"
-            loading={importing}
-            disabled={!toWrite.length || loading}
-            onClick={() => run(toWrite)}
-          >
-            {importLabel}
-          </Button>
-        </Flex>
+        <ReviewFooter
+          toWrite={toWrite.length}
+          lastRun={failed.size > 0 ? lastRun : null}
+          retryable={retryable.length}
+          importing={importing}
+          progress={{ done, total }}
+          loading={loading}
+          onImport={() => run(toWrite)}
+          onRetry={() => run(retryable)}
+          onCancel={onClose}
+        />
       </Flex>
     </Card>
-  );
-};
-
-// One entry of the file. Entries that won't be written are dimmed; failed
-// ones show the AWS error on hover.
-
-// One field of a row: its new value, after the old one when it changes.
-// An empty value shows as "none"; an old value that didn't load (null)
-// shows as "…", as in the table.
-const FieldChange = ({
-  label,
-  from,
-  to,
-  secure = false,
-  revealed = false,
-  action
-}: {
-  label: string;
-  from?: string | null;
-  to: string;
-  secure?: boolean;
-  revealed?: boolean;
-  action?: ReactNode;
-}) => {
-  const show = (text: string | null, old: boolean) =>
-    text === null || text ? (
-      // MaskedValue shows "…" for undefined.
-      <MaskedValue
-        value={text ?? undefined}
-        secure={secure}
-        revealed={revealed}
-        ellipsis={{
-          tooltip: (secure && !revealed) || text === null ? undefined : text
-        }}
-        type={old ? 'secondary' : undefined}
-        delete={old}
-        className={styles.value}
-      />
-    ) : (
-      <Typography.Text type="secondary" italic className={styles.value}>
-        none
-      </Typography.Text>
-    );
-  return (
-    <>
-      <Typography.Text type="secondary" className={styles.fieldLabel}>
-        {label}
-      </Typography.Text>
-      <span className={styles.change}>
-        {from !== undefined && (
-          <>
-            {show(from, true)}
-            <ArrowRightOutlined className={styles.arrow} aria-label="to" />
-          </>
-        )}
-        {show(to, false)}
-        {action}
-      </span>
-    </>
-  );
-};
-
-// What a new or changed entry would write: the value of a new one, and the
-// fields that change of a changed one.
-const RowDetails = ({ row }: { row: ImportRow }) => {
-  const [revealed, setRevealed] = useState(false);
-  const { entry, status, existing, changes } = row;
-  const secure = isSecureType(entry.type);
-  const reveal = secure ? (
-    <RevealButton
-      revealed={revealed}
-      onToggle={() => setRevealed(shown => !shown)}
-    />
-  ) : undefined;
-
-  if (status === 'new') {
-    return (
-      <div className={styles.details}>
-        <FieldChange
-          label="Value"
-          to={entry.value!}
-          secure={secure}
-          revealed={revealed}
-          action={reveal}
-        />
-      </div>
-    );
-  }
-  if (status !== 'changed' || !existing) return null;
-  return (
-    <div className={styles.details}>
-      {changes.includes('value') && (
-        <FieldChange
-          label="Value"
-          // Missing when its value failed to load.
-          from={existing.Value ?? null}
-          to={entry.value!}
-          secure={secure}
-          revealed={revealed}
-          action={reveal}
-        />
-      )}
-      {changes.includes('description') && (
-        <FieldChange
-          label="Description"
-          from={existing.Description ?? ''}
-          to={entry.description}
-        />
-      )}
-      {changes.includes('keyId') && (
-        <FieldChange
-          label={KMS_KEY_LABEL}
-          from={kmsKeyName(existing.KeyId)}
-          to={kmsKeyName(entry.keyId)}
-        />
-      )}
-    </div>
-  );
-};
-
-// One entry of the file. Entries that won't be written are dimmed; failed
-// ones show the AWS error on hover.
-const ReviewRow = ({
-  row,
-  written,
-  error
-}: {
-  row: ImportRow;
-  written: boolean;
-  error?: string;
-}) => {
-  const { entry, status } = row;
-  const { label, color, tooltip } = STATUSES[status];
-  const main = (
-    <div className={styles.rowMain}>
-      <span className={styles.statusColumn}>
-        {error ? (
-          <Tag color="red">failed</Tag>
-        ) : (
-          <Tooltip title={tooltip}>
-            <Tag color={color}>{label}</Tag>
-          </Tooltip>
-        )}
-      </span>
-      <Mono
-        ellipsis
-        className={styles.name}
-        type={error ? 'danger' : undefined}
-      >
-        {entry.name}
-      </Mono>
-      {isSecureType(entry.type) && <SecureLockIcon muted />}
-    </div>
-  );
-  return (
-    <li className={cx(styles.row, !written && styles.dimmed)}>
-      {error ? <Tooltip title={error}>{main}</Tooltip> : main}
-      <RowDetails row={row} />
-    </li>
   );
 };
 
