@@ -1,20 +1,7 @@
 import { useState } from 'react';
-import {
-  Button,
-  Checkbox,
-  Flex,
-  Input,
-  Popconfirm,
-  Table,
-  Tag,
-  Typography
-} from 'antd';
+import { Button, Checkbox, Flex, Input, Table, Tag, Typography } from 'antd';
 import type { TableColumnsType } from 'antd';
-import {
-  AppstoreOutlined,
-  DeleteOutlined,
-  PlusOutlined
-} from '@ant-design/icons';
+import { AppstoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { segmentError } from '../../../shared/structure';
 import type { StructureService } from '../../../shared/structure';
 import usePageVisible from '../../hooks/usePageVisible';
@@ -34,6 +21,7 @@ import styles from './Settings.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
 import EnvironmentLabel from '../common/EnvironmentLabel';
+import RemoveSegmentButton from './RemoveSegmentButton';
 
 // Typed into the add row, and checked when added.
 const AddService = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -172,20 +160,10 @@ const ServicesCard = () => {
       key: 'remove',
       width: 56,
       render: (_, { segment }) => (
-        <Popconfirm
-          title={`Remove ${segment}?`}
-          description={`Its parameters will appear under ${OTHER_PATHS_LABEL}.`}
-          okText="Remove"
-          okButtonProps={{ danger: true }}
-          onConfirm={() => update(current => removeService(current, segment))}
-        >
-          <Button
-            type="text"
-            size="small"
-            icon={<DeleteOutlined />}
-            aria-label={`Remove ${segment}`}
-          />
-        </Popconfirm>
+        <RemoveSegmentButton
+          segment={segment}
+          onRemove={() => update(current => removeService(current, segment))}
+        />
       )
     }
   ];

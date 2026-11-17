@@ -60,6 +60,7 @@ import { toggleIn } from '../../utils/sets';
 import { COPY_MODAL_WIDTH } from '../../utils/layout';
 import { notifySuccess } from '../../utils/notify';
 import PartialFailureAlert from '../common/PartialFailureAlert';
+import useRetainWhileClosing from '../../hooks/useRetainWhileClosing';
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   new: { color: 'green', label: 'New' },
@@ -544,8 +545,7 @@ const CopyDialog = ({ request, open, afterClose }: CopyDialogProps) => {
 const CopyModal = () => {
   const request = useUiStore(state => state.copyRequest);
   // Kept while the dialog fades out after it closes.
-  const [shown, setShown] = useState(request);
-  if (request && request !== shown) setShown(request);
+  const [shown, clearShown] = useRetainWhileClosing(request);
 
   return (
     shown && (
@@ -553,7 +553,7 @@ const CopyModal = () => {
         key={shown.id}
         request={shown}
         open={request === shown}
-        afterClose={() => setShown(null)}
+        afterClose={clearShown}
       />
     )
   );

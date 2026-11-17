@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { App, Flex, Modal, Typography } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useDeleteParameters } from '../../state/parameters';
@@ -13,6 +12,7 @@ import useEscape from '../../hooks/useEscape';
 import Mono from '../common/Mono';
 import styles from './DeleteModal.module.css';
 import { notifyError } from '../../utils/notify';
+import useRetainWhileClosing from '../../hooks/useRetainWhileClosing';
 
 const titleOf = ({ kind, label, names }: DeleteRequest, delimiter: string) => {
   if (kind === 'tree') {
@@ -53,8 +53,7 @@ const DeleteModal = () => {
   const checkContext = useCheckContext();
   const deleteParameters = useDeleteParameters();
   // Kept while the modal fades out after the request is gone.
-  const [shown, setShown] = useState(request);
-  if (request && request !== shown) setShown(request);
+  const [shown] = useRetainWhileClosing(request);
 
   const cancel = () => {
     if (!deleteParameters.isPending) uiActions.cancelDelete();

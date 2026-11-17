@@ -9,7 +9,6 @@ import {
   Input,
   Progress,
   Radio,
-  Switch,
   Typography
 } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
@@ -37,6 +36,7 @@ import { formatById } from '../../utils/formats';
 import styles from './ExportPanel.module.css';
 import { WAITING_FOR_PARAMETERS } from '../../utils/labels';
 import { cx } from '../../utils/classNames';
+import LabeledSwitch from '../common/LabeledSwitch';
 
 type Scope = 'all' | 'path';
 
@@ -226,17 +226,14 @@ const ExportPanel = () => {
             </Section>
           )}
           <Flex vertical gap={12}>
-            <Flex align="center" gap={8}>
-              <Switch
-                id="export-decrypt"
-                checked={includeSecureValues}
-                disabled={exporting}
-                onChange={setIncludeSecureValues}
-              />
-              <label htmlFor="export-decrypt">
-                Decrypt SecureString values
-              </label>
-            </Flex>
+            <LabeledSwitch
+              id="export-decrypt"
+              checked={includeSecureValues}
+              disabled={exporting}
+              onChange={setIncludeSecureValues}
+            >
+              Decrypt SecureString values
+            </LabeledSwitch>
             {includeSecureValues && (
               <Alert
                 type="warning"

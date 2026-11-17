@@ -1,32 +1,7 @@
-import { createContext, useContext, useMemo, useState } from 'react';
-import type { CSSProperties, HTMLAttributes } from 'react';
-import { Button, Popconfirm, Table } from 'antd';
+import { useState } from 'react';
+import { Button } from 'antd';
 import type { TableColumnsType } from 'antd';
-import {
-  DeleteOutlined,
-  HolderOutlined,
-  PlusOutlined
-} from '@ant-design/icons';
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors
-} from '@dnd-kit/core';
-import type {
-  DragEndEvent,
-  DraggableAttributes,
-  DraggableSyntheticListeners
-} from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { segmentError } from '../../../shared/structure';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
 import { updateStructure } from '../../state/settingsChanges';
@@ -44,7 +19,8 @@ import SegmentInput from './SegmentInput';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
-import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import RemoveSegmentButton from './RemoveSegmentButton';
+import SortableTable, { DragHandle } from './SortableTable';
 
 interface EnvironmentRow {
   key: string;
@@ -56,70 +32,7 @@ interface EnvironmentRow {
 
 // Segments can't contain spaces, so this key can't clash with one.
 const ADDED_KEY = ' added';
-
-// The drag handle is in a cell; the row it moves passes it what it needs.
-interface RowDrag {
-  setActivatorNodeRef?: (element: HTMLElement | null) => void;
-  listeners?: DraggableSyntheticListeners;
-  attributes?: DraggableAttributes;
-}
-
-const RowDragContext = createContext<RowDrag>({});
-
-const DragHandle = ({ label }: { label: string }) => {
-  const { setActivatorNodeRef, listeners, attributes } =
-    useContext(RowDragContext);
-  return (
-    <Button
-      type="text"
-      size="small"
-      icon={<HolderOutlined />}
-      className={styles.dragHandle}
-      ref={setActivatorNodeRef}
-      {...attributes}
-      {...listeners}
-      aria-label={`Move ${label}`}
-    />
-  );
-};
-
-interface RowProps extends HTMLAttributes<HTMLTableRowElement> {
-  'data-row-key': string;
-}
-
-// A table row that moves with dnd-kit, as in antd's sortable table example.
-const SortableRow = (props: RowProps) => {
-  const id = props['data-row-key'];
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id, disabled: id === ADDED_KEY });
-
-  const style: CSSProperties = {
-    ...props.style,
-    transform: CSS.Translate.toString(transform),
-    transition,
-    ...(isDragging ? { position: 'relative', zIndex: 1 } : {})
-  };
-
-  const drag = useMemo(
-    () => ({ setActivatorNodeRef, listeners, attributes }),
-    [setActivatorNodeRef, listeners, attributes]
-  );
-
-  return (
-    <RowDragContext.Provider value={drag}>
-      <tr {...props} ref={setNodeRef} style={style} />
-    </RowDragContext.Provider>
-  );
-};
-
-const tableComponents = { body: { row: SortableRow } };
+const LOCKED: ReadonlySet<string> = new Set([ADDED_KEY]);
 
 const EnvironmentsCard = () => {
   const structure = useSettingsStore(settings => settings.structure);
@@ -128,13 +41,6 @@ const EnvironmentsCard = () => {
   const { byEnv } = useStructuredParameters();
   // The colour of the row being added, or null when there is none.
   const [addedColor, setAddedColor] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates
-    })
-  );
-
   const segments = structure.environments.map(e => e.segment);
   const rows: EnvironmentRow[] = structure.environments.map(e => ({
     key: e.segment,
@@ -143,14 +49,6 @@ const EnvironmentsCard = () => {
   if (addedColor) {
     rows.push({ key: ADDED_KEY, segment: '', color: addedColor, added: true });
   }
-
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (over && active.id !== over.id) {
-      update(current =>
-        moveEnvironment(current, String(active.id), String(over.id))
-      );
-    }
-  };
 
   const columns: TableColumnsType<EnvironmentRow> = [
     {
@@ -235,22 +133,12 @@ const EnvironmentsCard = () => {
             onClick={() => setAddedColor(null)}
           />
         ) : (
-          <Popconfirm
-            title={`Remove ${row.segment}?`}
-            description={`Its parameters will appear under ${OTHER_PATHS_LABEL}.`}
-            okText="Remove"
-            okButtonProps={{ danger: true }}
-            onConfirm={() =>
+          <RemoveSegmentButton
+            segment={row.segment}
+            onRemove={() =>
               update(current => removeEnvironment(current, row.segment))
             }
-          >
-            <Button
-              type="text"
-              size="small"
-              icon={<DeleteOutlined />}
-              aria-label={`Remove ${row.segment}`}
-            />
-          </Popconfirm>
+          />
         )
     }
   ];
@@ -261,25 +149,17 @@ const EnvironmentsCard = () => {
       description="Path segments that name an environment. The order here is the order of the environment tabs."
       flush
     >
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={onDragEnd}
-      >
-        <SortableContext
-          items={segments}
-          strategy={verticalListSortingStrategy}
-        >
-          <Table<EnvironmentRow>
-            rowKey="key"
-            components={tableComponents}
-            columns={columns}
-            dataSource={rows}
-            pagination={false}
-            locale={{ emptyText: 'No environments' }}
-          />
-        </SortableContext>
-      </DndContext>
+      <SortableTable<EnvironmentRow>
+        items={segments}
+        locked={LOCKED}
+        onMove={(key, overKey) =>
+          update(current => moveEnvironment(current, key, overKey))
+        }
+        columns={columns}
+        dataSource={rows}
+        pagination={false}
+        locale={{ emptyText: 'No environments' }}
+      />
       <div className={styles.cardFooter}>
         <Button
           type="dashed"

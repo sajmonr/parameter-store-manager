@@ -1,16 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Card,
-  Flex,
-  Switch,
-  Tag,
-  Tooltip,
-  Typography
-} from 'antd';
+import { Alert, Button, Card, Flex, Tag, Tooltip, Typography } from 'antd';
 import { ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
 import { isSecureType } from '../../../shared/parameterTypes';
 import { importActions, useImportStore } from '../../state/import';
@@ -40,6 +31,7 @@ import { cx } from '../../utils/classNames';
 import { notifySuccess } from '../../utils/notify';
 import SecureLockIcon from '../common/SecureLockIcon';
 import PartialFailureAlert from '../common/PartialFailureAlert';
+import LabeledSwitch from '../common/LabeledSwitch';
 
 interface StatusStyle {
   label: string;
@@ -228,17 +220,14 @@ const ImportReview = ({
           ))}
         </ul>
         <Flex vertical gap={4}>
-          <Flex align="center" gap={8}>
-            <Switch
-              id="import-overwrite"
-              checked={overwrite}
-              disabled={importing}
-              onChange={setOverwrite}
-            />
-            <label htmlFor="import-overwrite">
-              Overwrite parameters that already exist with a different value
-            </label>
-          </Flex>
+          <LabeledSwitch
+            id="import-overwrite"
+            checked={overwrite}
+            disabled={importing}
+            onChange={setOverwrite}
+          >
+            Overwrite parameters that already exist with a different value
+          </LabeledSwitch>
           <Typography.Text type="secondary" className={styles.hint}>
             Overwriting creates a new version. Unchanged parameters are always
             skipped.

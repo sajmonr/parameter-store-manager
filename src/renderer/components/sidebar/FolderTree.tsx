@@ -8,12 +8,10 @@ import {
 } from '../../state/views';
 import useElementSize from '../../hooks/useElementSize';
 import { environmentColorOf } from '../../utils/structure';
-import EnvironmentDot from '../common/EnvironmentDot';
-import HighlightText from '../common/HighlightText';
 import { folderIcon } from './icons';
-import TreeNodeMenu from './TreeNodeMenu';
 import useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
+import TreeNodeTitle from './TreeNodeTitle';
 
 // The Paths view: folders of the parameters that match the search, with
 // match counts. Selecting a folder scopes the table to it; selecting it again
@@ -49,21 +47,14 @@ const FolderTree = () => {
           titleRender={node => {
             const color = environmentColorOf(node.key, structure, delimiter);
             return (
-              <TreeNodeMenu
+              <TreeNodeTitle
                 location={{ view: 'paths', scope: node.key }}
                 label={node.label}
                 treeNames={treeNames}
-              >
-                <span className={styles.title}>
-                  {color && (
-                    <EnvironmentDot color={color} className={styles.dot} />
-                  )}
-                  <span className={styles.label} title={node.label}>
-                    <HighlightText text={node.label} highlight={highlight} />
-                  </span>
-                  <span className={styles.count}>{node.count}</span>
-                </span>
-              </TreeNodeMenu>
+                count={node.count}
+                color={color}
+                highlight={highlight}
+              />
             );
           }}
         />
