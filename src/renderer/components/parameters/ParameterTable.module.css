@@ -49,21 +49,3 @@
 .table .groupRow:hover > :global(.ant-table-cell) {
   background: var(--ant-color-fill-quaternary);
 }
-
-.group {
-  font-size: var(--ant-font-size-sm);
-  font-weight: 600;
-}
-
-.groupName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.groupCount {
-  font-size: var(--ant-font-size-sm);
-  font-weight: normal;
-  color: var(--ant-color-text-tertiary);
-}

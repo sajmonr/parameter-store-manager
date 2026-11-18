@@ -9,6 +9,7 @@ import type { Location } from '../../utils/location';
 import useEscape from '../../hooks/useEscape';
 import Mono from '../common/Mono';
 import styles from './FolderTree.module.css';
+import { CountText } from '../common/MetaText';
 
 interface TreeNodeMenuProps {
   // Where the node goes; its tree is everything listed there.
@@ -63,7 +64,7 @@ const TreeNodeMenu = ({
             label: (
               <Flex component="span" justify="space-between" gap="middle">
                 Delete tree
-                <span className={styles.count}>{names.length}</span>
+                <CountText count={names.length} />
               </Flex>
             )
           }

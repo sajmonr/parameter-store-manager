@@ -155,13 +155,6 @@
   border: 1px solid var(--ant-color-border);
 }
 
-.envCount {
-  flex: none;
-  font-size: var(--ant-font-size-sm);
-  font-weight: normal;
-  color: var(--ant-color-text-tertiary);
-}
-
 .folderRow {
   border-bottom: 1px solid var(--ant-color-border-secondary);
   background: var(--ant-color-fill-quaternary);

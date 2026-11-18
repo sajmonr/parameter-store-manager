@@ -50,10 +50,6 @@
   font-size: var(--ant-font-size-sm);
 }
 
-.count {
-  font-size: var(--ant-font-size-sm);
-}
-
 /* Path structure: two radio cards side by side, sharing the width. */
 .layouts.layouts {
   width: 100%;
@@ -123,9 +119,4 @@
 
 .serviceInput.serviceInput {
   width: 220px;
-}
-
-.inOther {
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-warning);
 }

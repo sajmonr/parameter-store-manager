@@ -4,6 +4,7 @@ import { usePathDelimiter } from '../../../state/settings';
 import type { CompareFolderRow } from '../../../utils/compare';
 import Mono from '../../common/Mono';
 import styles from '../CompareGrid.module.css';
+import { CountText } from '../../common/MetaText';
 
 // A header row before a folder's keys, with how many there are.
 const FolderRow = ({ row }: { row: CompareFolderRow }) => {
@@ -18,7 +19,7 @@ const FolderRow = ({ row }: { row: CompareFolderRow }) => {
       >
         <FolderOutlined />
         <Mono size="small">{row.folder.slice(0, -delimiter.length)}</Mono>
-        <span className={styles.envCount}>{row.count}</span>
+        <CountText count={row.count} />
       </Flex>
     </div>
   );
