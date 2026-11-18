@@ -35,5 +35,3 @@ export const parameterPlace = (
   const color = environments.find(e => e.state === 'current')!.color;
   return { ...match, color, environments };
 };
-
-export type ParameterPlace = NonNullable<ReturnType<typeof parameterPlace>>;

@@ -12,7 +12,7 @@ export const chunk = <T>(items: T[], size: number) => {
   return chunks;
 };
 
-export interface Settled {
+interface Settled {
   // The names whose task finished.
   done: string[];
   // Each name whose task failed, with why.
@@ -52,12 +52,12 @@ export const settleEach = async <T>(
   return settled;
 };
 
-export const isThrottled = ({ name, code }: ApiError) =>
+const isThrottled = ({ name, code }: ApiError) =>
   name === 'ThrottlingException' || code === 'ThrottlingException';
 
 const THROTTLE_RETRIES = 3;
 // Doubled after each retry.
-export const THROTTLE_BACKOFF_MS = 1000;
+const THROTTLE_BACKOFF_MS = 1000;
 
 // Runs `call`, and while it fails with throttling waits 1, 2 and then 4
 // seconds and runs it again.

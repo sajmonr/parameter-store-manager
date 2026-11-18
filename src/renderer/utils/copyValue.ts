@@ -131,7 +131,7 @@ export const sourceEnvironments = (
   );
 
 // With more targets than this, the list can be filtered.
-export const FILTER_THRESHOLD = 5;
+const FILTER_THRESHOLD = 5;
 
 // The targets whose environment contains the filter text, ignoring case.
 // Short lists aren't filtered.
