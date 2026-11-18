@@ -5,6 +5,7 @@ import type { Format } from '../../../utils/formats';
 import { toJsonExport } from '../../../utils/jsonExport';
 import ExportSection from './ExportSection';
 import styles from '../ExportPanel.module.css';
+import HintText from '../../common/HintText';
 
 // The shape of a JSON export, shown instead of column options.
 const JSON_SAMPLE = toJsonExport({
@@ -26,19 +27,19 @@ const JSON_SAMPLE = toJsonExport({
 const ExportContentsSection = ({ format }: { format: Format }) =>
   format.exportOptions === 'columns' ? (
     <ExportSection label="Columns">
-      <Typography.Text type="secondary">
+      <HintText>
         Every {format.label} file has these columns, one row per parameter:
-      </Typography.Text>
+      </HintText>
       <Typography.Paragraph className={styles.sample}>
         <pre>{CSV_HEADER.join(',')}</pre>
       </Typography.Paragraph>
     </ExportSection>
   ) : (
     <ExportSection label="Contents">
-      <Typography.Text type="secondary">
+      <HintText>
         {format.label} always includes every field Import needs, so the file can
         be loaded back as-is.
-      </Typography.Text>
+      </HintText>
       <Typography.Paragraph className={styles.sample}>
         <pre>{JSON_SAMPLE}</pre>
       </Typography.Paragraph>

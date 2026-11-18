@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Typography } from 'antd';
 import {
   CheckCircleOutlined,
   FolderOpenOutlined,
@@ -14,11 +13,12 @@ import type {
 } from '../../../utils/compare';
 import CenteredState from '../../common/CenteredState';
 import styles from '../CompareGrid.module.css';
+import HintText from '../../common/HintText';
 
 const EmptyState = ({ icon, text }: { icon: ReactNode; text: string }) => (
   <CenteredState vertical gap="small">
     <span className={styles.emptyIcon}>{icon}</span>
-    <Typography.Text type="secondary">{text}</Typography.Text>
+    <HintText>{text}</HintText>
   </CenteredState>
 );
 

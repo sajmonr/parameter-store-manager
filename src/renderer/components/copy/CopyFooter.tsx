@@ -34,9 +34,7 @@ const CopyFooter = ({
           {summary.text}
         </Typography.Text>
       ) : (
-        <Typography.Text type="secondary">
-          Select the environments to copy to
-        </Typography.Text>
+        <HintText>Select the environments to copy to</HintText>
       )}
       <HintText>
         Only the value is copied. Types and descriptions in the targets stay as

@@ -88,9 +88,9 @@ const ImportPanel = () => {
             Drop a {extension} file here, or{' '}
             <Typography.Link>choose a file</Typography.Link>
           </Typography.Text>
-          <Typography.Text type="secondary">
+          <HintText>
             Use a file exported from this app as {format.label}.
-          </Typography.Text>
+          </HintText>
         </Flex>
       </Upload.Dragger>
     );
