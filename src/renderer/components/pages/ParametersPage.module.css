@@ -7,24 +7,23 @@
 }
 
 .body {
+  flex: 1;
   min-height: 0;
   background: var(--ant-color-bg-container);
 }
 
-.sider {
-  position: relative;
-  flex: none;
-  border-right: 1px solid var(--ant-color-border-secondary);
+/* The panels don't scroll: the tree and the table scroll inside them. */
+.panel {
+  overflow: hidden;
 }
 
-/* The sider's children are the tree header and the scrolling tree. */
-.sider > :global(.ant-layout-sider-children) {
-  display: flex;
-  flex-direction: column;
+.fill {
+  height: 100%;
   min-height: 0;
+  background: var(--ant-color-bg-container);
 }
 
-/* min-width: 0 lets this flex item shrink next to the sider and pane. */
+/* min-width: 0 lets this flex item shrink next to the pane. */
 .main {
   display: flex;
   flex-direction: column;

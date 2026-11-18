@@ -37,7 +37,7 @@ const renderApp = (settings: Partial<Settings> = {}) =>
   });
 
 const table = () => document.querySelector<HTMLElement>('.ant-table')!;
-const sidebar = () => document.querySelector<HTMLElement>('.ant-layout-sider')!;
+const sidebar = () => screen.getByRole('navigation', { name: 'Sidebar' });
 const rowNames = () =>
   [...table().querySelectorAll('.ant-table-row[data-row-key]')].map(row =>
     row.getAttribute('data-row-key')

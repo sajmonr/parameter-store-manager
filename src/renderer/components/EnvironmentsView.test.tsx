@@ -37,7 +37,7 @@ const renderApp = () =>
   });
 
 const table = () => document.querySelector<HTMLElement>('.ant-table')!;
-const sidebar = () => document.querySelector<HTMLElement>('.ant-layout-sider')!;
+const sidebar = () => screen.getByRole('navigation', { name: 'Sidebar' });
 const breadcrumb = () =>
   document.querySelector<HTMLElement>('.ant-breadcrumb')!;
 const rowKeys = () =>

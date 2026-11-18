@@ -1,4 +1,4 @@
-import { Layout } from 'antd';
+import { Flex, Layout, Splitter } from 'antd';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useResizableWidth from '../../hooks/useResizableWidth';
 import useWindowWidth from '../../hooks/useWindowWidth';
@@ -10,7 +10,6 @@ import {
   SIDER_MIN_WIDTH,
   siderMaxWidth
 } from '../../utils/layout';
-import ResizeHandle from '../common/ResizeHandle';
 import AppHeader from '../header/AppHeader';
 import Sidebar from '../sidebar/Sidebar';
 import ParameterBrowser from '../parameters/ParameterBrowser';
@@ -19,7 +18,8 @@ import DeleteModal from '../delete/DeleteModal';
 import CopyModal from '../copy/CopyModal';
 import styles from './ParametersPage.module.css';
 
-// The header, sidebar, table and detail pane, the delete confirmation and
+// The header; the sidebar, resized by dragging its edge (double-click
+// resets it); the table and the detail pane; the delete confirmation and
 // the copy dialog.
 const ParametersPage = () => {
   const narrow = useMediaQuery(NARROW_QUERY);
@@ -34,27 +34,35 @@ const ParametersPage = () => {
   return (
     <Layout className={styles.page}>
       <AppHeader />
-      <Layout className={styles.body}>
-        <Layout.Sider
-          theme="light"
-          width={sider.width}
-          className={styles.sider}
+      <Splitter
+        className={styles.body}
+        onResize={([width]) => width !== undefined && sider.setWidth(width)}
+        onDraggerDoubleClick={sider.reset}
+      >
+        <Splitter.Panel
+          size={sider.width}
+          min={SIDER_MIN_WIDTH}
+          max={siderMax}
+          className={styles.panel}
         >
-          <Sidebar />
-          <ResizeHandle
-            label="Resize folder tree"
-            width={sider.width}
-            min={SIDER_MIN_WIDTH}
-            max={siderMax}
-            onResize={sider.setWidth}
-            onReset={sider.reset}
-          />
-        </Layout.Sider>
-        <Layout.Content className={styles.main}>
-          <ParameterBrowser />
-        </Layout.Content>
-        <DetailHost narrow={narrow} />
-      </Layout>
+          <Flex
+            vertical
+            component="nav"
+            aria-label="Sidebar"
+            className={styles.fill}
+          >
+            <Sidebar />
+          </Flex>
+        </Splitter.Panel>
+        <Splitter.Panel className={styles.panel}>
+          <Layout className={styles.fill}>
+            <Layout.Content className={styles.main}>
+              <ParameterBrowser />
+            </Layout.Content>
+            <DetailHost narrow={narrow} />
+          </Layout>
+        </Splitter.Panel>
+      </Splitter>
       <DeleteModal />
       <CopyModal />
     </Layout>
