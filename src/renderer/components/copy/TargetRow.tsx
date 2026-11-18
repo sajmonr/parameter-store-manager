@@ -15,6 +15,8 @@ import MaskedValue from '../common/MaskedValue';
 import Mono from '../common/Mono';
 import KmsKeySelect from '../form/KmsKeySelect';
 import styles from './CopyModal.module.css';
+import HintText from '../common/HintText';
+import MetaText from '../common/MetaText';
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
   new: { color: 'green', label: 'New' },
@@ -33,19 +35,19 @@ const TargetTypeNotes = ({
   const { parameter } = target;
   if (isUnencrypted(source, target)) {
     return (
-      <Typography.Text type="danger" className={styles.note}>
+      <HintText type="danger">
         <CloseCircleFilled /> This environment stores it as a {parameter?.Type},
         so the secret will be saved unencrypted.
-      </Typography.Text>
+      </HintText>
     );
   }
   if (isEncrypted(source, target)) {
     return (
-      <Typography.Text type="secondary" className={styles.note}>
+      <HintText>
         <InfoCircleOutlined /> This environment stores it as a SecureString, so
         the value will be encrypted with{' '}
         <Mono small>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
-      </Typography.Text>
+      </HintText>
     );
   }
   return null;
@@ -102,21 +104,16 @@ const TargetRow = ({
         <Typography.Text strong className={styles.envName}>
           {segment}
         </Typography.Text>
-        <Tag color={tag.color} className={styles.tag}>
-          {tag.label}
-        </Tag>
+        <Tag color={tag.color}>{tag.label}</Tag>
         {keepsType && (
-          <Tag
-            className={styles.tag}
-            icon={isSecureType(targetType) ? <LockOutlined /> : undefined}
-          >
+          <Tag icon={isSecureType(targetType) ? <LockOutlined /> : undefined}>
             Keeps {targetType}
           </Tag>
         )}
       </div>
       <div className={styles.details}>
         <div className={styles.current}>
-          <Typography.Text type="secondary">Current</Typography.Text>
+          <MetaText>Current</MetaText>
           {parameter ? (
             <MaskedValue
               value={parameter.Value}
@@ -126,7 +123,7 @@ const TargetRow = ({
               className={styles.currentValue}
             />
           ) : (
-            <Typography.Text type="secondary">{NOT_SET_LABEL}</Typography.Text>
+            <MetaText>{NOT_SET_LABEL}</MetaText>
           )}
         </div>
         {!same && <TargetTypeNotes source={source} target={target} />}
@@ -138,7 +135,7 @@ const TargetRow = ({
             // Picking a key doesn't toggle the row.
             onClick={event => event.stopPropagation()}
           >
-            <Typography.Text type="secondary">{KMS_KEY_LABEL}</Typography.Text>
+            <MetaText>{KMS_KEY_LABEL}</MetaText>
             <KmsKeySelect
               size="small"
               value={kmsKey}
@@ -150,11 +147,7 @@ const TargetRow = ({
             />
           </Flex>
         )}
-        {error && (
-          <Typography.Text type="danger" className={styles.note}>
-            {error}
-          </Typography.Text>
-        )}
+        {error && <HintText type="danger">{error}</HintText>}
       </div>
     </li>
   );

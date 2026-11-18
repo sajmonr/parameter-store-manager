@@ -47,7 +47,7 @@ const SourceRow = ({
             disabled={disabled}
           />
         ) : (
-          <Tag color={sourceEnv.color} variant="solid" className={styles.tag}>
+          <Tag color={sourceEnv.color} variant="solid">
             {sourceEnv.segment}
           </Tag>
         )}

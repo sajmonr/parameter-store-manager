@@ -65,10 +65,6 @@
   margin-left: auto;
 }
 
-.tag {
-  margin: 0;
-}
-
 .warning {
   color: var(--ant-color-warning);
 }

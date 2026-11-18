@@ -1,8 +1,3 @@
-.form :global(.ant-form-item),
-.form :global(.ant-form-item-with-help) {
-  margin-bottom: 18px;
-}
-
 .mono,
 .mono textarea,
 .mono :global(.ant-select-content) {
@@ -64,7 +59,7 @@
 }
 
 .alert {
-  margin-bottom: 18px;
+  margin-bottom: var(--ant-margin);
 }
 
 .hint {

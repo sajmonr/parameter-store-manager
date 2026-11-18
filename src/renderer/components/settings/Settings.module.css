@@ -1,7 +1,4 @@
-.form :global(.ant-form-item) {
-  margin-bottom: 14px;
-}
-
+/* No gap under a card's last field; Form has no token for it. */
 .form :global(.ant-form-item):last-child {
   margin-bottom: 0;
 }

@@ -55,16 +55,12 @@ const KeyRow = memo(
             )}
             {differs && (
               <Tooltip title="Values aren't the same in every environment">
-                <Tag color="gold" className={styles.tag}>
-                  Differs
-                </Tag>
+                <Tag color="gold">Differs</Tag>
               </Tooltip>
             )}
             {missing.length > 0 && (
               <Tooltip title={`${NOT_SET_LABEL} in ${missing.join(', ')}`}>
-                <Tag color="red" className={styles.tag}>
-                  Missing
-                </Tag>
+                <Tag color="red">Missing</Tag>
               </Tooltip>
             )}
             {(differs || missing.length > 0) && (

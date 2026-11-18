@@ -119,10 +119,6 @@
   flex: 0 0 84px;
 }
 
-.statusColumn :global(.ant-tag) {
-  margin: 0;
-}
-
 .name.name {
   flex: 1;
   min-width: 0;

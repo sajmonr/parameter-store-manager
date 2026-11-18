@@ -26,14 +26,6 @@
   min-width: 0;
 }
 
-.source :global(.ant-tag) {
-  margin: 0;
-}
-
-.tag {
-  margin: 0;
-}
-
 .toolbar {
   min-height: 24px;
 }
@@ -109,12 +101,6 @@
   align-items: baseline;
   gap: 8px;
   min-width: 0;
-}
-
-.current :global(.ant-typography),
-.note,
-.kms :global(.ant-typography) {
-  font-size: 12px;
 }
 
 .currentValue {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { Table, Tooltip } from 'antd';
+import { ConfigProvider, Table, Tooltip } from 'antd';
 import type { GetRef } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
@@ -15,6 +15,7 @@ import {
   TABLE_HEADER_HEIGHT
 } from '../../utils/layout';
 import { cx } from '../../utils/classNames';
+import { flushTableTheme } from '../../theme';
 import useArrowNavigation from './useArrowNavigation';
 import useTableColumns from './useTableColumns';
 
@@ -66,56 +67,58 @@ const ParameterTable = ({
   return (
     <div ref={ref} className={styles.container}>
       {width > 0 && height > 0 && (
-        <Table
-          ref={tableRef}
-          className={cx(styles.table, !!placeholder && styles.placeholder)}
-          size="small"
-          virtual
-          pagination={false}
-          rowKey="Name"
-          rowSelection={{
-            columnWidth: TABLE_CHECKBOX_COLUMN_WIDTH,
-            selectedRowKeys: checked,
-            onChange: keys =>
-              uiActions.setChecked(checkContext, keys.map(String)),
-            // Disabled also leaves group rows out of Select all.
-            getCheckboxProps: row =>
-              isGroupRow(row)
-                ? { disabled: true }
-                : { 'aria-label': `Select ${row.Name}` },
-            renderCell: (_checked, row, _index, checkbox) =>
-              !isGroupRow(row) && checkbox,
-            // The header checks every row shown, or clears them all.
-            columnTitle: checkbox => (
-              <Tooltip
-                title={
-                  checked.length === parameters.length
-                    ? 'Clear selection'
-                    : 'Select all'
+        <ConfigProvider theme={flushTableTheme}>
+          <Table
+            ref={tableRef}
+            className={cx(styles.table, !!placeholder && styles.placeholder)}
+            size="small"
+            virtual
+            pagination={false}
+            rowKey="Name"
+            rowSelection={{
+              columnWidth: TABLE_CHECKBOX_COLUMN_WIDTH,
+              selectedRowKeys: checked,
+              onChange: keys =>
+                uiActions.setChecked(checkContext, keys.map(String)),
+              // Disabled also leaves group rows out of Select all.
+              getCheckboxProps: row =>
+                isGroupRow(row)
+                  ? { disabled: true }
+                  : { 'aria-label': `Select ${row.Name}` },
+              renderCell: (_checked, row, _index, checkbox) =>
+                !isGroupRow(row) && checkbox,
+              // The header checks every row shown, or clears them all.
+              columnTitle: checkbox => (
+                <Tooltip
+                  title={
+                    checked.length === parameters.length
+                      ? 'Clear selection'
+                      : 'Select all'
+                  }
+                >
+                  <span>{checkbox}</span>
+                </Tooltip>
+              )
+            }}
+            columns={columns}
+            dataSource={rows}
+            locale={placeholder ? { emptyText: placeholder } : undefined}
+            scroll={{ x: width, y: height - TABLE_HEADER_HEIGHT }}
+            rowClassName={row => {
+              if (isGroupRow(row)) return styles.groupRow ?? '';
+              return (row.Name === selectedName && styles.selected) || '';
+            }}
+            onRow={row => ({
+              // A group row narrows the environment to its service.
+              onClick: () => {
+                if (!isGroupRow(row)) uiActions.selectParameter(row.Name);
+                else if (isEnvironmentLocation(location)) {
+                  uiActions.setLocation({ ...location, service: row.service });
                 }
-              >
-                <span>{checkbox}</span>
-              </Tooltip>
-            )
-          }}
-          columns={columns}
-          dataSource={rows}
-          locale={placeholder ? { emptyText: placeholder } : undefined}
-          scroll={{ x: width, y: height - TABLE_HEADER_HEIGHT }}
-          rowClassName={row => {
-            if (isGroupRow(row)) return styles.groupRow ?? '';
-            return (row.Name === selectedName && styles.selected) || '';
-          }}
-          onRow={row => ({
-            // A group row narrows the environment to its service.
-            onClick: () => {
-              if (!isGroupRow(row)) uiActions.selectParameter(row.Name);
-              else if (isEnvironmentLocation(location)) {
-                uiActions.setLocation({ ...location, service: row.service });
               }
-            }
-          })}
-        />
+            })}
+          />
+        </ConfigProvider>
       )}
     </div>
   );

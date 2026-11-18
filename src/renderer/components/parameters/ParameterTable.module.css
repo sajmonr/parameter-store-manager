@@ -4,17 +4,9 @@
   overflow: hidden;
 }
 
-.table :global(.ant-table) {
-  border-radius: 0;
-}
-
-.table :global(.ant-table-container) {
-  border-radius: 0;
-}
-
+/* Table has no token for the header's font size alone. */
 .table :global(.ant-table-thead > tr > th) {
-  border-radius: 0 !important;
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
 /* Placeholder rows line up with the columns themselves, without the
@@ -40,11 +32,6 @@
 
 .table :global(.ant-table-row) {
   cursor: pointer;
-}
-
-.table :global(.ant-table-tbody .ant-table-cell) {
-  padding-top: 9px;
-  padding-bottom: 9px;
 }
 
 .table .selected > :global(.ant-table-cell),

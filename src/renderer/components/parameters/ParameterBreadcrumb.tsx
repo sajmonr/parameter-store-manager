@@ -1,4 +1,4 @@
-import { Badge, Breadcrumb, Spin, Typography } from 'antd';
+import { Breadcrumb, Spin, Typography } from 'antd';
 import type { ReactNode } from 'react';
 import { useParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
@@ -18,6 +18,7 @@ import ServiceBar from './ServiceBar';
 import styles from './ParameterBreadcrumb.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
 import EnvironmentLabel from '../common/EnvironmentLabel';
+import NeutralBadge from '../common/NeutralBadge';
 
 interface Crumb {
   key: string;
@@ -145,12 +146,7 @@ const ParameterBreadcrumb = ({
         {loading ? (
           <Spin size="small" aria-label="Counting parameters" />
         ) : (
-          <Badge
-            count={count}
-            showZero
-            overflowCount={99999}
-            className={styles.count}
-          />
+          <NeutralBadge count={count} showZero overflowCount={99999} />
         )}
         <div className={styles.end}>
           {isOtherLocation(location) && (
