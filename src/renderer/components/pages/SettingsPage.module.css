@@ -7,13 +7,13 @@
 .nav {
   flex: none;
   width: var(--settings-nav-width);
-  padding: 28px 12px;
+  padding: var(--ant-padding-lg) var(--ant-padding-sm);
   overflow-y: auto;
   border-right: 1px solid var(--ant-color-border-secondary);
 }
 
 .title.title {
-  margin: 0 12px 16px;
+  margin: 0 var(--ant-margin-sm) var(--ant-margin);
 }
 
 .main {
@@ -23,6 +23,6 @@
 
 .footer {
   display: block;
-  margin-top: 16px;
-  font-size: 12px;
+  margin-top: var(--ant-margin);
+  font-size: var(--ant-font-size-sm);
 }

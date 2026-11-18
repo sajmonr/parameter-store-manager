@@ -1,21 +1,21 @@
 .well {
-  margin-bottom: 18px;
-  padding: 10px 12px;
+  margin-bottom: var(--ant-margin);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 8px;
+  border-radius: var(--ant-border-radius-lg);
   background: var(--ant-color-bg-layout);
 }
 
 .label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 12px;
+  margin-bottom: var(--ant-margin-xs);
+  font-size: var(--ant-font-size-sm);
 }
 
 .rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -24,13 +24,13 @@
 .row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--ant-margin-xxs);
 }
 
 .name {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
 }
 
 .dot {
@@ -45,23 +45,23 @@
 }
 
 .meta {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 6px;
+  gap: var(--ant-margin-xxs);
+  padding: 0 var(--ant-padding-xs);
   border: 1px solid;
   border-radius: var(--ant-border-radius-sm);
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   line-height: 20px;
 }
 
@@ -80,7 +80,7 @@
 .open {
   margin-left: auto;
   height: 22px;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .open:hover {

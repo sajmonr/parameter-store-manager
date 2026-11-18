@@ -17,13 +17,13 @@
   display: flex;
   flex: 1;
   align-items: baseline;
-  gap: 12px;
+  gap: var(--ant-margin-sm);
   min-width: 0;
 }
 
 .labelAction {
   margin-left: auto;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 /* Truncates from the left, so the end of the path stays visible. */
@@ -36,7 +36,7 @@
   direction: rtl;
   text-align: right;
   font-family: var(--ant-font-family-code);
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-tertiary);
 }
 
@@ -45,7 +45,7 @@
 }
 
 .extra {
-  margin-top: 4px;
+  margin-top: var(--ant-margin-xxs);
 }
 
 .code {
@@ -64,7 +64,7 @@
 
 .hint {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-tertiary);
 }
 

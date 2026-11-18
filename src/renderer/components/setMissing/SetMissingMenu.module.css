@@ -2,18 +2,18 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ant-margin-xxs);
   min-width: 0;
 }
 
 .env {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ant-margin-xs);
 }
 
 .header > .env {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .action {
@@ -28,6 +28,6 @@
 }
 
 .actionDetail.actionDetail {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   line-height: 18px;
 }

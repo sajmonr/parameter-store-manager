@@ -25,7 +25,7 @@
 .scope {
   margin-inline-end: 2px;
   font-family: var(--ant-font-family-code);
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;

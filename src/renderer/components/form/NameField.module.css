@@ -24,18 +24,18 @@
 .list {
   max-height: 240px;
   overflow-y: auto;
-  padding: 4px;
+  padding: var(--ant-padding-xxs);
 }
 
 .option {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-xxs) var(--ant-padding-xs);
   border-radius: var(--ant-border-radius-sm);
   cursor: pointer;
   font-family: var(--ant-font-family-code);
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .option[aria-selected='true'] {
@@ -59,8 +59,8 @@
 }
 
 .footer {
-  padding: 6px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border-top: 1px solid var(--ant-color-split);
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-tertiary);
 }

@@ -17,7 +17,7 @@
 
 /* --compare-columns and min-width are set per environment count. */
 .grid {
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .row {
@@ -41,15 +41,16 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
-  padding: 9px 12px 9px 16px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm) var(--ant-padding-xs)
+    var(--ant-padding);
   background: var(--ant-color-bg-container);
   box-shadow: inset -1px 0 0 var(--ant-color-border-secondary);
 }
 
 .indented {
-  padding-left: 36px;
+  padding-left: var(--ant-padding-xl);
 }
 
 .keyName {
@@ -61,7 +62,7 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--ant-margin-xxs);
   margin-left: auto;
 }
 
@@ -83,9 +84,9 @@
 .cell {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
-  padding: 9px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
 }
 
 .present {
@@ -120,14 +121,14 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--ant-margin-xxs);
   margin-left: auto;
 }
 
 .chip {
   flex: none;
-  padding: 0 8px;
-  font-size: 12px;
+  padding: 0 var(--ant-padding-xs);
+  font-size: var(--ant-font-size-sm);
   line-height: 20px;
   border-radius: var(--ant-border-radius-sm);
   white-space: nowrap;
@@ -138,7 +139,7 @@
   composes: chip;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--ant-margin-xxs);
   font-family: inherit;
   color: var(--ant-color-error);
   background: none;
@@ -159,7 +160,7 @@
 }
 
 .notSetIcon {
-  font-size: 10px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .unreadable {
@@ -170,7 +171,7 @@
 
 .envCount {
   flex: none;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   font-weight: normal;
   color: var(--ant-color-text-tertiary);
 }
@@ -186,9 +187,9 @@
   left: 16px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  margin-left: 16px;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-xs) 0;
+  margin-left: var(--ant-margin);
   font-weight: 600;
 }
 
@@ -205,6 +206,7 @@
 }
 
 .emptyIcon {
+  /* An icon, larger than any text size token. */
   font-size: 32px;
   color: var(--ant-color-text-tertiary);
 }

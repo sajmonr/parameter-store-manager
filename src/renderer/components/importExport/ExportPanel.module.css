@@ -5,15 +5,15 @@
 .options.options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
 }
 
 /* A radio with what it chooses below it; the whole card selects it. */
 .option {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-sm) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border);
   border-radius: var(--ant-border-radius-lg);
   cursor: pointer;
@@ -27,13 +27,13 @@
 .optionBody {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   /* Lines up with the radio's label. */
-  padding-inline-start: 24px;
+  padding-inline-start: var(--ant-padding-lg);
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .hint code {
@@ -46,21 +46,21 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
+  gap: var(--ant-margin-xxs);
+  font-size: var(--ant-font-size-sm);
 }
 
 .previewName.previewName {
   display: block;
   max-width: 100%;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .sample {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   font-family: var(--ant-font-family-code);
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   line-height: 1.5;
   color: var(--ant-color-text-secondary);
   background: var(--ant-color-fill-quaternary);

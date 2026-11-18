@@ -51,8 +51,8 @@
 .group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--ant-margin-xs);
+  font-size: var(--ant-font-size-sm);
   font-weight: 600;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .groupCount {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   font-weight: normal;
   color: var(--ant-color-text-tertiary);
 }

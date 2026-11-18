@@ -1,14 +1,14 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: var(--ant-margin-sm);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-sm) var(--ant-padding-sm);
   text-align: left;
   font: inherit;
   color: inherit;
@@ -48,11 +48,11 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
 }
 
 .icon {
-  font-size: 16px;
+  font-size: var(--ant-font-size-lg);
   color: var(--ant-color-text-secondary);
 }
 
@@ -61,5 +61,5 @@
 }
 
 .description {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }

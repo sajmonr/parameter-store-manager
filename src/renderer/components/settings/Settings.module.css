@@ -15,7 +15,7 @@
 }
 
 .suffix {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .mono {
@@ -24,7 +24,7 @@
 
 /* Cards with a title and a description (SettingsCard). */
 .cardHeader {
-  padding-block: 14px;
+  padding-block: var(--ant-padding-sm);
 }
 
 .cardTitle.cardTitle {
@@ -34,7 +34,7 @@
 .cardDescription {
   display: block;
   font-weight: normal;
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .flushBody.flushBody {
@@ -42,7 +42,7 @@
 }
 
 .cardFooter {
-  padding: 16px 24px;
+  padding: var(--ant-padding) var(--ant-padding-lg);
 }
 
 .switchCard {
@@ -51,28 +51,28 @@
 
 .fieldError {
   display: block;
-  margin-top: 4px;
-  font-size: 12px;
+  margin-top: var(--ant-margin-xxs);
+  font-size: var(--ant-font-size-sm);
 }
 
 .hint,
 .count,
 .caption {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 /* Path structure: two radio cards side by side. */
 .layouts.layouts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--ant-margin-sm);
   width: 100%;
 }
 
 .layoutOption.layoutOption {
   min-width: 0;
   margin: 0;
-  padding: 14px 16px;
+  padding: var(--ant-padding-sm) var(--ant-padding);
   align-items: flex-start;
   border: 1px solid var(--ant-color-border);
   border-radius: var(--ant-border-radius-lg);
@@ -85,7 +85,7 @@
 
 .layoutRadio.layoutRadio {
   align-self: flex-start;
-  margin-top: 3px;
+  margin-top: var(--ant-margin-xxs);
 }
 
 .layoutLabel {
@@ -106,13 +106,13 @@
 }
 
 .layoutExample {
-  margin: 4px 0 6px;
-  font-size: 12px;
+  margin: var(--ant-margin-xxs) 0 var(--ant-margin-xs);
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-secondary);
 }
 
 .stats {
-  margin-top: 16px;
+  margin-top: var(--ant-margin);
 }
 
 /* Environments and services tables. */
@@ -133,6 +133,6 @@
 }
 
 .inOther {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-warning);
 }

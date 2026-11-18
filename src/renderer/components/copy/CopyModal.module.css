@@ -13,11 +13,11 @@
 .source {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
-  padding: 10px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 8px;
+  border-radius: var(--ant-border-radius-lg);
   background: var(--ant-color-bg-layout);
 }
 
@@ -48,8 +48,8 @@
 .row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: var(--ant-margin-xxs);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   cursor: pointer;
 }
 
@@ -76,7 +76,7 @@
 .rowMain {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -91,15 +91,15 @@
 .details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--ant-margin-xxs);
   padding-inline-start: 40px;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .current {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -119,13 +119,13 @@
 }
 
 .empty {
-  padding: 8px 0;
+  padding: var(--ant-padding-xs) 0;
 }
 
 .footer {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: var(--ant-margin);
   text-align: start;
 }
 
@@ -134,15 +134,15 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ant-margin-xxs);
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .overwriteIcon {
-  margin-right: 6px;
+  margin-right: var(--ant-margin-xs);
   color: var(--ant-color-warning);
 }
 
@@ -153,7 +153,7 @@
 .sourcePicker {
   flex: none;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--ant-border-radius);
   background: var(--ant-color-bg-container);
 }
 
@@ -166,15 +166,15 @@
 .sourceOption {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
 }
 
 .unsupported.unsupported {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .pickHint {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .pickIcon {

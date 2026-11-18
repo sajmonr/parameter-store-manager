@@ -2,8 +2,9 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px 3px 3px;
+  gap: var(--ant-margin-xs);
+  padding: var(--ant-padding-xxs) var(--ant-padding-xs) var(--ant-padding-xxs)
+    var(--ant-padding-xxs);
   border: 1px solid var(--ant-color-border-secondary);
   border-radius: var(--ant-border-radius-lg);
   background: var(--ant-color-bg-elevated);

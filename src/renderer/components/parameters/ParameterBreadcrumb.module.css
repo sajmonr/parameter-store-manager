@@ -1,7 +1,7 @@
 /* Fixed heights, so checking rows never moves the table. */
 .header {
   flex: none;
-  padding: 0 16px;
+  padding: 0 var(--ant-padding);
 }
 
 .row {
@@ -9,7 +9,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -19,7 +19,7 @@
 }
 
 .breadcrumb {
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
   min-width: 0;
   flex: 0 1 auto;
   overflow: hidden;
@@ -55,20 +55,20 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ant-margin-sm);
 }
 
 .hint {
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 /* The tabs scroll sideways when they don't fit; the mode switch never does. */
 .serviceBar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
+  gap: var(--ant-margin-sm);
+  padding-bottom: var(--ant-padding-sm);
 }
 
 .serviceBar > * {
@@ -81,11 +81,11 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ant-margin-sm);
   overflow-x: auto;
   scrollbar-width: thin;
   /* Keeps the scrollbar clear of the tabs. */
-  padding-bottom: 4px;
+  padding-bottom: var(--ant-padding-xxs);
   margin-bottom: -4px;
 }
 
@@ -113,6 +113,6 @@
 }
 
 .comparing {
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
   white-space: nowrap;
 }

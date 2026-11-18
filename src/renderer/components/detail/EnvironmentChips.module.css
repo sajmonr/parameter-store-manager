@@ -1,13 +1,13 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--ant-margin-xs);
 }
 
 .chips > * {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ant-margin-xs);
   margin-inline-end: 0;
 }
 
@@ -38,5 +38,5 @@
 }
 
 .add {
-  font-size: 10px;
+  font-size: var(--ant-font-size-sm);
 }
