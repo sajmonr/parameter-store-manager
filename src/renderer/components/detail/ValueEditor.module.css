@@ -1,3 +1,5 @@
+/* Code font and table density in a text area; antd has no font tokens for
+   inputs alone. */
 .value textarea {
   font-family: var(--ant-font-family-code);
   font-size: var(--ant-font-size-sm);

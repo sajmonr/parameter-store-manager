@@ -8,6 +8,7 @@
   display: inline-flex;
 }
 
+/* Small text in the menu header. */
 .header > .env {
   font-size: var(--ant-font-size-sm);
 }

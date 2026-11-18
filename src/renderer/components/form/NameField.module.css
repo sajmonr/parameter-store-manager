@@ -2,6 +2,7 @@
   position: relative;
 }
 
+/* Code font in a text area; antd has no font family token for inputs alone. */
 .input,
 .input textarea {
   font-family: var(--ant-font-family-code);
@@ -37,6 +38,7 @@
   background: var(--ant-control-item-bg-hover);
 }
 
+/* Icon colours come from text tokens. */
 .icon {
   flex: none;
   color: var(--ant-color-text-tertiary);

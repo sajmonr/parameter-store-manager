@@ -1,3 +1,4 @@
+/* Icon colours come from status tokens. */
 .icon {
   color: var(--ant-color-warning);
 }

@@ -60,11 +60,11 @@
   margin-bottom: var(--ant-margin-xs);
 }
 
+/* A zero count is fainter. */
 .empty {
   color: var(--ant-color-text-quaternary);
 }
 
 .menuPath {
-  font-size: var(--ant-font-size-sm);
   word-break: break-all;
 }

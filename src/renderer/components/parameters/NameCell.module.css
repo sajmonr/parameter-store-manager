@@ -2,6 +2,7 @@
   min-width: 0;
 }
 
+/* The open parameter is marked in the primary colour. */
 .selected {
   color: var(--ant-color-primary);
 }

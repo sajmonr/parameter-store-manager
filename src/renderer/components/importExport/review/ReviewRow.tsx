@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Tag, Tooltip, Typography, Flex } from 'antd';
+import { Tag, Tooltip, Flex } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { isSecureType } from '../../../../shared/parameterTypes';
 import type { ImportRow } from '../../../utils/importPlan';
@@ -45,12 +45,13 @@ const FieldChange = ({
         }}
         type={old ? 'secondary' : undefined}
         delete={old}
+        size="small"
         className={styles.value}
       />
     ) : (
-      <Typography.Text type="secondary" italic className={styles.value}>
+      <MetaText italic className={styles.value}>
         none
-      </Typography.Text>
+      </MetaText>
     );
   return (
     <>
@@ -158,6 +159,7 @@ const ReviewRow = ({
       </span>
       <Mono
         ellipsis
+        size="small"
         className={styles.name}
         type={error ? 'danger' : undefined}
       >

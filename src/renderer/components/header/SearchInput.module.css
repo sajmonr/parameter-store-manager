@@ -4,6 +4,8 @@
   min-width: 200px;
 }
 
+/* Code font for typed paths and globs; antd has no font family token for
+   inputs alone. The placeholder is prose. */
 .search input {
   font-family: var(--ant-font-family-code);
 }
@@ -18,14 +20,13 @@
   border-color: var(--ant-color-primary);
 }
 
+/* Icon colours come from text tokens. */
 .icon {
   color: var(--ant-color-text-tertiary);
 }
 
 .scope {
   margin-inline-end: 2px;
-  font-family: var(--ant-font-family-code);
-  font-size: var(--ant-font-size-sm);
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;

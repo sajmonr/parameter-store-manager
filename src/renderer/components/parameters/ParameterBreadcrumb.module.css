@@ -14,6 +14,7 @@
   flex: none;
 }
 
+/* Small text for antd's Breadcrumb, which has no font size token. */
 .breadcrumb {
   font-size: var(--ant-font-size-sm);
   min-width: 0;

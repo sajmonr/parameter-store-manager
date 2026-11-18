@@ -1,3 +1,4 @@
+/* A native button: it takes the surrounding font and colour. */
 .card {
   padding: var(--ant-padding-sm) var(--ant-padding-sm);
   text-align: left;
@@ -36,6 +37,7 @@
   border-color: var(--ant-color-border);
 }
 
+/* Icon colours and sizes come from tokens. */
 .icon {
   font-size: var(--ant-font-size-lg);
   color: var(--ant-color-text-secondary);

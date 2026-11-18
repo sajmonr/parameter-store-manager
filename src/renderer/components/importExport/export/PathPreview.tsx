@@ -1,6 +1,7 @@
 import { Typography, Flex } from 'antd';
 import Mono from '../../common/Mono';
 import styles from '../ExportPanel.module.css';
+import MetaText from '../../common/MetaText';
 
 const PREVIEW_SIZE = 5;
 
@@ -24,16 +25,18 @@ const PathPreview = ({ names }: { names: string[] }) => {
     >
       {names.slice(0, PREVIEW_SIZE).map(name => (
         <li key={name}>
-          <Mono ellipsis={{ tooltip: name }} className={styles.previewName}>
+          <Mono
+            size="small"
+            ellipsis={{ tooltip: name }}
+            className={styles.previewName}
+          >
             {name}
           </Mono>
         </li>
       ))}
       {rest > 0 && (
         <li>
-          <Typography.Text type="secondary">
-            and {rest.toLocaleString()} more
-          </Typography.Text>
+          <MetaText>and {rest.toLocaleString()} more</MetaText>
         </li>
       )}
     </Flex>

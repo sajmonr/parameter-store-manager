@@ -2,6 +2,7 @@
   min-width: 0;
 }
 
+/* Normal weight inside the bold modal title. */
 .sourceName {
   display: block;
   margin-top: 2px;
@@ -95,6 +96,7 @@
   min-width: 0;
 }
 
+/* Code font in a select; antd has no font family token for inputs alone. */
 .kmsSelect {
   flex: 1;
   max-width: 300px;
@@ -115,6 +117,7 @@
   min-width: 0;
 }
 
+/* Icon colours come from status tokens. */
 .overwriteIcon {
   margin-right: var(--ant-margin-xs);
   color: var(--ant-color-warning);

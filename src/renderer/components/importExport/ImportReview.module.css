@@ -1,3 +1,4 @@
+/* Icon colours and sizes come from tokens. */
 .fileIcon {
   font-size: var(--ant-font-size-xl);
   color: var(--ant-color-primary);
@@ -85,9 +86,9 @@
 .value.value {
   flex: 0 1 auto;
   min-width: 0;
-  font-size: var(--ant-font-size-sm);
 }
 
+/* An icon sized to the small text beside it. */
 .arrow {
   flex: none;
   font-size: var(--ant-font-size-sm);
@@ -105,7 +106,6 @@
 .name.name {
   flex: 1;
   min-width: 0;
-  font-size: var(--ant-font-size-sm);
 }
 
 .status {

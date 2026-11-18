@@ -54,7 +54,11 @@ const TreeNodeMenu = ({
           {
             type: 'group',
             key: 'path',
-            label: <Mono className={styles.menuPath}>{path}</Mono>
+            label: (
+              <Mono size="small" className={styles.menuPath}>
+                {path}
+              </Mono>
+            )
           },
           {
             key: 'delete',

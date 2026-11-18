@@ -29,6 +29,7 @@
   white-space: normal;
 }
 
+/* Normal weight inside the bold card title. */
 .cardDescription {
   display: block;
   font-weight: normal;
@@ -106,6 +107,7 @@
   cursor: grab;
 }
 
+/* Icon colours come from tokens. */
 .serviceIcon {
   color: var(--ant-color-primary);
 }

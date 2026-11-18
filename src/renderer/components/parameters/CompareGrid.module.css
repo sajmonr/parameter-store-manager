@@ -25,6 +25,7 @@
   border-bottom: 1px solid var(--ant-color-border-secondary);
 }
 
+/* Column headers are bold, like the table header. */
 .headerRow {
   position: sticky;
   top: 0;
@@ -58,6 +59,7 @@
   flex: none;
 }
 
+/* Icon colours come from status tokens. */
 .warning {
   color: var(--ant-color-warning);
 }
@@ -69,6 +71,7 @@
     inset -1px 0 0 var(--ant-color-border-secondary);
 }
 
+/* The open parameter is marked in the primary colour. */
 .selectedKey .keyName {
   color: var(--ant-color-primary);
 }
@@ -110,6 +113,7 @@
   flex: none;
 }
 
+/* Small pills inside cells. */
 .chip {
   flex: none;
   padding: 0 var(--ant-padding-xs);
@@ -145,6 +149,7 @@
   outline-offset: 1px;
 }
 
+/* An icon sized to the chip text. */
 .notSetIcon {
   font-size: var(--ant-font-size-sm);
 }

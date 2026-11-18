@@ -21,6 +21,7 @@
   min-width: 0;
 }
 
+/* A Typography.Link in a label, at the small size. */
 .labelAction {
   font-size: var(--ant-font-size-sm);
 }
