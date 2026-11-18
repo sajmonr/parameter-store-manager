@@ -39,6 +39,7 @@ export const SETTINGS_MAX_WIDTH = 680;
 export const SETTINGS_WIDE_MAX_WIDTH = 880;
 
 export const COPY_MODAL_WIDTH = 640;
+export const SET_MISSING_MENU_WIDTH = 300;
 
 // Below this width the detail pane becomes a drawer.
 export const NARROW_QUERY = `(max-width: ${NARROW_WIDTH - 1}px)`;

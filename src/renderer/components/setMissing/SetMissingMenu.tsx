@@ -1,42 +1,17 @@
 import { useState } from 'react';
-import type { ReactElement, ReactNode } from 'react';
-import { Dropdown, Tooltip, Typography } from 'antd';
+import type { ReactElement } from 'react';
+import { Dropdown, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
-import { CopyOutlined, EditOutlined } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
-import {
-  DEFAULT_PARAMETER_TYPE,
-  isEditableType
-} from '../../../shared/parameterTypes';
+import { isEditableType } from '../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import { pathOf } from '../../utils/structure';
 import useEscape from '../../hooks/useEscape';
-import EnvironmentDot from '../common/EnvironmentDot';
-import Mono from '../common/Mono';
-import styles from './SetMissingMenu.module.css';
-
-// An environment that has the key, with its name and type there.
-export interface SourceEnvironment extends StructureEnvironment {
-  name: string;
-  type: string | undefined;
-}
-
-const ActionLabel = ({
-  title,
-  detail
-}: {
-  title: ReactNode;
-  detail: string;
-}) => (
-  <span className={styles.action}>
-    <span className={styles.actionTitle}>{title}</span>
-    <Typography.Text type="secondary" className={styles.actionDetail}>
-      {detail}
-    </Typography.Text>
-  </span>
-);
+import { SET_MISSING_MENU_WIDTH } from '../../utils/layout';
+import { missingValuePrefill, setMissingItems } from './menuItems';
+import type { SourceEnvironment } from './menuItems';
 
 interface SetMissingMenuProps {
   service: string;
@@ -83,70 +58,13 @@ const SetMissingMenu = ({
   const currentUnsupported = current && !isEditableType(current.type);
   const preselectTargets = [target.segment];
 
-  const header: ReactNode = (
-    <span className={styles.header}>
-      <span className={styles.env}>
-        Set value in <EnvironmentDot color={target.color} />
-        {target.segment}
-      </span>
-      <Mono small ellipsis={{ tooltip: path }}>
-        {path}
-      </Mono>
-    </span>
-  );
-
-  const items: MenuProps['items'] = [
-    { type: 'group', key: 'target', label: header },
-    { type: 'divider' },
-    ...(current
-      ? [
-          {
-            key: 'current',
-            icon: <CopyOutlined />,
-            label: (
-              <ActionLabel
-                title={
-                  <span className={styles.env}>
-                    Copy from <EnvironmentDot color={current.color} />
-                    {current.segment}
-                  </span>
-                }
-                detail={
-                  currentUnsupported
-                    ? `${current.type} values can't be copied yet`
-                    : 'The value shown in this pane'
-                }
-              />
-            ),
-            disabled: currentUnsupported
-          }
-        ]
-      : []),
-    ...(others.length
-      ? [
-          {
-            key: 'other',
-            icon: <CopyOutlined />,
-            label: (
-              <ActionLabel
-                title="Copy from another environment"
-                detail={`Set in ${others.map(e => e.segment).join(', ')}`}
-              />
-            )
-          }
-        ]
-      : []),
-    {
-      key: 'new',
-      icon: <EditOutlined />,
-      label: (
-        <ActionLabel
-          title="Enter a new value"
-          detail="Opens the form with everything but the value filled in"
-        />
-      )
-    }
-  ];
+  const items = setMissingItems({
+    target,
+    path,
+    current,
+    currentUnsupported: !!currentUnsupported,
+    others
+  });
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
     setOpen(false);
@@ -160,16 +78,13 @@ const SetMissingMenu = ({
       });
     }
     if (key === 'new') {
-      uiActions.openNewParameter({
-        target: { service, env: target.segment, key: parameterKey },
-        type: isEditableType(template.Type)
-          ? template.Type
-          : DEFAULT_PARAMETER_TYPE,
-        description: template.Description ?? '',
-        kmsKey: template.KeyId,
-        value: '',
-        focusValue: true
-      });
+      uiActions.openNewParameter(
+        missingValuePrefill(template, {
+          service,
+          env: target.segment,
+          key: parameterKey
+        })
+      );
     }
   };
 
@@ -180,7 +95,7 @@ const SetMissingMenu = ({
       open={open}
       onOpenChange={setOpen}
       menu={{ items, onClick }}
-      styles={{ root: { width: 300 } }}
+      styles={{ root: { width: SET_MISSING_MENU_WIDTH } }}
     >
       <Tooltip title={open ? undefined : `Set a value in ${target.segment}`}>
         {children(open)}
