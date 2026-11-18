@@ -60,9 +60,15 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
 
   return (
     content && (
-      <aside className={styles.pane} aria-label="Details">
+      <Flex
+        component="aside"
+        vertical
+        gap="middle"
+        className={styles.pane}
+        aria-label="Details"
+      >
         {content}
-      </aside>
+      </Flex>
     )
   );
 };

@@ -55,12 +55,12 @@ const ParametersPage = () => {
           </Flex>
         </Splitter.Panel>
         <Splitter.Panel className={styles.panel}>
-          <Layout className={styles.fill}>
+          <Flex className={styles.fill}>
             <Layout.Content className={styles.main}>
               <ParameterBrowser />
             </Layout.Content>
             <DetailHost narrow={narrow} />
-          </Layout>
+          </Flex>
         </Splitter.Panel>
       </Splitter>
       <DeleteModal />
