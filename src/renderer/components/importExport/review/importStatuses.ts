@@ -9,8 +9,8 @@ interface StatusStyle {
 }
 
 export const STATUSES: Record<ImportStatus, StatusStyle> = {
-  new: { label: 'new', color: 'green' },
-  changed: { label: 'changed', color: 'gold' },
+  new: { label: 'new', color: 'success' },
+  changed: { label: 'changed', color: 'warning' },
   unchanged: { label: 'unchanged' },
   skipped: {
     label: 'skipped',

@@ -145,7 +145,7 @@ const ReviewRow = ({
     <div className={styles.rowMain}>
       <span className={styles.statusColumn}>
         {error ? (
-          <Tag color="red">failed</Tag>
+          <Tag color="error">failed</Tag>
         ) : (
           <Tooltip title={tooltip}>
             <Tag color={color}>{label}</Tag>

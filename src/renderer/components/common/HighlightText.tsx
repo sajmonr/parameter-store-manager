@@ -1,11 +1,11 @@
-const HIGHLIGHT_COLOR = '#f50';
+import { Typography } from 'antd';
 
 interface HighlightTextProps {
   text: string;
   highlight?: string;
 }
 
-// `text` with the first case-insensitive occurrence of `highlight` in orange.
+// `text` with the first case-insensitive occurrence of `highlight` marked.
 const HighlightText = ({ text, highlight = '' }: HighlightTextProps) => {
   const index = highlight
     ? text.toLowerCase().indexOf(highlight.toLowerCase())
@@ -15,7 +15,7 @@ const HighlightText = ({ text, highlight = '' }: HighlightTextProps) => {
   return (
     <>
       {text.slice(0, index)}
-      <span style={{ color: HIGHLIGHT_COLOR }}>{text.slice(index, end)}</span>
+      <Typography.Text mark>{text.slice(index, end)}</Typography.Text>
       {text.slice(end)}
     </>
   );

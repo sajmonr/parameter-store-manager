@@ -89,7 +89,8 @@
   margin-bottom: -4px;
 }
 
-/* A cut-off edge fades out. */
+/* A cut-off edge fades out. A mask uses only the alpha of its colours, so
+   #000 means opaque here, not black. */
 .fadeStart {
   mask-image: linear-gradient(to right, transparent, #000 24px);
 }

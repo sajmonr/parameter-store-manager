@@ -10,7 +10,8 @@ export type Layout = (typeof LAYOUTS)[number];
 export const isHexColor = (value: string) => /^#[0-9a-f]{6}$/i.test(value);
 
 // antd's green, gold, red, blue, purple and cyan. A new environment gets the
-// next one in this order; the colour picker suggests them.
+// next one in this order; the colour picker suggests them. Colours are
+// stored in the settings, so these are values rather than theme tokens.
 export const ENVIRONMENT_COLORS = [
   '#52c41a',
   '#faad14',

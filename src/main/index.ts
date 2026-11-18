@@ -17,6 +17,7 @@ import {
   WINDOW_MIN_WIDTH,
   WINDOW_WIDTH
 } from '../shared/layout';
+import { WINDOW_BACKGROUND } from '../shared/windowBackground';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -44,10 +45,8 @@ const installExtensions = async () => {
   }).catch(console.log);
 };
 
-// Matches antd's layout background, so the window doesn't flash the wrong
-// color before the first paint or on reload.
 const windowBackground = () =>
-  nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5';
+  WINDOW_BACKGROUND[nativeTheme.shouldUseDarkColors ? 'dark' : 'light'];
 
 const createWindow = () => {
   const win = new BrowserWindow({

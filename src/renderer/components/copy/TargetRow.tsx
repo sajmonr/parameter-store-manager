@@ -19,8 +19,8 @@ import HintText from '../common/HintText';
 import MetaText from '../common/MetaText';
 
 const STATUS_TAGS: Record<CopyStatus, { color?: string; label: string }> = {
-  new: { color: 'green', label: 'New' },
-  overwrites: { color: 'gold', label: 'Overwrites' },
+  new: { color: 'success', label: 'New' },
+  overwrites: { color: 'warning', label: 'Overwrites' },
   same: { label: 'Same value' }
 };
 
