@@ -30,6 +30,8 @@
   flex-wrap: nowrap;
 }
 
+/* Long crumbs shorten with an ellipsis and the separators stay; Breadcrumb
+   has no option for it. */
 .breadcrumb :global(.ant-breadcrumb-item) {
   min-width: 0;
   overflow: hidden;

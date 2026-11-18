@@ -78,6 +78,8 @@
   border-radius: var(--ant-border-radius-lg);
 }
 
+/* The chosen layout's card is highlighted; Radio has no token for its
+   wrapper's checked state. */
 .layoutOption:global(.ant-radio-wrapper-checked) {
   border-color: var(--ant-color-primary);
   background: var(--ant-color-primary-bg);

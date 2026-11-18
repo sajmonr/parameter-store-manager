@@ -61,6 +61,7 @@ const SidebarGroup = ({
         <SectionLabel>{title}</SectionLabel>
       </div>
       <Tree<GroupTreeNode>
+        className={styles.groupTree}
         blockNode
         showIcon
         treeData={treeData}

@@ -38,6 +38,8 @@
   color: var(--ant-color-text-tertiary);
 }
 
+/* The count follows the selected node's colour; Tree's selected-node
+   tokens style only its own title. */
 :global(.ant-tree-treenode-selected) .count {
   color: var(--ant-color-primary);
 }
@@ -55,7 +57,7 @@
   padding: var(--ant-padding-xs) var(--ant-padding-sm) var(--ant-padding-xxs);
 }
 
-.group + :global(.ant-tree) {
+.groupTree {
   margin-bottom: var(--ant-margin-xs);
 }
 

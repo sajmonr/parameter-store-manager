@@ -30,6 +30,8 @@
   overflow: hidden !important;
 }
 
+/* Any row opens its parameter. The open row is marked like a selected
+   one; Table's selection tokens apply only to checked rows. */
 .table :global(.ant-table-row) {
   cursor: pointer;
 }
