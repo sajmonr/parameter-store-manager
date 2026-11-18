@@ -4,6 +4,8 @@ import { Input, Tooltip, Flex } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
 import type { Suggestion } from '../../utils/naming';
 import styles from './NameField.module.css';
+import Mono from '../common/Mono';
+import MetaText from '../common/MetaText';
 
 interface NameFieldProps {
   value: string;
@@ -149,17 +151,19 @@ const NameField = ({
                   }}
                 >
                   <FolderOutlined className={styles.icon} />
-                  <span className={styles.text}>
-                    <span className={styles.parent}>{suggestion.parent}</span>
+                  <Mono size="small" ellipsis>
+                    <MetaText tone="tertiary" style={{ font: 'inherit' }}>
+                      {suggestion.parent}
+                    </MetaText>
                     {suggestion.child}
-                  </span>
+                  </Mono>
                 </Flex>
               </Tooltip>
             ))}
           </div>
-          <div className={styles.footer}>
+          <MetaText tone="tertiary" className={styles.footer}>
             ↑↓ to move · Tab or ↵ to complete · Esc to close
-          </div>
+          </MetaText>
         </div>
       )}
     </div>

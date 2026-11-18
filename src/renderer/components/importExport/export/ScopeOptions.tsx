@@ -8,6 +8,7 @@ import PathPreview from './PathPreview';
 import type { Scope } from './useExportForm';
 import styles from '../ExportPanel.module.css';
 import HintText from '../../common/HintText';
+import Mono from '../../common/Mono';
 
 interface ScopeOptionsProps {
   scope: Scope;
@@ -59,7 +60,7 @@ const ScopeOptions = ({
               onFocus={() => onScope('path')}
               options={suggestions.map(folder => ({
                 value: folder,
-                label: <span className={styles.mono}>{folder}</span>
+                label: <Mono>{folder}</Mono>
               }))}
               disabled={disabled}
               // Each pick narrows the suggestions to its subfolders.
@@ -75,8 +76,9 @@ const ScopeOptions = ({
             </AutoComplete>
             {byPath && matched && <PathPreview names={matched} />}
             <HintText>
-              A path exports everything under it. <code>*</code> matches one
-              segment, <code>**</code> any depth.
+              A path exports everything under it.{' '}
+              <Typography.Text code>*</Typography.Text> matches one segment,{' '}
+              <Typography.Text code>**</Typography.Text> any depth.
             </HintText>
           </Flex>
         </Flex>

@@ -12,6 +12,7 @@ import EnvironmentPicker from './EnvironmentPicker';
 import NameField from './NameField';
 import type { NamingState } from './useNaming';
 import styles from './ParameterForm.module.css';
+import Mono from '../common/Mono';
 
 // The service, environments and key in structured mode, or the full path,
 // with a link to switch between the two.
@@ -152,9 +153,9 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
               {newFolders && (
                 <Typography.Text type="secondary">
                   <FolderAddOutlined /> Creates new folder{' '}
-                  <code className={styles.code}>
+                  <Mono type="secondary">
                     {breakable(newFolders, delimiter)}
-                  </code>
+                  </Mono>
                 </Typography.Text>
               )}
               {switchLink}

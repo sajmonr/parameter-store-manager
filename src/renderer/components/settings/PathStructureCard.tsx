@@ -11,6 +11,7 @@ import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
 import HintText from '../common/HintText';
+import Mono from '../common/Mono';
 
 const layouts: { value: Layout; caption: string }[] = [
   { value: 'env-first', caption: 'Environment convention' },
@@ -46,13 +47,18 @@ const LayoutExample = ({
   const [first, second] =
     layout === 'env-first' ? [envPart, servicePart] : [servicePart, envPart];
   return (
-    <div className={styles.layoutExample}>
+    <Mono
+      type="secondary"
+      size="small"
+      ellipsis
+      className={styles.layoutExample}
+    >
       {rootFolder(delimiter)}
       {first}
       {delimiter}
       {second}
       {`${delimiter}ConnectionStrings${delimiter}Db`}
-    </div>
+    </Mono>
   );
 };
 
@@ -89,9 +95,9 @@ const PathStructureCard = () => {
                 label: styles.layoutLabel
               }}
             >
-              <div className={styles.layoutPattern}>
+              <Mono strong ellipsis className={styles.layoutPattern}>
                 {layoutPattern(value, delimiter)}
-              </div>
+              </Mono>
               <LayoutExample
                 layout={value}
                 structure={structure}

@@ -29,7 +29,9 @@ const ExportContentsSection = ({ format }: { format: Format }) =>
       <Typography.Text type="secondary">
         Every {format.label} file has these columns, one row per parameter:
       </Typography.Text>
-      <pre className={styles.sample}>{CSV_HEADER.join(',')}</pre>
+      <Typography.Paragraph className={styles.sample}>
+        <pre>{CSV_HEADER.join(',')}</pre>
+      </Typography.Paragraph>
     </ExportSection>
   ) : (
     <ExportSection label="Contents">
@@ -37,7 +39,9 @@ const ExportContentsSection = ({ format }: { format: Format }) =>
         {format.label} always includes every field Import needs, so the file can
         be loaded back as-is.
       </Typography.Text>
-      <pre className={styles.sample}>{JSON_SAMPLE}</pre>
+      <Typography.Paragraph className={styles.sample}>
+        <pre>{JSON_SAMPLE}</pre>
+      </Typography.Paragraph>
     </ExportSection>
   );
 

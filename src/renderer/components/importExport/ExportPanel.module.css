@@ -1,3 +1,5 @@
+/* The path input takes the code font; antd has no font family token for
+   inputs alone. */
 .mono {
   font-family: var(--ant-font-family-code);
 }
@@ -24,10 +26,6 @@
   padding-inline-start: var(--ant-padding-lg);
 }
 
-.hint code {
-  font-family: var(--ant-font-family-code);
-}
-
 .preview {
   margin: 0;
   padding: 0;
@@ -41,16 +39,9 @@
   font-size: var(--ant-font-size-sm);
 }
 
-.sample {
+.sample.sample,
+.sample pre {
   margin: 0;
-  padding: var(--ant-padding-xs) var(--ant-padding-sm);
-  font-family: var(--ant-font-family-code);
-  font-size: var(--ant-font-size-sm);
-  line-height: 1.5;
-  color: var(--ant-color-text-secondary);
-  background: var(--ant-color-fill-quaternary);
-  border-radius: var(--ant-border-radius);
-  overflow-x: auto;
 }
 
 .status {

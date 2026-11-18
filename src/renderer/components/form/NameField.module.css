@@ -31,8 +31,6 @@
   padding: var(--ant-padding-xxs) var(--ant-padding-xs);
   border-radius: var(--ant-border-radius-sm);
   cursor: pointer;
-  font-family: var(--ant-font-family-code);
-  font-size: var(--ant-font-size-sm);
 }
 
 .option[aria-selected='true'] {
@@ -44,20 +42,8 @@
   color: var(--ant-color-text-tertiary);
 }
 
-.text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.parent {
-  color: var(--ant-color-text-tertiary);
-}
-
 .footer {
+  display: block;
   padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border-top: 1px solid var(--ant-color-split);
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-text-tertiary);
 }

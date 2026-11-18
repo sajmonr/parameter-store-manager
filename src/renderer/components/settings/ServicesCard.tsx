@@ -19,6 +19,7 @@ import EnvironmentLabel from '../common/EnvironmentLabel';
 import AddServiceRow from './AddServiceRow';
 import RemoveSegmentButton from './RemoveSegmentButton';
 import ServiceEnvironmentCell from './ServiceEnvironmentCell';
+import Mono from '../common/Mono';
 
 const ServicesCard = () => {
   const structure = useSettingsStore(settings => settings.structure);
@@ -35,9 +36,7 @@ const ServicesCard = () => {
   const environmentColumns: TableColumnsType<StructureService> =
     structure.environments.map(({ segment: env, color }) => ({
       key: `env:${env}`,
-      title: (
-        <EnvironmentLabel color={color} name={env} className={styles.mono} />
-      ),
+      title: <EnvironmentLabel color={color} name={<Mono>{env}</Mono>} />,
       render: (_, service) => (
         <ServiceEnvironmentCell
           service={service.segment}
@@ -60,7 +59,7 @@ const ServicesCard = () => {
       render: (_, { segment }) => (
         <Flex gap="small" align="center">
           <AppstoreOutlined className={styles.serviceIcon} />
-          <span className={styles.mono}>{segment}</span>
+          <Mono>{segment}</Mono>
           {added.includes(segment) && <Tag color="blue">new</Tag>}
         </Flex>
       )

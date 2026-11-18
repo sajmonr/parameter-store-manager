@@ -47,12 +47,6 @@
   margin-top: var(--ant-margin-xxs);
 }
 
-.code {
-  font-family: var(--ant-font-family-code);
-  word-break: normal;
-  overflow-wrap: normal;
-}
-
 .switch {
   align-self: flex-start;
 }

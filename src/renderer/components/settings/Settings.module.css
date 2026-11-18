@@ -8,6 +8,8 @@
   min-width: 0;
 }
 
+/* Inputs take the code font here; antd has no font family token for
+   inputs alone. */
 .delimiter {
   width: 48px;
   text-align: center;
@@ -84,20 +86,11 @@
 
 .layoutPattern,
 .layoutExample {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-family: var(--ant-font-family-code);
-}
-
-.layoutPattern {
-  font-weight: 600;
+  display: block;
 }
 
 .layoutExample {
   margin: var(--ant-margin-xxs) 0 var(--ant-margin-xs);
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-text-secondary);
 }
 
 .stats {
