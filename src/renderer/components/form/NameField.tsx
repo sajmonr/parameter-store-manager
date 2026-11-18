@@ -1,9 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Input, Tooltip } from 'antd';
+import { Input, Tooltip, Flex } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
-import type { Suggestion } from '../../utils/newParameter';
+import type { Suggestion } from '../../utils/naming';
 import styles from './NameField.module.css';
+import Mono from '../common/Mono';
+import MetaText from '../common/MetaText';
 
 interface NameFieldProps {
   value: string;
@@ -134,7 +136,9 @@ const NameField = ({
                 placement="left"
                 mouseEnterDelay={0.6}
               >
-                <div
+                <Flex
+                  align="center"
+                  gap="small"
                   id={optionId(index)}
                   role="option"
                   aria-selected={index === active}
@@ -147,17 +151,19 @@ const NameField = ({
                   }}
                 >
                   <FolderOutlined className={styles.icon} />
-                  <span className={styles.text}>
-                    <span className={styles.parent}>{suggestion.parent}</span>
+                  <Mono size="small" ellipsis>
+                    <MetaText tone="tertiary" style={{ font: 'inherit' }}>
+                      {suggestion.parent}
+                    </MetaText>
                     {suggestion.child}
-                  </span>
-                </div>
+                  </Mono>
+                </Flex>
               </Tooltip>
             ))}
           </div>
-          <div className={styles.footer}>
+          <MetaText tone="tertiary" className={styles.footer}>
             ↑↓ to move · Tab or ↵ to complete · Esc to close
-          </div>
+          </MetaText>
         </div>
       )}
     </div>

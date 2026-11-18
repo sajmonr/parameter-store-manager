@@ -6,15 +6,15 @@
 }
 
 .content {
-  padding: 28px 40px;
+  padding: var(--ant-padding-lg) var(--ant-padding-xl);
 }
 
 /* Full width, with room below the last card. */
 .wide {
-  padding-bottom: 48px;
+  padding-bottom: calc(var(--ant-padding-lg) * 2);
 }
 
 /* The Export / Import cards, above the panel they pick. */
 .modes {
-  margin-bottom: 16px;
+  margin-bottom: var(--ant-margin);
 }

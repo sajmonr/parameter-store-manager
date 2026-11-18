@@ -2,8 +2,7 @@ import { Segmented } from 'antd';
 import { uiActions } from '../../state/ui';
 import { useLoaded } from '../../state/views';
 import type { useEnvironmentTabs } from '../../state/views';
-import EnvironmentDot from '../common/EnvironmentDot';
-import styles from './ParameterBreadcrumb.module.css';
+import EnvironmentLabel from '../common/EnvironmentLabel';
 
 // The service's environments, with the matches in each at the selected
 // folder (a dash until the first load ends). Switching keeps the service and
@@ -24,11 +23,12 @@ const EnvironmentTabs = ({
       options={tabs.map(({ segment, color, count }) => ({
         value: segment,
         label: (
-          <span className={styles.env}>
-            <EnvironmentDot color={color} />
-            {segment}
-            <span className={styles.tabCount}>{loaded ? count : '–'}</span>
-          </span>
+          <EnvironmentLabel
+            color={color}
+            name={segment}
+            count={count}
+            loaded={loaded}
+          />
         )
       }))}
     />

@@ -3,8 +3,6 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Scrolls both ways; the header row and the key column are sticky in it. */
@@ -17,15 +15,17 @@
 
 /* --compare-columns and min-width are set per environment count. */
 .grid {
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
+/* A grid, so the columns line up from row to row; Flex can't. */
 .row {
   display: grid;
   grid-template-columns: var(--compare-columns);
   border-bottom: 1px solid var(--ant-color-border-secondary);
 }
 
+/* Column headers are bold, like the table header. */
 .headerRow {
   position: sticky;
   top: 0;
@@ -39,17 +39,15 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   min-width: 0;
-  padding: 9px 12px 9px 16px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm) var(--ant-padding-xs)
+    var(--ant-padding);
   background: var(--ant-color-bg-container);
   box-shadow: inset -1px 0 0 var(--ant-color-border-secondary);
 }
 
 .indented {
-  padding-left: 36px;
+  padding-left: var(--ant-padding-xl);
 }
 
 .keyName {
@@ -59,16 +57,9 @@
 /* On the right of the key, so they stay visible while scrolling sideways. */
 .tags {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
 }
 
-.tag {
-  margin: 0;
-}
-
+/* Icon colours come from status tokens. */
 .warning {
   color: var(--ant-color-warning);
 }
@@ -80,16 +71,14 @@
     inset -1px 0 0 var(--ant-color-border-secondary);
 }
 
+/* The open parameter is marked in the primary colour. */
 .selectedKey .keyName {
   color: var(--ant-color-primary);
 }
 
 .cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   min-width: 0;
-  padding: 9px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
 }
 
 .present {
@@ -122,20 +111,13 @@
    edge. */
 .actions {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: auto;
 }
 
-.lock {
-  color: var(--ant-color-warning);
-}
-
+/* Small pills inside cells. */
 .chip {
   flex: none;
-  padding: 0 8px;
-  font-size: 12px;
+  padding: 0 var(--ant-padding-xs);
+  font-size: var(--ant-font-size-sm);
   line-height: 20px;
   border-radius: var(--ant-border-radius-sm);
   white-space: nowrap;
@@ -144,9 +126,10 @@
 /* A button: its menu sets the value in that environment. */
 .notSet {
   composes: chip;
+  /* A button, which Flex can't render with a button's props. */
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--ant-margin-xxs);
   font-family: inherit;
   color: var(--ant-color-error);
   background: none;
@@ -166,28 +149,15 @@
   outline-offset: 1px;
 }
 
+/* An icon sized to the chip text. */
 .notSetIcon {
-  font-size: 10px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .unreadable {
   composes: chip;
   color: var(--ant-color-text-secondary);
   border: 1px solid var(--ant-color-border);
-}
-
-.envName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.envCount {
-  flex: none;
-  font-size: 12px;
-  font-weight: normal;
-  color: var(--ant-color-text-tertiary);
 }
 
 .folderRow {
@@ -197,13 +167,12 @@
 
 /* Stays in view while the row scrolls sideways. */
 .folderLabel {
-  position: sticky;
-  left: 16px;
+  /* Flex has no inline mode. */
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  margin-left: 16px;
+  position: sticky;
+  left: var(--ant-padding);
+  padding: var(--ant-padding-xs) 0;
+  margin-left: var(--ant-margin);
   font-weight: 600;
 }
 
@@ -214,24 +183,13 @@
   top: 96px;
   left: 50%;
   z-index: 3;
-  width: min(420px, calc(100% - 32px));
+  width: min(420px, calc(100% - var(--ant-margin-xl)));
   transform: translateX(-50%);
   box-shadow: var(--ant-box-shadow-secondary);
 }
 
-.empty {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px;
-  text-align: center;
-}
-
 .emptyIcon {
+  /* An icon, larger than any text size token. */
   font-size: 32px;
   color: var(--ant-color-text-tertiary);
 }

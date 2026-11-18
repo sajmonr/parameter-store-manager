@@ -1,7 +1,12 @@
 // The JSON export: every field Import needs, so a file can be loaded back
 // as-is. StringList isn't supported yet, so it is neither written nor read.
-import { isEditableType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
-import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import {
+  PARAMETER_TYPES,
+  isEditableType,
+  isSecureType,
+  listTypes
+} from '../../shared/parameterTypes';
+import type { EditableParameterType } from '../../shared/parameterTypes';
 import {
   fileKeyId,
   invalidEntries,
@@ -10,6 +15,7 @@ import {
   NOT_AN_EXPORT
 } from './importFile';
 import type { ImportEntry, ParseResult } from './importFile';
+import { byString } from '../../shared/sort';
 
 export const EXPORT_FORMAT = 'parameter-store-manager';
 export const EXPORT_VERSION = 1;
@@ -51,7 +57,7 @@ export const toJsonExport = ({
     exportedAt: date.toISOString().replace(/\.\d{3}Z$/, 'Z'),
     region,
     decrypted,
-    parameters: [...parameters].sort((a, b) => (a.name < b.name ? -1 : 1))
+    parameters: [...parameters].sort(byString(parameter => parameter.name))
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 };
@@ -69,11 +75,11 @@ const entryProblem = (entry: unknown, seen: Set<string>): string | null => {
   const problem = nameProblem(name, seen);
   if (problem) return problem;
   if (!isEditableType(type)) {
-    return `${String(name)} has type ${String(type)}, not String or SecureString`;
+    return `${String(name)} has type ${String(type)}, not ${listTypes(PARAMETER_TYPES)}`;
   }
   // SSM values are never empty. Only a SecureString exported without
   // decryption has none.
-  const skipped = value === null && type === 'SecureString';
+  const skipped = value === null && isSecureType(type);
   if (!skipped && (typeof value !== 'string' || !value)) {
     return `${String(name)} has no value`;
   }

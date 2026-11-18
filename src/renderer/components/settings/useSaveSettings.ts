@@ -1,6 +1,6 @@
-import { App } from 'antd';
 import type { Settings } from '../../../shared/availableSettings';
 import type { Structure } from '../../../shared/structure';
+import { notifyError } from '../../utils/notify';
 import {
   saveSettingsAndApply,
   updateStructure
@@ -9,15 +9,11 @@ import {
 // A failed save leaves the saved value in the store, so the control shows it
 // again. Resolves to whether it saved.
 const useNotifyFailure = () => {
-  const { notification } = App.useApp();
   return (save: Promise<unknown>) =>
     save.then(
       () => true,
-      (error: Error) => {
-        notification.error({
-          title: 'The setting was not saved',
-          description: error.message
-        });
+      (error: unknown) => {
+        notifyError('The setting was not saved', error);
         return false;
       }
     );

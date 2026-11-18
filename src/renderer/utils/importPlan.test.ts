@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { countStatuses, isWritten, planImport } from './importPlan';
+import {
+  countStatuses,
+  importDuration,
+  isWritten,
+  planImport
+} from './importPlan';
 import type { Existing } from './importPlan';
 import type { ImportEntry } from './importFile';
 
@@ -142,5 +147,15 @@ describe('countStatuses', () => {
       typeChange: 0,
       unsupported: 0
     });
+  });
+});
+
+describe('importDuration', () => {
+  it('estimates the time at 3 writes per second', () => {
+    expect(importDuration(1)).toBe('about 5 seconds');
+    expect(importDuration(100)).toBe('about 35 seconds');
+    expect(importDuration(180)).toBe('about 1 minute');
+    expect(importDuration(312)).toBe('about 2 minutes');
+    expect(importDuration(781)).toBe('about 4 minutes');
   });
 });

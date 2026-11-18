@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Dropdown } from 'antd';
+import { Dropdown, Flex } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
@@ -9,6 +9,7 @@ import type { Location } from '../../utils/location';
 import useEscape from '../../hooks/useEscape';
 import Mono from '../common/Mono';
 import styles from './FolderTree.module.css';
+import { CountText } from '../common/MetaText';
 
 interface TreeNodeMenuProps {
   // Where the node goes; its tree is everything listed there.
@@ -53,7 +54,11 @@ const TreeNodeMenu = ({
           {
             type: 'group',
             key: 'path',
-            label: <Mono className={styles.menuPath}>{path}</Mono>
+            label: (
+              <Mono size="small" className={styles.menuPath}>
+                {path}
+              </Mono>
+            )
           },
           {
             key: 'delete',
@@ -61,10 +66,10 @@ const TreeNodeMenu = ({
             icon: <DeleteOutlined />,
             disabled: !names.length,
             label: (
-              <span className={styles.menuItem}>
+              <Flex component="span" justify="space-between" gap="middle">
                 Delete tree
-                <span className={styles.count}>{names.length}</span>
-              </span>
+                <CountText count={names.length} />
+              </Flex>
             )
           }
         ],

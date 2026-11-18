@@ -3,14 +3,9 @@ import { Descriptions, Typography } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import Mono from '../common/Mono';
 import TimeAgo from '../common/TimeAgo';
-
-const dateFormat: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit'
-};
+import { isSecureType } from '../../../shared/parameterTypes';
+import { formatModified } from '../../utils/dates';
+import { EMPTY_VALUE, KMS_KEY_LABEL } from '../../utils/labels';
 
 interface ParameterMetaProps {
   parameter: ParameterEntry;
@@ -33,8 +28,8 @@ const ParameterMeta = ({ parameter, environments }: ParameterMetaProps) => {
     },
     {
       key: 'kms',
-      label: 'KMS key',
-      children: Type === 'SecureString' ? <Mono>{KeyId}</Mono> : '—'
+      label: KMS_KEY_LABEL,
+      children: isSecureType(Type) ? <Mono>{KeyId}</Mono> : EMPTY_VALUE
     },
     { key: 'version', label: 'Version', children: Version },
     {
@@ -42,7 +37,7 @@ const ParameterMeta = ({ parameter, environments }: ParameterMetaProps) => {
       label: 'Last modified',
       children: LastModifiedDate && (
         <>
-          {LastModifiedDate.toLocaleString(undefined, dateFormat)} ·{' '}
+          {formatModified(LastModifiedDate)} ·{' '}
           <TimeAgo date={LastModifiedDate} />
         </>
       )

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { App, Flex, Modal, Typography } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useDeleteParameters } from '../../state/parameters';
@@ -12,6 +11,8 @@ import { plural } from '../../utils/plural';
 import useEscape from '../../hooks/useEscape';
 import Mono from '../common/Mono';
 import styles from './DeleteModal.module.css';
+import { notifyError } from '../../utils/notify';
+import useRetainWhileClosing from '../../hooks/useRetainWhileClosing';
 
 const titleOf = ({ kind, label, names }: DeleteRequest, delimiter: string) => {
   if (kind === 'tree') {
@@ -45,15 +46,14 @@ const NameList = ({ names }: { names: string[] }) => (
 // The one confirmation for deleting checked rows, a sidebar tree or the open
 // parameter (see uiActions.requestDelete).
 const DeleteModal = () => {
-  const { message, notification } = App.useApp();
+  const { message } = App.useApp();
   const request = useUiStore(state => state.pendingDelete);
   const region = useSettingsStore(settings => settings.ssmRegion);
   const delimiter = usePathDelimiter();
   const checkContext = useCheckContext();
   const deleteParameters = useDeleteParameters();
   // Kept while the modal fades out after the request is gone.
-  const [shown, setShown] = useState(request);
-  if (request && request !== shown) setShown(request);
+  const [shown] = useRetainWhileClosing(request);
 
   const cancel = () => {
     if (!deleteParameters.isPending) uiActions.cancelDelete();
@@ -69,16 +69,19 @@ const DeleteModal = () => {
       message.success(`Deleted ${plural(deleted.length, 'parameter')}`);
     }
     if (failed.length) {
-      notification.error({
-        title: `${plural(failed.length, 'parameter')} could not be deleted. They are still selected.`,
-        description: (
-          <>
-            {error && describeError(error)}
-            <NameList names={failed} />
-          </>
-        ),
-        duration: 0
-      });
+      notifyError(
+        `${plural(failed.length, 'parameter')} could not be deleted. They are still selected.`,
+        undefined,
+        {
+          description: (
+            <>
+              {error && describeError(error)}
+              <NameList names={failed} />
+            </>
+          ),
+          duration: 0
+        }
+      );
     }
   };
 
@@ -88,7 +91,7 @@ const DeleteModal = () => {
       open={!!request}
       title={
         shown && (
-          <Flex gap={8} align="baseline">
+          <Flex gap="small" align="baseline">
             <ExclamationCircleFilled className={styles.icon} />
             <span className={styles.title}>{titleOf(shown, delimiter)}</span>
           </Flex>

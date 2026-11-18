@@ -1,15 +1,11 @@
 /* Fixed heights, so checking rows never moves the table. */
 .header {
   flex: none;
-  padding: 0 16px;
+  padding: 0 var(--ant-padding);
 }
 
 .row {
-  height: 52px;
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 8px;
+  height: var(--header-height);
   min-width: 0;
 }
 
@@ -18,8 +14,9 @@
   flex: none;
 }
 
+/* Small text for antd's Breadcrumb, which has no font size token. */
 .breadcrumb {
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
   min-width: 0;
   flex: 0 1 auto;
   overflow: hidden;
@@ -30,6 +27,8 @@
   flex-wrap: nowrap;
 }
 
+/* Long crumbs shorten with an ellipsis and the separators stay; Breadcrumb
+   has no option for it. */
 .breadcrumb :global(.ant-breadcrumb-item) {
   min-width: 0;
   overflow: hidden;
@@ -49,38 +48,17 @@
   color: var(--ant-color-text);
 }
 
-.env {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.count :global(.ant-badge-count) {
-  background: var(--ant-color-fill-secondary);
-  color: var(--ant-color-text);
-  box-shadow: none;
-}
-
 .end {
-  flex: 0 1 auto;
   min-width: 0;
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .hint {
   min-width: 0;
-  font-size: 12px;
 }
 
 /* The tabs scroll sideways when they don't fit; the mode switch never does. */
 .serviceBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: var(--ant-padding-sm);
 }
 
 .serviceBar > * {
@@ -91,17 +69,15 @@
 .tabs {
   flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   overflow-x: auto;
   scrollbar-width: thin;
   /* Keeps the scrollbar clear of the tabs. */
-  padding-bottom: 4px;
-  margin-bottom: -4px;
+  padding-bottom: var(--ant-padding-xxs);
+  margin-bottom: calc(var(--ant-padding-xxs) * -1);
 }
 
-/* A cut-off edge fades out. */
+/* A cut-off edge fades out. A mask uses only the alpha of its colours, so
+   #000 means opaque here, not black. */
 .fadeStart {
   mask-image: linear-gradient(to right, transparent, #000 24px);
 }
@@ -125,11 +101,5 @@
 }
 
 .comparing {
-  font-size: 12px;
   white-space: nowrap;
-}
-
-.tabCount {
-  font-size: 12px;
-  color: var(--ant-color-text-tertiary);
 }

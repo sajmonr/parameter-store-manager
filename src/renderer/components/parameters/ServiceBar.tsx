@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useEffect } from 'react';
 import {
   useCompareMode,
@@ -11,9 +12,7 @@ import EnvironmentTabs from './EnvironmentTabs';
 import ModeSwitch from './ModeSwitch';
 import useHorizontalScroll from '../../hooks/useHorizontalScroll';
 import styles from './ParameterBreadcrumb.module.css';
-
-const cx = (...classes: (string | false | null | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import { cx } from '../../utils/classNames';
 
 // A service's second breadcrumb row: its environment tabs, or the compare
 // filter while comparing, and the switch between the two. The tabs scroll
@@ -35,8 +34,14 @@ const ServiceBar = ({ comparison }: { comparison: Comparison | null }) => {
   if (!isServiceLocation(location) || !tabs.length) return null;
 
   return (
-    <div className={styles.serviceBar}>
-      <div
+    <Flex
+      align="center"
+      gap="var(--ant-margin-sm)"
+      className={styles.serviceBar}
+    >
+      <Flex
+        align="center"
+        gap="var(--ant-margin-sm)"
         ref={scrollRef}
         className={cx(
           styles.tabs,
@@ -49,9 +54,9 @@ const ServiceBar = ({ comparison }: { comparison: Comparison | null }) => {
         ) : (
           <EnvironmentTabs tabs={tabs} env={location.env} />
         )}
-      </div>
+      </Flex>
       <ModeSwitch compare={compare} />
-    </div>
+    </Flex>
   );
 };
 

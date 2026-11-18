@@ -1,9 +1,12 @@
-import { Button, Typography } from 'antd';
+import { Button, Flex, Tag } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
+import { breakable } from '../../utils/paths';
 import Mono from '../common/Mono';
 import styles from './CreatePreview.module.css';
+import MetaText from '../common/MetaText';
+import HintText from '../common/HintText';
 
 export interface PreviewRow {
   name: string;
@@ -17,53 +20,37 @@ export interface PreviewRow {
   error?: string;
 }
 
-// A zero-width space after each delimiter lets the path wrap there, and only
-// there.
-export const breakable = (name: string, delimiter: string) =>
-  name.split(delimiter).join(`${delimiter}\u200b`);
-
 const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
-  <li className={styles.row}>
-    <div className={styles.name}>
+  <Flex component="li" vertical gap="var(--ant-margin-xxs)">
+    <Flex align="baseline" gap="small">
       {row.color && <EnvironmentDot color={row.color} className={styles.dot} />}
-      <Mono size={12} className={styles.path}>
+      <Mono size="small" className={styles.path}>
         {breakable(row.name, delimiter)}
       </Mono>
-    </div>
-    {row.meta && (
-      <Typography.Text type="secondary" className={styles.meta}>
-        {row.meta}
-      </Typography.Text>
-    )}
+    </Flex>
+    {row.meta && <MetaText>{row.meta}</MetaText>}
     {row.created && (
-      <div className={styles.status}>
-        <span className={`${styles.tag} ${styles.created}`}>
-          <CheckCircleFilled />
+      <span>
+        <Tag color="success" icon={<CheckCircleFilled />}>
           Created
-        </span>
-      </div>
+        </Tag>
+      </span>
     )}
-    {row.error && (
-      <Typography.Text type="danger" className={styles.meta}>
-        {row.error}
-      </Typography.Text>
-    )}
+    {row.error && <HintText type="danger">{row.error}</HintText>}
     {row.exists && !row.created && (
-      <div className={styles.status}>
-        <span className={`${styles.tag} ${styles.exists}`}>
-          <CloseCircleFilled />
+      <Flex align="center" gap="small">
+        <Tag color="error" icon={<CloseCircleFilled />}>
           Already exists
-        </span>
+        </Tag>
         <Button
           size="small"
-          className={styles.open}
           onClick={() => uiActions.selectParameter(row.name)}
         >
           Open →
         </Button>
-      </div>
+      </Flex>
     )}
-  </li>
+  </Flex>
 );
 
 // What the form will create, one row per parameter.
@@ -75,14 +62,14 @@ const CreatePreview = ({
   delimiter: string;
 }) => (
   <div className={styles.well}>
-    <Typography.Text type="secondary" className={styles.label}>
+    <MetaText className={styles.label}>
       {rows.length > 1 ? `Creates ${rows.length} parameters` : 'Creates'}
-    </Typography.Text>
-    <ul className={styles.rows}>
+    </MetaText>
+    <Flex component="ul" vertical gap="small" className={styles.rows}>
       {rows.map(row => (
         <Row key={row.name} row={row} delimiter={delimiter} />
       ))}
-    </ul>
+    </Flex>
   </div>
 );
 

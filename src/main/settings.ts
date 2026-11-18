@@ -116,7 +116,10 @@ export const setSettings = (values: Partial<Settings>): Settings => {
     updates.pathDelimiter !== getSetting(availableSettings.pathDelimiter);
   if (updates.structure || delimiterChanged) {
     const next = { ...getAllSettings(), ...updates };
-    const [error] = structureErrors(next.structure, next.pathDelimiter || '/');
+    const [error] = structureErrors(
+      next.structure,
+      next.pathDelimiter || DEFAULT_SETTINGS.pathDelimiter
+    );
     if (error) throw new Error(error);
   }
   // set(object) writes only the given keys.

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { Card, Typography } from 'antd';
+import { Card } from 'antd';
 import styles from './Settings.module.css';
+import HintText from '../common/HintText';
 
 interface SettingsCardProps {
   title: string;
@@ -21,9 +22,7 @@ const SettingsCard = ({
     title={
       <>
         {title}
-        <Typography.Text type="secondary" className={styles.cardDescription}>
-          {description}
-        </Typography.Text>
+        <HintText className={styles.cardDescription}>{description}</HintText>
       </>
     }
     classNames={{

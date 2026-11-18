@@ -2,36 +2,17 @@
 // be left while it runs (see ui.showPage), so the review it came from stays
 // open to show what failed.
 import { create } from 'zustand';
-import pAll from 'p-all';
 import type { QueryClient } from '@tanstack/react-query';
-import type { ApiError } from '../clients/call';
-import { describeError } from '../utils/awsErrors';
-import type { EditableParameterType } from '../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { settleEach } from '../utils/batch';
+import type { EditableParameterType } from '../../shared/parameterTypes';
 import type { ImportEntry } from '../utils/importFile';
 import { putParameter } from './parameters';
-import { getSettings } from './settings';
+import { sourceGuard } from './sourceGuard';
 
 // SSM allows 3 PutParameter calls per second per account and region, shared
 // with every other writer, so a large import stays under it. A throttled
 // write is retried by the SDK client (adaptive mode, see main/aws.ts).
 export const IMPORT_CONCURRENCY = 2;
-
-// AWS's default PutParameter limit, which sets how long an import takes.
-const WRITES_PER_SECOND = 3;
-// From this many writes, the review says how long the import will take.
-export const SLOW_IMPORT_WRITES = 100;
-
-// How long writing `count` parameters takes at best: "about 35 seconds",
-// "about 2 minutes".
-export const importDuration = (count: number) => {
-  const seconds = count / WRITES_PER_SECOND;
-  if (seconds < 60) {
-    const rounded = Math.max(5, Math.round(seconds / 5) * 5);
-    return `about ${rounded} seconds`;
-  }
-  const minutes = Math.round(seconds / 60);
-  return `about ${minutes} minute${minutes === 1 ? '' : 's'}`;
-};
 
 export const IMPORT_SOURCE_CHANGED =
   'The profile or region changed during the import.';
@@ -84,34 +65,29 @@ const run = async (
   client: QueryClient,
   writes: ImportWrite[]
 ): Promise<ImportResult> => {
-  const result: ImportResult = { written: [], failed: new Map() };
-  if (useImportStore.getState().running) return result;
-  const { profile, ssmRegion } = getSettings();
+  if (useImportStore.getState().running) {
+    return { written: [], failed: new Map() };
+  }
+  const checkSource = sourceGuard(IMPORT_SOURCE_CHANGED);
   let done = 0;
   set({ running: true, done, total: writes.length });
   try {
-    await pAll(
-      writes.map(item => async () => {
-        const name = item.entry.name;
-        try {
-          const now = getSettings();
-          if (now.profile !== profile || now.ssmRegion !== ssmRegion) {
-            throw new Error(IMPORT_SOURCE_CHANGED);
-          }
-          await write(client, item);
-          result.written.push(name);
-        } catch (error) {
-          result.failed.set(name, describeError(error as ApiError));
-        }
+    const { done: written, failed } = await settleEach(writes, {
+      nameOf: item => item.entry.name,
+      task: item => {
+        checkSource();
+        return write(client, item);
+      },
+      concurrency: IMPORT_CONCURRENCY,
+      onSettled: () => {
         done += 1;
         set({ done });
-      }),
-      { concurrency: IMPORT_CONCURRENCY }
-    );
+      }
+    });
+    return { written, failed };
   } finally {
     set(initialImportState);
   }
-  return result;
 };
 
 export const importActions = { run };

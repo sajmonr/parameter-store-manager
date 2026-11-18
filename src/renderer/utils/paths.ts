@@ -1,6 +1,8 @@
 // Parameter names are paths split by the path delimiter setting. A folder is a
 // name prefix that ends with the delimiter, such as '/app/db/'. The empty
 // string stands for "all parameters".
+import { SSM_PATH_SEPARATOR } from '../../shared/aws';
+import { byLocale } from '../../shared/sort';
 
 export interface FolderNode {
   key: string;
@@ -57,7 +59,8 @@ export const shortFolder = (folder: string, delimiter: string) => {
 
 // Where new parameters go when no folder is picked. SSM paths start with '/',
 // so that delimiter gets a root folder; other delimiters have no root prefix.
-export const rootFolder = (delimiter: string) => (delimiter === '/' ? '/' : '');
+export const rootFolder = (delimiter: string) =>
+  delimiter === SSM_PATH_SEPARATOR ? SSM_PATH_SEPARATOR : '';
 
 // Builds the folder hierarchy of `names`. Nodes are sorted by label.
 export const buildFolderTree = (names: string[], delimiter: string) => {
@@ -84,10 +87,27 @@ export const buildFolderTree = (names: string[], delimiter: string) => {
   });
 
   const sort = (list: FolderNode[]): FolderNode[] => {
-    list.sort((a, b) => a.label.localeCompare(b.label));
+    list.sort(byLocale(node => node.label));
     list.forEach(node => sort(node.children));
     return list;
   };
 
   return { roots: sort(roots), keys: [...nodes.keys()] };
 };
+
+// The file name of a path from the save dialog, on any platform.
+export const baseName = (filePath: string) => filePath.split(/[/\\]/).pop();
+
+// Every folder of the names.
+export const folderSet = (names: Iterable<string>, delimiter: string) => {
+  const folders = new Set<string>();
+  for (const name of names) {
+    foldersOf(name, delimiter).forEach(folder => folders.add(folder));
+  }
+  return folders;
+};
+
+// A zero-width space after each delimiter lets the path wrap there, and only
+// there.
+export const breakable = (name: string, delimiter: string) =>
+  name.split(delimiter).join(`${delimiter}\u200b`);

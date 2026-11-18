@@ -2,6 +2,7 @@
   position: relative;
 }
 
+/* Code font in a text area; antd has no font family token for inputs alone. */
 .input,
 .input textarea {
   font-family: var(--ant-font-family-code);
@@ -11,7 +12,7 @@
 
 .popup {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + var(--ant-margin-xxs));
   left: 0;
   right: 0;
   z-index: 10;
@@ -24,43 +25,27 @@
 .list {
   max-height: 240px;
   overflow-y: auto;
-  padding: 4px;
+  padding: var(--ant-padding-xxs);
 }
 
 .option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
+  padding: var(--ant-padding-xxs) var(--ant-padding-xs);
   border-radius: var(--ant-border-radius-sm);
   cursor: pointer;
-  font-family: var(--ant-font-family-code);
-  font-size: 13px;
 }
 
 .option[aria-selected='true'] {
   background: var(--ant-control-item-bg-hover);
 }
 
+/* Icon colours come from text tokens. */
 .icon {
   flex: none;
   color: var(--ant-color-text-tertiary);
 }
 
-.text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.parent {
-  color: var(--ant-color-text-tertiary);
-}
-
 .footer {
-  padding: 6px 12px;
+  display: block;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border-top: 1px solid var(--ant-color-split);
-  font-size: 12px;
-  color: var(--ant-color-text-tertiary);
 }

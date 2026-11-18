@@ -1,4 +1,4 @@
-import { Badge, Breadcrumb, Spin, Typography } from 'antd';
+import { Breadcrumb, Spin, Flex } from 'antd';
 import type { ReactNode } from 'react';
 import { useParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
@@ -8,11 +8,18 @@ import { isEnvironmentLocation, isOtherLocation } from '../../utils/location';
 import type { Location, LocationContext } from '../../utils/location';
 import type { Comparison } from '../../utils/compare';
 import { folderChain } from '../../utils/paths';
-import { environmentColorOf, layoutPattern } from '../../utils/structure';
-import EnvironmentDot from '../common/EnvironmentDot';
+import {
+  environmentColor,
+  environmentColorOf,
+  layoutPattern
+} from '../../utils/structure';
 import SelectionBar from './SelectionBar';
 import ServiceBar from './ServiceBar';
 import styles from './ParameterBreadcrumb.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import EnvironmentLabel from '../common/EnvironmentLabel';
+import NeutralBadge from '../common/NeutralBadge';
+import HintText from '../common/HintText';
 
 interface Crumb {
   key: string;
@@ -20,15 +27,8 @@ interface Crumb {
   location: Location;
 }
 
-const envLabel = (env: string, color: string | undefined) =>
-  color ? (
-    <span className={styles.env}>
-      <EnvironmentDot color={color} />
-      {env}
-    </span>
-  ) : (
-    env
-  );
+const envLabel = (env: string, color: string | null) =>
+  color ? <EnvironmentLabel color={color} name={env} /> : env;
 
 // The location and each place above it, outermost first.
 const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
@@ -44,7 +44,7 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
         const color = environmentColorOf(key, structure, delimiter);
         return {
           key,
-          label: envLabel(label, color ?? undefined),
+          label: envLabel(label, color),
           location: { view: 'paths', scope: key } as const
         };
       })
@@ -53,7 +53,11 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   const folders = folderChain(location.folder, delimiter);
   if (isOtherLocation(location)) {
     return [
-      { key: '', label: 'Other paths', location: { ...location, folder: '' } },
+      {
+        key: '',
+        label: OTHER_PATHS_LABEL,
+        location: { ...location, folder: '' }
+      },
       ...folders.map(({ key, label }) => ({
         key,
         label,
@@ -63,7 +67,7 @@ const crumbsOf = (location: Location, context: LocationContext): Crumb[] => {
   }
   if (isEnvironmentLocation(location)) {
     const { env, service } = location;
-    const color = structure.environments.find(e => e.segment === env)?.color;
+    const color = environmentColor(structure, env);
     const crumbs: Crumb[] = [
       {
         key: 'env',
@@ -138,28 +142,29 @@ const ParameterBreadcrumb = ({
 
   return (
     <div className={styles.header}>
-      <div className={styles.row}>
+      <Flex align="center" gap="small" className={styles.row}>
         <Breadcrumb items={items} className={styles.breadcrumb} />
         {loading ? (
           <Spin size="small" aria-label="Counting parameters" />
         ) : (
-          <Badge
-            count={count}
-            showZero
-            overflowCount={99999}
-            className={styles.count}
-          />
+          <NeutralBadge count={count} showZero overflowCount={99999} />
         )}
-        <div className={styles.end}>
+        <Flex
+          flex="auto"
+          align="center"
+          justify="flex-end"
+          gap="var(--ant-margin-sm)"
+          className={styles.end}
+        >
           {isOtherLocation(location) && (
-            <Typography.Text type="secondary" className={styles.hint} ellipsis>
+            <HintText ellipsis className={styles.hint}>
               Don&apos;t match{' '}
               {layoutPattern(context.structure.layout, context.delimiter)}
-            </Typography.Text>
+            </HintText>
           )}
           <SelectionBar checked={checked} />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
       <ServiceBar comparison={comparison} />
     </div>
   );

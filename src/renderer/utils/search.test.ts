@@ -4,8 +4,10 @@ import {
   createPathMatcher,
   createPrefixMatcher,
   globToRegExp,
+  globUnder,
   isGlobQuery,
-  literalPrefix
+  literalPrefix,
+  suggestFolders
 } from './search';
 
 const names = [
@@ -152,5 +154,29 @@ describe('literalPrefix', () => {
     expect(literalPrefix('/app/*/db')).toBe('/app/');
     expect(literalPrefix('/app/d?/x')).toBe('/app/d');
     expect(literalPrefix('**/Password')).toBe('');
+  });
+});
+
+describe('suggestFolders', () => {
+  it('lists folders under the typed path, shallowest first', () => {
+    const folders = [
+      '/app/',
+      '/app/prod/',
+      '/app/dev/',
+      '/app/prod/db/',
+      '/b/'
+    ];
+    expect(suggestFolders(folders, '/app/', '/')).toEqual([
+      '/app/dev/',
+      '/app/prod/',
+      '/app/prod/db/'
+    ]);
+  });
+});
+
+describe('globUnder', () => {
+  it('matches everything under a folder, or the root', () => {
+    expect(globUnder('/app/', '/')).toBe('/app/**');
+    expect(globUnder('', '/')).toBe('/**');
   });
 });

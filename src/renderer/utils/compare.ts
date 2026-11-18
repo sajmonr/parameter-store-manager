@@ -1,12 +1,16 @@
 // Compare mode: one service's keys side by side across its environments,
 // with the keys whose values differ and the keys some environment lacks.
 import type { StructureEnvironment } from '../../shared/structure';
-import type { ParameterEntry } from '../state/parameters';
-import { rowsFor, serviceEnvironments } from './location';
+import type { ParameterEntry } from './parameterList';
+import { rowsFor } from './location';
+import { environmentsOf } from './structure';
 import type { LocationContext, ServiceLocation } from './location';
 import { folderOf } from './paths';
 import type { Matcher } from './search';
 import { parse } from './structure';
+import { compareStrings } from '../../shared/sort';
+import { isEditableType } from '../../shared/parameterTypes';
+import { plural } from './plural';
 
 export type CompareFilter = 'all' | 'differs' | 'missing';
 
@@ -38,6 +42,16 @@ export interface Comparison {
   counts: Record<CompareFilter, number>;
 }
 
+// What compare mode lists: the comparison and the keys its filter keeps,
+// which aren't shown until a load has listed every name (`ready`). `failed`
+// when the first load stopped before it did.
+export interface Compared {
+  comparison: Comparison;
+  keys: CompareKey[];
+  ready: boolean;
+  failed: boolean;
+}
+
 const isDiffering = (key: CompareKey) => key.differs;
 const isMissing = (key: CompareKey) => key.missing.length > 0;
 
@@ -47,11 +61,8 @@ export const filterKeys = (keys: CompareKey[], filter: CompareFilter) => {
   return keys;
 };
 
-const byFolderThenKey = (a: CompareKey, b: CompareKey) => {
-  if (a.folder !== b.folder) return a.folder < b.folder ? -1 : 1;
-  if (a.key === b.key) return 0;
-  return a.key < b.key ? -1 : 1;
-};
+const byFolderThenKey = (a: CompareKey, b: CompareKey) =>
+  compareStrings(a.folder, b.folder) || compareStrings(a.key, b.key);
 
 // The raw stored string and the type: nothing is normalised.
 const valueId = ({ Type, Value }: ParameterEntry) =>
@@ -69,8 +80,7 @@ export const compare = (
   loading = false
 ): Comparison => {
   const { structure, delimiter } = ctx;
-  const service = structure.services.find(s => s.segment === location.service);
-  const environments = service ? serviceEnvironments(service, structure) : [];
+  const environments = environmentsOf(location.service, structure);
 
   const cellsByKey = new Map<string, Map<string, ParameterEntry>>();
   environments.forEach(({ segment: env }) => {
@@ -152,3 +162,70 @@ export const compareRows = (keys: CompareKey[]) => {
 export const isFolderRow = (
   row: CompareKey | CompareFolderRow
 ): row is CompareFolderRow => 'id' in row;
+
+// The parameter a sync copies from: the first, in environment order, whose
+// value can be copied, otherwise the first there is.
+export const copySourceOf = (
+  row: CompareKey,
+  environments: StructureEnvironment[]
+) => {
+  const present = environments.flatMap(({ segment }) => {
+    const parameter = row.cells.get(segment);
+    return parameter ? [parameter] : [];
+  });
+  return (
+    present.find(p => isEditableType(p.Type) && p.Value !== undefined) ??
+    present[0]
+  );
+};
+
+// Why the value of `source` can't be copied, or null when it can.
+export const copyBlockReason = (source: ParameterEntry | undefined) => {
+  if (!source || !isEditableType(source.Type)) {
+    return `${source?.Type ?? 'This type'} is not supported yet`;
+  }
+  if (source.Value === undefined) return "Can't read the value";
+  return null;
+};
+
+// How many of the keys each environment has, in the environments' order.
+export const countsByEnvironment = (comparison: Comparison) =>
+  comparison.environments.map(
+    ({ segment }) =>
+      comparison.keys.filter(key => key.cells.has(segment)).length
+  );
+
+export type EmptyReason =
+  'noKeys' | 'noMatches' | 'allSet' | 'uncompared' | 'allSame';
+
+// Why `filter` lists nothing, with the text to show.
+export const emptyReasonOf = (
+  comparison: Comparison,
+  filter: CompareFilter
+): { reason: EmptyReason; text: string } => {
+  if (!comparison.total) {
+    return { reason: 'noKeys', text: 'No keys in this folder' };
+  }
+  if (!comparison.keys.length) {
+    return { reason: 'noMatches', text: 'No keys match the search' };
+  }
+  if (filter === 'missing') {
+    return { reason: 'allSet', text: 'Every key is set in each environment' };
+  }
+  // Values that didn't load weren't compared, so they may differ.
+  const uncompared = comparison.keys.filter(k => k.unreadable.length).length;
+  if (uncompared) {
+    return {
+      reason: 'uncompared',
+      text: `No differences in the values that loaded. ${plural(uncompared, 'key')} couldn't be compared.`
+    };
+  }
+  return {
+    reason: 'allSame',
+    text: 'Every key has the same value in each environment'
+  };
+};
+
+// Whether the parameter `name` is one of the row's cells.
+export const rowHas = (row: CompareKey, name: string | null) =>
+  [...row.cells.values()].some(p => p.Name === name);

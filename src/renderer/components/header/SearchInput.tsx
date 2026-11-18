@@ -5,6 +5,7 @@ import { uiActions, useUiStore } from '../../state/ui';
 import { useLocation, useMatcher } from '../../state/views';
 import { shortFolder } from '../../utils/paths';
 import styles from './SearchInput.module.css';
+import Mono from '../common/Mono';
 
 // One box for plain-text and glob search. It matches full names in every
 // view. In the Paths view, the scoped folder shows as a tag inside the box;
@@ -28,7 +29,9 @@ const SearchInput = () => {
           uiActions.setScope('');
         }}
       >
-        {shortFolder(scope, delimiter)}
+        <Mono size="small" style={{ color: 'inherit' }}>
+          {shortFolder(scope, delimiter)}
+        </Mono>
       </Tag>
     </Tooltip>
   );

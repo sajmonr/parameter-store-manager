@@ -22,6 +22,14 @@ import type {
   ParameterType,
   PutParameterCommandInput
 } from '@aws-sdk/client-ssm';
+import {
+  DEFAULT_KMS_KEY,
+  DEFAULT_PARAMETER_TYPE,
+  isSecureType
+} from '../../shared/parameterTypes';
+import { DESCRIBE_PAGE_SIZE } from '../endpoints/parameters/describeParameters/describeParameters.contract';
+import { SSM_PATH_SEPARATOR } from '../../shared/aws';
+import { byString } from '../../shared/sort';
 
 export interface FakeParameter {
   Name: string;
@@ -69,7 +77,7 @@ const parameterOf = (parameter: FakeParameter): Parameter => ({
   Value: parameter.Value,
   Version: parameter.Version,
   LastModifiedDate: new Date(parameter.LastModifiedDate),
-  ARN: `${ARN_PREFIX}${parameter.Name.startsWith('/') ? '' : '/'}${parameter.Name}`,
+  ARN: `${ARN_PREFIX}${parameter.Name.startsWith(SSM_PATH_SEPARATOR) ? '' : SSM_PATH_SEPARATOR}${parameter.Name}`,
   DataType: 'text'
 });
 
@@ -87,7 +95,7 @@ export class FakeParameterStore {
     private readonly fixturePath: string,
     private readonly workingPath: string,
     // The most parameters a describe page returns.
-    private readonly pageSize = 50
+    private readonly pageSize = DESCRIBE_PAGE_SIZE
   ) {}
 
   private load(): FakeDataset {
@@ -126,7 +134,7 @@ export class FakeParameterStore {
     const prefix = beginsWithOf(input);
     const matching = this.load()
       .parameters.filter(p => p.Name.startsWith(prefix))
-      .sort((a, b) => (a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0));
+      .sort(byString(parameter => parameter.Name));
     const start = Number(input.NextToken ?? 0);
     if (!Number.isInteger(start) || start < 0) {
       throw awsError('InvalidNextToken', 'The specified token is not valid.');
@@ -166,13 +174,13 @@ export class FakeParameterStore {
         'The parameter already exists. To overwrite this value, set the overwrite option in the request to true.'
       );
     }
-    const type = Type ?? existing?.Type ?? 'String';
+    const type = Type ?? existing?.Type ?? DEFAULT_PARAMETER_TYPE;
     const parameter: FakeParameter = {
       Name,
       Type: type,
       Value,
       Description: Description ?? existing?.Description,
-      KeyId: type === 'SecureString' ? (KeyId ?? 'alias/aws/ssm') : undefined,
+      KeyId: isSecureType(type) ? (KeyId ?? DEFAULT_KMS_KEY) : undefined,
       Version: (existing?.Version ?? 0) + 1,
       LastModifiedDate: new Date().toISOString(),
       LastModifiedUser: 'arn:aws:iam::000000000000:user/fake-developer'

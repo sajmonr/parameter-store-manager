@@ -1,5 +1,4 @@
-import type { KeyboardEvent } from 'react';
-import { Tag, Tooltip } from 'antd';
+import { Tag, Tooltip, Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
@@ -8,6 +7,7 @@ import type { EnvironmentState } from '../../state/views';
 import EnvironmentDot from '../common/EnvironmentDot';
 import SetMissingMenu from '../setMissing/SetMissingMenu';
 import styles from './EnvironmentChips.module.css';
+import { onActivateKey } from '../../utils/keys';
 
 export interface EnvironmentChip {
   segment: string;
@@ -16,12 +16,6 @@ export interface EnvironmentChip {
   name: string;
   state: EnvironmentState;
 }
-
-const onActivate = (open: () => void) => (event: KeyboardEvent) => {
-  if (event.key !== 'Enter' && event.key !== ' ') return;
-  event.preventDefault();
-  open();
-};
 
 interface EnvironmentChipsProps {
   chips: EnvironmentChip[];
@@ -49,7 +43,7 @@ const EnvironmentChips = ({
   const current = sources.find(chip => chip.state === 'current')!;
 
   return (
-    <div className={styles.chips}>
+    <Flex gap="small" wrap className={styles.chips}>
       {chips.map(({ segment, color, name, state }) => {
         if (state === 'current') {
           return (
@@ -84,7 +78,7 @@ const EnvironmentChips = ({
                   tabIndex={0}
                   onClick={event => event.stopPropagation()}
                   onKeyDown={event =>
-                    onActivate(() => event.currentTarget.click())(event)
+                    onActivateKey(() => event.currentTarget.click())(event)
                   }
                 >
                   <EnvironmentDot color={color} />
@@ -104,7 +98,7 @@ const EnvironmentChips = ({
               role="button"
               tabIndex={0}
               onClick={open}
-              onKeyDown={onActivate(open)}
+              onKeyDown={onActivateKey(open)}
             >
               <EnvironmentDot color={color} />
               {segment}
@@ -112,7 +106,7 @@ const EnvironmentChips = ({
           </Tooltip>
         );
       })}
-    </div>
+    </Flex>
   );
 };
 

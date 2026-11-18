@@ -1,14 +1,6 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-}
-
+/* A native button: it takes the surrounding font and colour. */
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  padding: var(--ant-padding-sm) var(--ant-padding-sm);
   text-align: left;
   font: inherit;
   color: inherit;
@@ -45,21 +37,12 @@
   border-color: var(--ant-color-border);
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Icon colours and sizes come from tokens. */
 .icon {
-  font-size: 16px;
+  font-size: var(--ant-font-size-lg);
   color: var(--ant-color-text-secondary);
 }
 
 .selected .icon {
   color: var(--ant-color-primary);
-}
-
-.description {
-  font-size: 12px;
 }

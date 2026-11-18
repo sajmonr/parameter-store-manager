@@ -2,6 +2,8 @@ import { Button, Empty, Space, Typography } from 'antd';
 import { uiActions } from '../../state/ui';
 import { useLocation, useMatcher } from '../../state/views';
 import styles from './StateLayout.module.css';
+import CenteredState from '../common/CenteredState';
+import HintText from '../common/HintText';
 
 const NoResults = () => {
   const { query } = useMatcher();
@@ -19,7 +21,7 @@ const NoResults = () => {
   }
 
   return (
-    <div className={styles.center}>
+    <CenteredState>
       <Empty
         className={styles.content}
         description={
@@ -28,9 +30,7 @@ const NoResults = () => {
               No parameters match{' '}
               <Typography.Text code>{query}</Typography.Text>
             </Typography.Text>
-            <Typography.Text type="secondary" className={styles.hint}>
-              {hint}
-            </Typography.Text>
+            <HintText className={styles.hint}>{hint}</HintText>
           </>
         }
       >
@@ -43,7 +43,7 @@ const NoResults = () => {
           )}
         </Space>
       </Empty>
-    </div>
+    </CenteredState>
   );
 };
 

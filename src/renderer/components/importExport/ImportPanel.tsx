@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Flex, Typography, Upload } from 'antd';
 import { GlobalOutlined, InboxOutlined } from '@ant-design/icons';
-import type { FormatId } from '../../state/export';
+import type { FormatId } from '../../../shared/fileFormats';
 import { useImportStore } from '../../state/import';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import type { ImportFile } from '../../utils/importFile';
 import FormatCards from './FormatCards';
-import { FORMATS, formatById } from './formats';
+import {
+  DEFAULT_IMPORT_FORMAT,
+  formatById,
+  IMPORT_ACCEPT,
+  importFormatOf
+} from '../../utils/formats';
 import ImportReview from './ImportReview';
 import styles from './ImportPanel.module.css';
+import HintText from '../common/HintText';
 
 export interface LoadedFile {
   name: string;
@@ -17,26 +23,10 @@ export interface LoadedFile {
   data: ImportFile;
 }
 
-// JSON when it can be imported: it also has the region and export time.
-const DEFAULT_FORMAT =
-  FORMATS.find(format => format.id === 'json' && format.canImport)?.id ??
-  FORMATS.find(format => format.canImport)!.id;
-
-// Every importable extension: a file is read as the format it names.
-const ACCEPT = FORMATS.filter(format => format.canImport)
-  .map(format => `.${format.id}`)
-  .join(',');
-
-// The importable format a file's extension names, if any.
-const formatOfFile = (fileName: string) => {
-  const extension = fileName.split('.').pop()?.toLowerCase();
-  return FORMATS.find(format => format.canImport && format.id === extension);
-};
-
 // Step 1 picks a file and checks it; step 2 reviews and imports it. A file
 // that isn't a valid export never reaches the review.
 const ImportPanel = () => {
-  const [formatId, setFormatId] = useState<FormatId>(DEFAULT_FORMAT);
+  const [formatId, setFormatId] = useState<FormatId>(DEFAULT_IMPORT_FORMAT);
   const [file, setFile] = useState<LoadedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const importing = useImportStore(state => state.running);
@@ -47,7 +37,7 @@ const ImportPanel = () => {
   // A file is read as the format its extension names, which then shows as
   // picked; otherwise as the picked format.
   const onFile = async (picked: File) => {
-    const read = formatOfFile(picked.name) ?? format;
+    const read = importFormatOf(picked.name) ?? format;
     if (!read.canImport) return;
     setFormatId(read.id);
     const result = read.parse(await picked.text());
@@ -78,7 +68,7 @@ const ImportPanel = () => {
   } else {
     step = (
       <Upload.Dragger
-        accept={ACCEPT}
+        accept={IMPORT_ACCEPT}
         multiple={false}
         showUploadList={false}
         // Read here instead of uploaded.
@@ -87,22 +77,27 @@ const ImportPanel = () => {
           return false;
         }}
       >
-        <Flex vertical align="center" gap={4} className={styles.dropZone}>
+        <Flex
+          vertical
+          align="center"
+          gap="var(--ant-margin-xxs)"
+          className={styles.dropZone}
+        >
           <InboxOutlined className={styles.dropIcon} />
           <Typography.Text>
             Drop a {extension} file here, or{' '}
             <Typography.Link>choose a file</Typography.Link>
           </Typography.Text>
-          <Typography.Text type="secondary">
+          <HintText>
             Use a file exported from this app as {format.label}.
-          </Typography.Text>
+          </HintText>
         </Flex>
       </Upload.Dragger>
     );
   }
 
   return (
-    <Flex vertical gap={16}>
+    <Flex vertical gap="middle">
       {/* Where the parameters go: the region in Settings, never the file's. */}
       <Alert
         type="info"
@@ -128,9 +123,9 @@ const ImportPanel = () => {
         title={
           <Flex vertical>
             Format
-            <Typography.Text type="secondary" className={styles.subtitle}>
+            <HintText className={styles.subtitle}>
               The format the file was exported in.
-            </Typography.Text>
+            </HintText>
           </Flex>
         }
       >

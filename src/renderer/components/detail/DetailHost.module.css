@@ -1,8 +1,5 @@
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 20px 22px;
+  padding: var(--ant-padding-md) var(--ant-padding-lg);
 }
 
 .pane {

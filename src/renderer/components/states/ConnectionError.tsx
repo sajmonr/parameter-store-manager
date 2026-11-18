@@ -11,6 +11,8 @@ import type { LoadState } from '../../state/parameters';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
+import { profileLabel } from '../../../shared/aws';
+import CenteredState from '../common/CenteredState';
 
 const Code = (props: ComponentProps<typeof Typography.Text>) => (
   <Typography.Text code {...props} />
@@ -25,7 +27,7 @@ const ConnectionError = ({
   const profile = useSettingsStore(settings => settings.profile);
   const region = useSettingsStore(settings => settings.ssmRegion);
   const { fetchError: error, refresh } = useParameters();
-  const profileName = profile || 'default';
+  const profileName = profileLabel(profile);
 
   let result: ResultProps;
   if (kind === 'expired') {
@@ -72,7 +74,7 @@ const ConnectionError = ({
   }
 
   return (
-    <div className={styles.center}>
+    <CenteredState>
       <Result
         className={styles.content}
         {...result}
@@ -87,7 +89,7 @@ const ConnectionError = ({
           </Space>
         }
       />
-    </div>
+    </CenteredState>
   );
 };
 

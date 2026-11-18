@@ -1,54 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Alert, Card, Checkbox, Flex, Form, Select, Typography } from 'antd';
+import { Alert, Card, Checkbox, Flex, Form, Select } from 'antd';
 import type { ListProfilesResponse } from '../../../main/endpoints/aws/listProfiles/listProfiles.contract';
 import usePageVisible from '../../hooks/usePageVisible';
 import { profilesService } from '../../services';
 import { useExportStore } from '../../state/export';
 import { useSettingsStore } from '../../state/settings';
-import { AWS_REGIONS } from '../../utils/awsRegions';
+import { profileChoices, regionOptions } from '../../utils/awsSettings';
 import useSaveSettings from './useSaveSettings';
 import styles from './Settings.module.css';
+import MetaText from '../common/MetaText';
 
-const regionOptions = (current: string) =>
-  [...new Set([...AWS_REGIONS, current].filter(Boolean))]
-    .sort()
-    .map(region => ({ value: region, label: region }));
-
-// The empty profile means the SDK default: AWS_PROFILE if set, otherwise the
-// profile named "default". Without AWS_PROFILE the two are the same, so the
-// empty profile is shown as "default"; with it, both are listed.
-const profileOptions = (
-  { profiles, envProfile }: ListProfilesResponse,
-  current: string
-) => {
-  const sourceText = (name: string) => {
-    const found = profiles.find(p => p.name === name);
-    return found && `from ~/.aws/${found.source}`;
-  };
-  const names = profiles
-    .map(p => p.name)
-    .filter(name => envProfile || name !== 'default');
-  if (current && !names.includes(current)) names.unshift(current);
-  const sdkDefault = envProfile
-    ? { value: '', name: 'SDK default', suffix: `AWS_PROFILE=${envProfile}` }
-    : { value: '', name: 'default', suffix: sourceText('default') };
-  return [
-    sdkDefault,
-    ...names.map(name => ({ value: name, name, suffix: sourceText(name) }))
-  ].map(({ value, name, suffix }) => ({
+const profileOptions = (profiles: ListProfilesResponse, current: string) =>
+  profileChoices(profiles, current).map(({ value, name, suffix }) => ({
     value,
     label: (
-      <Flex justify="space-between" align="center" gap={8}>
+      <Flex justify="space-between" align="center" gap="small">
         <span>{name}</span>
-        {suffix && (
-          <Typography.Text type="secondary" className={styles.suffix}>
-            {suffix}
-          </Typography.Text>
-        )}
+        {suffix && <MetaText>{suffix}</MetaText>}
       </Flex>
     )
   }));
-};
 
 const AwsConnectionSection = () => {
   const saved = useSettingsStore();
@@ -107,7 +78,7 @@ const AwsConnectionSection = () => {
             onChange={(profile: string) => save({ profile })}
           />
         </Form.Item>
-        <Flex gap={12}>
+        <Flex gap="var(--ant-margin-sm)">
           <Form.Item
             label="SSM region"
             htmlFor="settings-ssm-region"

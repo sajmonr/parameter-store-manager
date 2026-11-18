@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
-import { Badge, Button, Tooltip } from 'antd';
+import { Badge, Button, Tooltip, Flex } from 'antd';
 import {
   SettingOutlined,
   SwapOutlined,
   UnorderedListOutlined
 } from '@ant-design/icons';
-import { describeProgress, useExportStore } from '../../state/export';
+import { useExportStore } from '../../state/export';
+import { countOf, describeExportProgress } from '../../utils/progress';
 import { useImportStore } from '../../state/import';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { Page } from '../../state/ui';
@@ -66,9 +67,9 @@ const ImportExportItem = () => {
   const label = 'Import & export';
   let tooltip: string | undefined;
   if (importing) {
-    tooltip = `${label}: Importing ${imported.toLocaleString()} of ${toImport.toLocaleString()}…`;
+    tooltip = `${label}: Importing ${countOf(imported, toImport)}…`;
   } else if (progress) {
-    tooltip = `${label}: ${describeProgress(progress)}`;
+    tooltip = `${label}: ${describeExportProgress(progress)}`;
   }
   return (
     <RailItem
@@ -84,7 +85,14 @@ const ImportExportItem = () => {
 
 // The app's pages, with Settings pinned to the bottom.
 const Rail = () => (
-  <nav className={styles.rail} aria-label="Pages">
+  <Flex
+    component="nav"
+    vertical
+    align="center"
+    gap="var(--ant-margin-xxs)"
+    className={styles.rail}
+    aria-label="Pages"
+  >
     <RailItem
       page="parameters"
       label="Parameters"
@@ -100,7 +108,7 @@ const Rail = () => (
       icon={<SettingOutlined />}
       onClick={() => uiActions.openSettings()}
     />
-  </nav>
+  </Flex>
 );
 
 export default Rail;

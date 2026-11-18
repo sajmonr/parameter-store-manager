@@ -37,7 +37,7 @@ const renderApp = () =>
   });
 
 const table = () => document.querySelector<HTMLElement>('.ant-table')!;
-const sidebar = () => document.querySelector<HTMLElement>('.ant-layout-sider')!;
+const sidebar = () => screen.getByRole('navigation', { name: 'Sidebar' });
 const breadcrumb = () =>
   document.querySelector<HTMLElement>('.ant-breadcrumb')!;
 const rowKeys = () =>
@@ -107,7 +107,7 @@ describe('Environments view', () => {
     // The view switcher and the group title.
     expect(within(sidebar()).getAllByText('Environments')).toHaveLength(2);
     expect(within(sidebar()).getByText('development')).toBeInTheDocument();
-    expect(within(sidebar()).getByText('Other paths')).toBeInTheDocument();
+    expect(within(sidebar()).getByTitle('Root')).toBeInTheDocument();
     expect(rowKeys()).toEqual([
       JSON.stringify(['group', 'compass']),
       '/development/compass/AppServer/Port',

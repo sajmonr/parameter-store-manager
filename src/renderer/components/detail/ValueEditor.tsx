@@ -1,14 +1,17 @@
 import { useId, useState } from 'react';
-import { App, Button, Flex, Form, Input, Typography } from 'antd';
+import { Button, Flex, Form, Input } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { isEditableType } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { isEditableType } from '../../../shared/parameterTypes';
 import { usePutParameter } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { leafOf } from '../../utils/paths';
-import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/newParameter';
+import { isValueValid, MAX_VALUE_LENGTH } from '../../utils/parameterValue';
 import { isSubmitShortcut } from '../../utils/keys';
 import styles from './ValueEditor.module.css';
+import { DESCRIPTION_PLACEHOLDER } from '../../utils/labels';
+import { notifyError, notifySuccess } from '../../utils/notify';
+import HintText from '../common/HintText';
 
 // Inline edit of the value and description. The name, type and KMS key
 // can't be changed here.
@@ -18,7 +21,6 @@ interface ValueEditorProps {
 }
 
 const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
-  const { notification } = App.useApp();
   const delimiter = usePathDelimiter();
   const putParameter = usePutParameter();
   const [value, setValue] = useState(parameter.Value || '');
@@ -40,24 +42,19 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
         overwrite: true
       })
       .then(result => {
-        notification.success({
-          title: 'Parameter saved',
+        notifySuccess('Parameter saved', {
           description: `${leafOf(parameter.Name, delimiter)} · version ${result.version}`
         });
         onDone();
       })
-      .catch(err => {
-        notification.error({
-          title: 'Parameter was not saved',
-          description: err.message || ''
-        });
+      .catch(error => {
+        notifyError('Parameter was not saved', error);
       });
   };
 
   return (
     <Form
       layout="vertical"
-      className={styles.form}
       onKeyDown={event => {
         if (isSubmitShortcut(event)) save();
       }}
@@ -79,13 +76,13 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
           id={`${id}-description`}
           value={description}
           onChange={event => setDescription(event.target.value)}
-          placeholder="What reads this value?"
+          placeholder={DESCRIPTION_PLACEHOLDER}
         />
       </Form.Item>
-      <Flex align="center" gap={8}>
-        <Typography.Text type="secondary" className={styles.hint}>
+      <Flex align="center" gap="small">
+        <HintText className={styles.hint}>
           <InfoCircleOutlined /> Saves as version {(parameter.Version || 0) + 1}
-        </Typography.Text>
+        </HintText>
         <Button onClick={onDone}>Cancel</Button>
         <Button
           type="primary"

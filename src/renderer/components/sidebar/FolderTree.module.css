@@ -1,7 +1,7 @@
 .container {
   flex: 1;
   min-height: 0;
-  padding: 8px 4px;
+  padding: var(--ant-padding-xs) var(--ant-padding-xxs);
   overflow: hidden;
 }
 
@@ -18,9 +18,6 @@
 }
 
 .title {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
   min-width: 0;
 }
 
@@ -34,10 +31,14 @@
 
 .count {
   flex: none;
-  font-size: 12px;
+  /* Not CountText: the colour follows the node's selection (below), which
+     an inline token colour would override. */
+  font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-tertiary);
 }
 
+/* The count follows the selected node's colour; Tree's selected-node
+   tokens style only its own title. */
 :global(.ant-tree-treenode-selected) .count {
   color: var(--ant-color-primary);
 }
@@ -52,29 +53,18 @@
 }
 
 .group {
-  padding: 8px 12px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ant-color-text-tertiary);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm) var(--ant-padding-xxs);
 }
 
-.group + :global(.ant-tree) {
-  margin-bottom: 8px;
+.groupTree {
+  margin-bottom: var(--ant-margin-xs);
 }
 
+/* A zero count is fainter. */
 .empty {
   color: var(--ant-color-text-quaternary);
 }
 
 .menuPath {
-  font-size: 12px;
   word-break: break-all;
-}
-
-.menuItem {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
 }

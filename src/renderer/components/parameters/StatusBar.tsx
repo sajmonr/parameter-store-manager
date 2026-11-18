@@ -1,30 +1,15 @@
+import { Flex } from 'antd';
 import { useParameters } from '../../state/parameters';
-import type { LoadState } from '../../state/parameters';
 import { useUiStore } from '../../state/ui';
 import {
   useLoaded,
   useSelectedParameter,
   useVisibleParameters
 } from '../../state/views';
-import { plural } from '../../utils/plural';
-import type { Compared } from './ParameterBrowser';
+import type { Compared } from '../../utils/compare';
+import { statusText } from '../../utils/statusText';
 import SyncStatus from './SyncStatus';
 import styles from './StatusBar.module.css';
-
-// Counts wait for the first load, like the sidebar's and the tabs'.
-const statusText = (
-  loadState: LoadState,
-  loaded: boolean,
-  visible: number,
-  total: number,
-  compared: Compared | null
-) => {
-  if (loadState === 'loading' || !loaded) return 'Loading…';
-  if (loadState !== 'ready') return '—';
-  if (!compared) return `${visible} of ${total} parameters`;
-  const { comparison, keys } = compared;
-  return `${keys.length} of ${plural(comparison.total, 'key')} · ${plural(comparison.environments.length, 'environment')}`;
-};
 
 // The rows listed and the sync state, with the keys that work: the arrow
 // keys move between rows, but not between compared keys, and Esc closes an
@@ -45,13 +30,18 @@ const StatusBar = ({ compared }: { compared: Compared | null }) => {
   ].filter(Boolean);
 
   return (
-    <div className={styles.bar}>
-      <span className={styles.start}>
+    <Flex align="center" justify="space-between" className={styles.bar}>
+      <Flex
+        component="span"
+        align="center"
+        gap="small"
+        className={styles.start}
+      >
         <span>{statusText(loadState, loaded, visible, total, compared)}</span>
         <SyncStatus />
-      </span>
+      </Flex>
       {hints.length > 0 && <span>{hints.join(' · ')}</span>}
-    </div>
+    </Flex>
   );
 };
 

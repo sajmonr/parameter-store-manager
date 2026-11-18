@@ -1,7 +1,8 @@
-import { Badge, Button, Tooltip } from 'antd';
+import { Button, Tooltip, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import styles from './SelectionBar.module.css';
+import NeutralBadge from '../common/NeutralBadge';
 
 // The actions for the checked rows, in a small card at the end of the
 // breadcrumb row while there are any. Move and Copy to environment will join
@@ -9,8 +10,14 @@ import styles from './SelectionBar.module.css';
 const SelectionBar = ({ checked }: { checked: string[] }) => {
   if (!checked.length) return null;
   return (
-    <Badge count={checked.length} overflowCount={9999} className={styles.count}>
-      <div role="toolbar" aria-label="Selection" className={styles.bar}>
+    <NeutralBadge solid count={checked.length} overflowCount={9999}>
+      <Flex
+        align="center"
+        gap="small"
+        role="toolbar"
+        aria-label="Selection"
+        className={styles.bar}
+      >
         <Tooltip title="Clear selection">
           <Button
             type="text"
@@ -34,8 +41,8 @@ const SelectionBar = ({ checked }: { checked: string[] }) => {
         >
           Delete
         </Button>
-      </div>
-    </Badge>
+      </Flex>
+    </NeutralBadge>
   );
 };
 

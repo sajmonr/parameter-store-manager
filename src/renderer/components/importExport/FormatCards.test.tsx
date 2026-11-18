@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FormatCards from './FormatCards';
-import { FORMATS } from './formats';
-import type { Format } from './formats';
+import { FORMATS } from '../../utils/formats';
+import type { Format } from '../../utils/formats';
 
 // A format only Export can use, added the way a new one would be.
 const exportOnly: Format = {

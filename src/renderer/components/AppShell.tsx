@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { PageVisibleContext } from '../hooks/usePageVisible';
@@ -11,6 +12,7 @@ import ParametersPage from './pages/ParametersPage';
 import ImportExportPage from './pages/ImportExportPage';
 import SettingsPage from './pages/SettingsPage';
 import styles from './AppShell.module.css';
+import { cx } from '../utils/classNames';
 
 const onSettingsShortcut = (event: KeyboardEvent) => {
   if (!isSettingsShortcut(event)) return;
@@ -26,7 +28,7 @@ const PageFrame = ({ page, children }: { page: Page; children: ReactNode }) => {
   return (
     <PageVisibleContext.Provider value={visible}>
       <div
-        className={visible ? styles.page : `${styles.page} ${styles.hidden}`}
+        className={cx(styles.page, !visible && styles.hidden)}
         aria-hidden={!visible}
       >
         {children}
@@ -46,7 +48,7 @@ const AppShell = () => {
   }, []);
 
   return (
-    <div className={styles.shell} style={layoutVariables}>
+    <Flex className={styles.shell} style={layoutVariables}>
       <Rail />
       <main className={styles.pages}>
         <PageFrame page="parameters">
@@ -59,7 +61,7 @@ const AppShell = () => {
           <SettingsPage />
         </PageFrame>
       </main>
-    </div>
+    </Flex>
   );
 };
 

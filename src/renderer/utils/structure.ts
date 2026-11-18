@@ -1,8 +1,48 @@
 // Reads a service, an environment and a key out of parameter names, as the
 // structure setting describes them. A name that doesn't fit is listed under
 // Other paths.
-import type { Layout, Structure } from '../../shared/structure';
+import type {
+  Layout,
+  Structure,
+  StructureService
+} from '../../shared/structure';
 import { folderLabel, foldersOf, rootFolder } from './paths';
+
+export const findService = ({ services }: Structure, segment: string) =>
+  services.find(s => s.segment === segment);
+
+export const findEnvironment = (
+  { environments }: Structure,
+  segment: string | null
+) => environments.find(e => e.segment === segment);
+
+// The colour of a configured environment, or null.
+export const environmentColor = (structure: Structure, segment: string) =>
+  findEnvironment(structure, segment)?.color ?? null;
+
+// The service's environments, in the configured order.
+export const serviceEnvironments = (
+  service: StructureService,
+  structure: Structure
+) =>
+  structure.environments.filter(e => service.environments.includes(e.segment));
+
+// The service's environments in the configured order, or none when the
+// service isn't configured.
+export const environmentsOf = (service: string, structure: Structure) => {
+  const configured = findService(structure, service);
+  return configured ? serviceEnvironments(configured, structure) : [];
+};
+
+// `preferred` if the service is in it, otherwise its first environment.
+export const envFor = (
+  service: StructureService,
+  preferred: string | null,
+  structure: Structure
+) => {
+  const envs = serviceEnvironments(service, structure).map(e => e.segment);
+  return preferred && envs.includes(preferred) ? preferred : (envs[0] ?? '');
+};
 
 export interface Match {
   env: string;
@@ -147,9 +187,10 @@ export const layoutPattern = (layout: Layout, delimiter: string) => {
 // service's folder with the services convention.
 export const environmentColorOf = (
   folder: string,
-  { enabled, layout, environments, services }: Structure,
+  structure: Structure,
   delimiter: string
 ) => {
+  const { enabled, layout } = structure;
   if (!enabled) return null;
   const chain = foldersOf(folder, delimiter);
   const depth = layout === 'env-first' ? 1 : 2;
@@ -157,10 +198,9 @@ export const environmentColorOf = (
   const [first] = chain as [string];
   if (
     layout === 'svc-first' &&
-    !services.some(s => s.segment === folderLabel(first, delimiter))
+    !findService(structure, folderLabel(first, delimiter))
   ) {
     return null;
   }
-  const segment = folderLabel(folder, delimiter);
-  return environments.find(e => e.segment === segment)?.color ?? null;
+  return environmentColor(structure, folderLabel(folder, delimiter));
 };

@@ -1,4 +1,4 @@
-import { Drawer } from 'antd';
+import { Drawer, Flex } from 'antd';
 import { useParameters } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useSelectedParameter } from '../../state/views';
@@ -7,6 +7,7 @@ import usePageVisible from '../../hooks/usePageVisible';
 import ParameterDetail from './ParameterDetail';
 import ParameterForm from '../form/ParameterForm';
 import styles from './DetailHost.module.css';
+import { DRAWER_WIDTH } from '../../utils/layout';
 
 // Hosts the selected parameter or the new-parameter form: docked on the
 // right in a wide window, as a drawer in a narrow one. Not rendered at all
@@ -43,21 +44,31 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
         onClose={close}
         getContainer={false}
         placement="right"
-        size={420}
+        size={DRAWER_WIDTH}
         closable={false}
         keyboard={false}
         styles={{ body: { padding: 0 } }}
       >
-        {content && <div className={styles.content}>{content}</div>}
+        {content && (
+          <Flex vertical gap="middle" className={styles.content}>
+            {content}
+          </Flex>
+        )}
       </Drawer>
     );
   }
 
   return (
     content && (
-      <aside className={styles.pane} aria-label="Details">
+      <Flex
+        component="aside"
+        vertical
+        gap="middle"
+        className={styles.pane}
+        aria-label="Details"
+      >
         {content}
-      </aside>
+      </Flex>
     )
   );
 };

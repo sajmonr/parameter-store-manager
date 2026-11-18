@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { makeParameter } from '../test/testState';
-import { copyRequest, copySummary, copyTargets } from './copyValue';
+import {
+  copyButtonLabel,
+  copyRequest,
+  copySummary,
+  copyTargets,
+  filterTargets,
+  isEncrypted,
+  selectAllState,
+  selectionOf,
+  sourceEnvironments
+} from './copyValue';
 import type { CopyEnvironment } from './copyValue';
 
 const env = (
@@ -126,5 +136,74 @@ describe('copySummary', () => {
       text: '1 new',
       overwrites: 0
     });
+  });
+});
+
+describe('sourceEnvironments', () => {
+  it('lists the environments that have the key, with their type', () => {
+    expect(
+      sourceEnvironments(
+        [env('dev', 'current'), env('legacy'), env('test', 'missing')],
+        byName
+      ).map(e => [e.segment, e.type])
+    ).toEqual([
+      ['dev', 'SecureString'],
+      ['legacy', 'StringList']
+    ]);
+  });
+});
+
+describe('isEncrypted', () => {
+  it('is true for a String copied into a SecureString', () => {
+    const plain = makeParameter('/staging/app/Key', { Value: 'v' });
+    expect(isEncrypted(plain, target('prod'))).toBe(true);
+    expect(isEncrypted(plain, target('test'))).toBe(false);
+    expect(isEncrypted(source, target('prod'))).toBe(false);
+  });
+});
+
+describe('filterTargets', () => {
+  it("doesn't filter a short list", () => {
+    expect(filterTargets(targets, 'prod')).toEqual({
+      filtering: false,
+      listed: targets
+    });
+  });
+
+  it('filters a long list by environment, ignoring case', () => {
+    const long = [...targets, { ...target('test'), segment: 'Production' }];
+    const { filtering, listed } = filterTargets(long, ' PROD ');
+    expect(filtering).toBe(true);
+    expect(listed.map(t => t.segment)).toEqual(['prod', 'Production']);
+  });
+});
+
+describe('selectionOf and selectAllState', () => {
+  it('ignores targets that already have the value', () => {
+    const picked = new Set(['staging', 'prod']);
+    const { selectable, selected } = selectionOf(targets, picked);
+    expect(selectable.map(t => t.segment)).toEqual([
+      'prod',
+      'qa',
+      'legacy',
+      'test'
+    ]);
+    expect(selected.map(t => t.segment)).toEqual(['prod']);
+    expect(selectAllState(targets, picked)).toMatchObject({
+      checked: false,
+      indeterminate: true
+    });
+    expect(
+      selectAllState(targets, new Set(['prod', 'qa', 'legacy', 'test']))
+    ).toMatchObject({ checked: true, indeterminate: false });
+  });
+});
+
+describe('copyButtonLabel', () => {
+  it('shows the progress, else the count', () => {
+    expect(copyButtonLabel(undefined, 0)).toBe('Copy');
+    expect(copyButtonLabel(undefined, 2)).toBe('Copy to 2 environments');
+    expect(copyButtonLabel({ done: 1, total: 3 }, 3)).toBe('Copying 2 of 3…');
+    expect(copyButtonLabel({ done: 3, total: 3 }, 3)).toBe('Copying 3 of 3…');
   });
 });

@@ -3,23 +3,26 @@ import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { useSettingsStore } from '../../state/settings';
 import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
+import { profileLabel } from '../../../shared/aws';
+import CenteredState from '../common/CenteredState';
+import HintText from '../common/HintText';
 
 const EmptyAccount = () => {
-  const profile = useSettingsStore(settings => settings.profile) || 'default';
+  const profile = profileLabel(useSettingsStore(settings => settings.profile));
   const region = useSettingsStore(settings => settings.ssmRegion);
 
   return (
-    <div className={styles.center}>
+    <CenteredState>
       <Empty
         className={styles.content}
         description={
           <>
             <Typography.Text strong>No parameters in {region}</Typography.Text>
-            <Typography.Text type="secondary" className={styles.hint}>
+            <HintText className={styles.hint}>
               Profile <Typography.Text code>{profile}</Typography.Text> can read
               Parameter Store here, but nothing has been created yet. Wrong
               region? Change it in Settings.
-            </Typography.Text>
+            </HintText>
           </>
         }
       >
@@ -39,7 +42,7 @@ const EmptyAccount = () => {
           </Button>
         </Space>
       </Empty>
-    </div>
+    </CenteredState>
   );
 };
 

@@ -4,17 +4,9 @@
   overflow: hidden;
 }
 
-.table :global(.ant-table) {
-  border-radius: 0;
-}
-
-.table :global(.ant-table-container) {
-  border-radius: 0;
-}
-
+/* Table has no token for the header's font size alone. */
 .table :global(.ant-table-thead > tr > th) {
-  border-radius: 0 !important;
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
 }
 
 /* Placeholder rows line up with the columns themselves, without the
@@ -38,13 +30,10 @@
   overflow: hidden !important;
 }
 
+/* Any row opens its parameter. The open row is marked like a selected
+   one; Table's selection tokens apply only to checked rows. */
 .table :global(.ant-table-row) {
   cursor: pointer;
-}
-
-.table :global(.ant-table-tbody .ant-table-cell) {
-  padding-top: 9px;
-  padding-bottom: 9px;
 }
 
 .table .selected > :global(.ant-table-cell),
@@ -56,32 +45,7 @@
   box-shadow: inset 2px 0 0 var(--ant-color-primary);
 }
 
-.lock {
-  color: var(--ant-color-warning);
-}
-
 .table .groupRow > :global(.ant-table-cell),
 .table .groupRow:hover > :global(.ant-table-cell) {
   background: var(--ant-color-fill-quaternary);
-}
-
-.group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.groupName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.groupCount {
-  font-size: 12px;
-  font-weight: normal;
-  color: var(--ant-color-text-tertiary);
 }

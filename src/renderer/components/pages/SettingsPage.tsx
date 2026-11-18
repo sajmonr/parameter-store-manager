@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Menu, Typography } from 'antd';
+import { Menu, Typography, Flex } from 'antd';
 import {
   AppstoreOutlined,
   BgColorsOutlined,
@@ -13,6 +13,12 @@ import ServicesSection from '../settings/ServicesSection';
 import PageHeading from './PageHeading';
 import pageStyles from './Page.module.css';
 import styles from './SettingsPage.module.css';
+import { cx } from '../../utils/classNames';
+import {
+  SETTINGS_MAX_WIDTH,
+  SETTINGS_WIDE_MAX_WIDTH
+} from '../../utils/layout';
+import HintText from '../common/HintText';
 
 interface SectionInfo {
   key: SettingsSection;
@@ -41,7 +47,7 @@ const sections: SectionInfo[] = [
     description:
       'Tell the app how your parameter paths are built so it can group them by service and environment. This only changes how the app reads paths. Nothing is renamed in AWS.',
     Content: ServicesSection,
-    maxWidth: 880
+    maxWidth: SETTINGS_WIDE_MAX_WIDTH
   },
   {
     key: 'display',
@@ -62,7 +68,7 @@ const SettingsPage = () => {
   const current = useUiStore(state => state.settingsSection);
 
   return (
-    <div className={styles.layout}>
+    <Flex className={styles.layout}>
       <nav className={styles.nav} aria-label="Settings sections">
         <Typography.Title level={4} className={styles.title}>
           Settings
@@ -78,12 +84,13 @@ const SettingsPage = () => {
           styles={{ root: { borderInlineEnd: 'none' } }}
         />
       </nav>
-      <div className={`${pageStyles.scroll} ${styles.main}`}>
+      <div className={cx(pageStyles.scroll, styles.main)}>
         <div
           className={pageStyles.content}
           style={{
             maxWidth:
-              sections.find(section => section.key === current)?.maxWidth ?? 680
+              sections.find(section => section.key === current)?.maxWidth ??
+              SETTINGS_MAX_WIDTH
           }}
         >
           {/* All sections stay mounted, so each keeps its local state. */}
@@ -93,12 +100,12 @@ const SettingsPage = () => {
               <Content />
             </section>
           ))}
-          <Typography.Text type="secondary" className={styles.footer}>
+          <HintText className={styles.footer}>
             Changes are saved automatically.
-          </Typography.Text>
+          </HintText>
         </div>
       </div>
-    </div>
+    </Flex>
   );
 };
 

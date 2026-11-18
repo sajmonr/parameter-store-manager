@@ -12,6 +12,7 @@ import { withCallLog } from './awsLog';
 import { withFakeSource } from './fake/fakeAws';
 import { availableSettings, getSetting } from './settings';
 import { isFakeSource } from './source';
+import { profileLabel } from '../shared/aws';
 
 // Order: env AWS_* -> shared ini profile (which also covers SSO, assumed
 // roles and credential_process) -> credential_process.
@@ -65,7 +66,7 @@ const getClient = <T extends AwsClient>(
     withCallLog(
       client,
       service.toUpperCase(),
-      `${region}, profile ${profile || 'default'}${fake ? ', fake' : ''}`
+      `${region}, profile ${profileLabel(profile)}${fake ? ', fake' : ''}`
     );
     if (fake) withFakeSource(client);
     clients.set(key, client);

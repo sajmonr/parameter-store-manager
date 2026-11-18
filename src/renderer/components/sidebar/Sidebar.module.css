@@ -1,9 +1,9 @@
 .switcher {
   flex: none;
-  padding: 12px 12px 4px;
+  padding: var(--ant-padding-sm) var(--ant-padding-sm) var(--ant-padding-xxs);
 }
 
 .skeleton {
   flex: 1;
-  padding: 12px 16px;
+  padding: var(--ant-padding-sm) var(--ant-padding);
 }

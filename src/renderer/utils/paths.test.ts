@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  baseName,
+  breakable,
   buildFolderTree,
   folderChain,
   folderOf,
+  folderSet,
   foldersOf,
   leafOf,
   rootFolder,
@@ -90,5 +93,24 @@ describe('buildFolderTree', () => {
 
   it('returns no folders for no names', () => {
     expect(buildFolderTree([], '/')).toEqual({ roots: [], keys: [] });
+  });
+});
+
+describe('breakable', () => {
+  it('adds a zero-width space after each delimiter', () => {
+    expect(breakable('/a/b', '/')).toBe('/\u200ba/\u200bb');
+  });
+});
+
+describe('folderSet', () => {
+  it('collects every folder of the names', () => {
+    expect([...folderSet(['/a/b/c', '/a/d'], '/')]).toEqual(['/a/', '/a/b/']);
+  });
+});
+
+describe('baseName', () => {
+  it('reads the file name on any platform', () => {
+    expect(baseName('/Users/me/export.csv')).toBe('export.csv');
+    expect(baseName('C:\\Users\\me\\export.csv')).toBe('export.csv');
   });
 });

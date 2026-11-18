@@ -3,7 +3,11 @@ import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
 import {
   countAt,
+  envFor,
+  environmentColor,
   environmentColorOf,
+  environmentsOf,
+  findService,
   layoutPattern,
   parse,
   pathOf,
@@ -213,5 +217,42 @@ describe('environmentColorOf', () => {
     expect(
       environmentColorOf('/development/', { ...structure, enabled: false }, '/')
     ).toBe(null);
+  });
+});
+
+describe('service and environment lookups', () => {
+  it('finds a configured service, and its environments in configured order', () => {
+    expect(findService(structure, 'assessment')?.segment).toBe('assessment');
+    expect(findService(structure, 'missing')).toBeUndefined();
+    expect(environmentsOf('assessment', structure).map(e => e.segment)).toEqual(
+      ['development', 'staging']
+    );
+    expect(environmentsOf('missing', structure)).toEqual([]);
+  });
+
+  it('gives the colour of a configured environment only', () => {
+    expect(environmentColor(structure, 'development')).toBe(
+      structure.environments.find(e => e.segment === 'development')!.color
+    );
+    expect(environmentColor(structure, 'missing')).toBeNull();
+  });
+});
+
+describe('envFor', () => {
+  const reversed: Structure = {
+    ...structure,
+    services: [{ segment: 'billing', environments: ['production', 'staging'] }]
+  };
+
+  it('keeps the preferred environment, else the first in configured order', () => {
+    const assessment = findService(structure, 'assessment')!;
+    expect(envFor(assessment, 'staging', structure)).toBe('staging');
+    expect(envFor(assessment, 'production', structure)).toBe('development');
+    expect(envFor(assessment, null, structure)).toBe('development');
+    // In the order of the environments, not of the service's list.
+    expect(envFor(reversed.services[0]!, null, reversed)).toBe('staging');
+    expect(
+      envFor({ segment: 'none', environments: [] }, 'staging', structure)
+    ).toBe('');
   });
 });

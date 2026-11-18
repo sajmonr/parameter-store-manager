@@ -10,6 +10,14 @@ import MenuBuilder from './menu';
 import { registerEndpoints } from './endpoints';
 import { availableSettings, getSetting, onSettingsChange } from './settings';
 import { isFakeSource } from './source';
+import { sendEvent } from './events';
+import {
+  WINDOW_HEIGHT,
+  WINDOW_MIN_HEIGHT,
+  WINDOW_MIN_WIDTH,
+  WINDOW_WIDTH
+} from '../shared/layout';
+import { WINDOW_BACKGROUND } from '../shared/windowBackground';
 
 const isDebug = !app.isPackaged || process.env.DEBUG_PROD === 'true';
 // Set by electron-vite while `npm run dev` is running.
@@ -37,10 +45,8 @@ const installExtensions = async () => {
   }).catch(console.log);
 };
 
-// Matches antd's layout background, so the window doesn't flash the wrong
-// color before the first paint or on reload.
 const windowBackground = () =>
-  nativeTheme.shouldUseDarkColors ? '#000000' : '#f5f5f5';
+  WINDOW_BACKGROUND[nativeTheme.shouldUseDarkColors ? 'dark' : 'light'];
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -48,12 +54,10 @@ const createWindow = () => {
     title: isFakeSource()
       ? 'Parameter Store Manager — FAKE'
       : 'Parameter Store Manager',
-    width: 1280,
-    height: 800,
-    // Below 1100px the detail pane becomes a drawer; below this the table
-    // and folder tree get too narrow to read.
-    minWidth: 900,
-    minHeight: 600,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
+    minWidth: WINDOW_MIN_WIDTH,
+    minHeight: WINDOW_MIN_HEIGHT,
     backgroundColor: windowBackground(),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
@@ -115,7 +119,8 @@ app.whenReady().then(async () => {
   nativeTheme.themeSource = getSetting(availableSettings.theme);
   onSettingsChange(settings => {
     nativeTheme.themeSource = settings[availableSettings.theme];
-    if (mainWindow) mainWindow.webContents.send('settings.changed', settings);
+    if (mainWindow)
+      sendEvent(mainWindow.webContents, 'settings.changed', settings);
   });
   // Fires for both a theme setting change and an OS appearance change.
   nativeTheme.on('updated', () => {

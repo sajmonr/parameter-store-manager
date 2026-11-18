@@ -23,10 +23,10 @@ const ValueWell = ({
       value={value}
       secure={secure}
       revealed={revealed}
-      size={13}
+      size="small"
       className={styles.value}
     />
-    <Flex gap={4} className={styles.actions}>
+    <Flex gap="var(--ant-margin-xxs)" className={styles.actions}>
       {secure && (
         <RevealButton revealed={revealed} onToggle={onToggleReveal} withLabel />
       )}

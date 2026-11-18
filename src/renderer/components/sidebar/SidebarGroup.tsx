@@ -6,11 +6,11 @@ import { useLoaded, useTreeNames } from '../../state/views';
 import type { Location } from '../../utils/location';
 import type { SidebarNode } from '../../utils/servicesTree';
 import EnvironmentDot from '../common/EnvironmentDot';
-import HighlightText from '../common/HighlightText';
-import { folderIcon } from './FolderTree';
-import TreeNodeMenu from './TreeNodeMenu';
+import { folderIcon } from './icons';
 import type useTreeExpansion from './useTreeExpansion';
 import styles from './FolderTree.module.css';
+import SectionLabel from '../common/SectionLabel';
+import TreeNodeTitle from './TreeNodeTitle';
 
 type GroupTreeNode = SidebarNode & TreeDataNode & { children: GroupTreeNode[] };
 
@@ -57,8 +57,11 @@ const SidebarGroup = ({
   const loaded = useLoaded();
   return (
     <>
-      <div className={styles.group}>{title}</div>
+      <div className={styles.group}>
+        <SectionLabel>{title}</SectionLabel>
+      </div>
       <Tree<GroupTreeNode>
+        className={styles.groupTree}
         blockNode
         showIcon
         treeData={treeData}
@@ -67,30 +70,14 @@ const SidebarGroup = ({
         selectedKeys={[selectedKey]}
         onSelect={(_keys, { node }) => onSelect(node.location)}
         titleRender={node => (
-          <TreeNodeMenu
+          <TreeNodeTitle
             location={node.location}
             label={node.label}
             treeNames={treeNames}
-          >
-            <span className={styles.title}>
-              <span className={styles.label} title={node.label}>
-                {node.kind === 'other' ? (
-                  node.label
-                ) : (
-                  <HighlightText text={node.label} highlight={highlight} />
-                )}
-              </span>
-              <span
-                className={
-                  loaded && node.count
-                    ? styles.count
-                    : `${styles.count} ${styles.empty}`
-                }
-              >
-                {loaded ? node.count : '–'}
-              </span>
-            </span>
-          </TreeNodeMenu>
+            count={node.count}
+            loaded={loaded}
+            highlight={node.kind === 'other' ? undefined : highlight}
+          />
         )}
       />
     </>

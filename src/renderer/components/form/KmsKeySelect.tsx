@@ -1,10 +1,10 @@
-import { Flex, Select, Typography } from 'antd';
+import { Flex, Select } from 'antd';
 import type { SelectProps } from 'antd';
 import { useKmsAliases } from '../../state/kms';
-import { DEFAULT_KMS_KEY } from '../../../main/endpoints/parameters/putParameter/putParameter.contract';
+import { DEFAULT_KMS_KEY } from '../../../shared/parameterTypes';
+import { isAwsManaged } from '../../utils/kms';
 import Mono from '../common/Mono';
-
-const isAwsManaged = (alias: string) => alias.startsWith('alias/aws/');
+import MetaText from '../common/MetaText';
 
 type KmsKeySelectProps = SelectProps<string> & {
   // Keys to list even when they aren't selected or don't have an alias.
@@ -33,13 +33,9 @@ const KmsKeySelect = ({
   const options = aliases.map(alias => ({
     value: alias,
     label: (
-      <Flex justify="space-between" gap={8}>
+      <Flex justify="space-between" gap="small">
         <Mono ellipsis>{alias}</Mono>
-        {isAwsManaged(alias) && (
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            AWS managed
-          </Typography.Text>
-        )}
+        {isAwsManaged(alias) && <MetaText>AWS managed</MetaText>}
       </Flex>
     )
   }));

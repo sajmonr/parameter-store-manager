@@ -44,7 +44,7 @@ describe('buildServicesTree', () => {
       ['billing', 0]
     ]);
     expect(summary(tree.other!)).toEqual([
-      'Other paths',
+      'Root',
       1,
       [['random', 1, [['a', 1]]]]
     ]);
@@ -122,7 +122,7 @@ describe('buildEnvironmentsTree', () => {
       ['production', 0, [['billing', 0]]]
     ]);
     expect(summary(tree.other!)).toEqual([
-      'Other paths',
+      'Root',
       1,
       [['random', 1, [['a', 1]]]]
     ]);

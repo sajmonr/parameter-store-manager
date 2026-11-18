@@ -1,7 +1,7 @@
 // Changes made to the structure setting from the Settings page. Each returns
 // a new structure and keeps the services' environment lists consistent with
 // the environments.
-import { ENVIRONMENT_COLORS } from '../../shared/structure';
+import { delimiterConflict, ENVIRONMENT_COLORS } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
 
 // The first suggested colour no environment uses yet; once all are used,
@@ -111,3 +111,17 @@ export const setServiceEnvironment = (
     return { ...s, environments };
   })
 });
+
+// Configured segments can't contain the delimiter, or paths would split
+// inside them.
+export const delimiterError = (delimiter: string, structure: Structure) => {
+  if (!delimiter) return 'Enter a delimiter.';
+  if (/\s/.test(delimiter)) return "The delimiter can't contain spaces.";
+  const segment = delimiterConflict(structure, delimiter);
+  if (segment) {
+    return segment.includes(delimiter)
+      ? `"${segment}" contains "${delimiter}".`
+      : `"${segment}" ends with part of "${delimiter}".`;
+  }
+  return null;
+};

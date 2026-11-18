@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_STRUCTURE } from '../../shared/structure';
 import type { Structure } from '../../shared/structure';
 import { makeParameter } from '../test/testState';
-import { compare, compareRows, filterKeys, isFolderRow } from './compare';
+import {
+  compare,
+  compareRows,
+  copyBlockReason,
+  copySourceOf,
+  countsByEnvironment,
+  emptyReasonOf,
+  filterKeys,
+  isFolderRow,
+  rowHas
+} from './compare';
 import type { LocationContext, ServiceLocation } from './location';
 import { createMatcher } from './search';
 
@@ -180,5 +190,69 @@ describe('compareRows', () => {
       'AppServer/Host',
       'AppServer/Port'
     ]);
+  });
+});
+
+describe('copySourceOf and copyBlockReason', () => {
+  const comparison = compare(compass(), parameters, everything, ctx);
+  const changed = byKey(comparison).Changed!;
+
+  it('copies from the first environment whose value can be copied', () => {
+    const source = copySourceOf(changed, comparison.environments);
+    expect(source?.Name).toBe('/development/compass/Changed');
+    expect(copyBlockReason(source)).toBeNull();
+  });
+
+  it("says why a value can't be copied", () => {
+    expect(copyBlockReason(undefined)).toBe('This type is not supported yet');
+    expect(
+      copyBlockReason(makeParameter('/a', { Type: 'StringList', Value: 'x' }))
+    ).toBe('StringList is not supported yet');
+    expect(copyBlockReason(makeParameter('/a', { Value: undefined }))).toBe(
+      "Can't read the value"
+    );
+  });
+});
+
+describe('countsByEnvironment', () => {
+  it('counts the keys each environment has', () => {
+    const comparison = compare(compass(), parameters, everything, ctx);
+    expect(countsByEnvironment(comparison)).toEqual([4, 4, 2]);
+  });
+});
+
+describe('emptyReasonOf', () => {
+  const comparison = compare(compass(), parameters, everything, ctx);
+
+  it('tells an empty folder from a search without matches', () => {
+    expect(
+      emptyReasonOf({ ...comparison, total: 0, keys: [] }, 'all').reason
+    ).toBe('noKeys');
+    expect(emptyReasonOf({ ...comparison, keys: [] }, 'all').reason).toBe(
+      'noMatches'
+    );
+  });
+
+  it('explains an empty filter', () => {
+    expect(emptyReasonOf(comparison, 'missing').reason).toBe('allSet');
+    expect(emptyReasonOf(comparison, 'differs').reason).toBe('allSame');
+    const unreadable = comparison.keys.map(k => ({
+      ...k,
+      unreadable: ['staging']
+    }));
+    expect(
+      emptyReasonOf({ ...comparison, keys: unreadable }, 'differs').text
+    ).toBe(
+      "No differences in the values that loaded. 4 keys couldn't be compared."
+    );
+  });
+});
+
+describe('rowHas', () => {
+  it('finds the parameter among the cells', () => {
+    const same = byKey(compare(compass(), parameters, everything, ctx)).Same!;
+    expect(rowHas(same, '/staging/compass/Same')).toBe(true);
+    expect(rowHas(same, '/qa/compass/Same')).toBe(false);
+    expect(rowHas(same, null)).toBe(false);
   });
 });

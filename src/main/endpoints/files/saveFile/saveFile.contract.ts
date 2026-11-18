@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { defineContract } from '../../../../shared/contract';
+import { FORMAT_IDS } from '../../../../shared/fileFormats';
 
 export interface SaveFileResponse {
   // null when the user cancelled the save dialog.
@@ -15,7 +16,7 @@ export const saveFileContract = defineContract<SaveFileResponse>()({
     fileName: z
       .string()
       .max(255)
-      .regex(/^[^/\\]+\.(csv|json)$/),
+      .regex(new RegExp(`^[^/\\\\]+\\.(${FORMAT_IDS.join('|')})$`)),
     content: z.string()
   })
 });

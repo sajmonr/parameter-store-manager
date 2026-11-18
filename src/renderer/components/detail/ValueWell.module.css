@@ -1,8 +1,10 @@
 .well {
   position: relative;
-  padding: 14px 14px 42px;
+  /* Room below the value for the action buttons. */
+  padding: var(--ant-padding-sm) var(--ant-padding-sm)
+    calc(var(--ant-control-height-sm) + var(--ant-padding-xs) * 2);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 8px;
+  border-radius: var(--ant-border-radius-lg);
   background: var(--ant-color-bg-layout);
 }
 
@@ -15,6 +17,6 @@
 
 .actions {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: var(--ant-padding-xs);
+  bottom: var(--ant-padding-xs);
 }

@@ -1,6 +1,6 @@
 .header {
-  height: 52px;
-  padding: 0 16px;
+  height: var(--header-height);
+  padding: 0 var(--ant-padding);
   line-height: normal;
   background: var(--ant-color-bg-container);
   border-bottom: 1px solid var(--ant-color-border-secondary);
@@ -10,19 +10,8 @@
    narrower than the actions. */
 .row {
   height: 100%;
-  display: grid;
-  grid-template-columns: 1fr minmax(200px, 540px) 1fr;
-  align-items: center;
-  gap: 12px;
 }
 
 .center {
-  grid-column: 2;
-  display: flex;
-  min-width: 0;
-}
-
-.end {
-  grid-column: 3;
-  justify-self: end;
+  min-width: var(--search-min-width);
 }

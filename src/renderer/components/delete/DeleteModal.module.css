@@ -1,3 +1,4 @@
+/* Icon colours come from status tokens. */
 .icon {
   color: var(--ant-color-warning);
 }
@@ -10,7 +11,7 @@
 .list {
   max-height: 280px;
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   overflow-y: auto;
   list-style: none;
   border: 1px solid var(--ant-color-border-secondary);

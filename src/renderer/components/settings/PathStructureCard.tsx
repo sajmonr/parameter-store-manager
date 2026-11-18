@@ -1,4 +1,4 @@
-import { Alert, Radio, theme, Typography } from 'antd';
+import { Alert, Flex, Radio, theme } from 'antd';
 import { DEFAULT_ENVIRONMENT_COLOR } from '../../../shared/structure';
 import type { Layout, Structure } from '../../../shared/structure';
 import { useParameters } from '../../state/parameters';
@@ -9,6 +9,9 @@ import { layoutPattern } from '../../utils/structure';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import HintText from '../common/HintText';
+import Mono from '../common/Mono';
 
 const layouts: { value: Layout; caption: string }[] = [
   { value: 'env-first', caption: 'Environment convention' },
@@ -44,13 +47,18 @@ const LayoutExample = ({
   const [first, second] =
     layout === 'env-first' ? [envPart, servicePart] : [servicePart, envPart];
   return (
-    <div className={styles.layoutExample}>
+    <Mono
+      type="secondary"
+      size="small"
+      ellipsis
+      className={styles.layoutExample}
+    >
       {rootFolder(delimiter)}
       {first}
       {delimiter}
       {second}
       {`${delimiter}ConnectionStrings${delimiter}Db`}
-    </div>
+    </Mono>
   );
 };
 
@@ -76,29 +84,29 @@ const PathStructureCard = () => {
         }}
         className={styles.layouts}
       >
-        {layouts.map(({ value, caption }) => (
-          <Radio
-            key={value}
-            value={value}
-            classNames={{
-              root: styles.layoutOption,
-              icon: styles.layoutRadio,
-              label: styles.layoutLabel
-            }}
-          >
-            <div className={styles.layoutPattern}>
-              {layoutPattern(value, delimiter)}
-            </div>
-            <LayoutExample
-              layout={value}
-              structure={structure}
-              delimiter={delimiter}
-            />
-            <Typography.Text type="secondary" className={styles.caption}>
-              {caption}
-            </Typography.Text>
-          </Radio>
-        ))}
+        <Flex gap="var(--ant-margin-sm)">
+          {layouts.map(({ value, caption }) => (
+            <Radio
+              key={value}
+              value={value}
+              classNames={{
+                root: styles.layoutOption,
+                icon: styles.layoutRadio,
+                label: styles.layoutLabel
+              }}
+            >
+              <Mono strong ellipsis className={styles.layoutPattern}>
+                {layoutPattern(value, delimiter)}
+              </Mono>
+              <LayoutExample
+                layout={value}
+                structure={structure}
+                delimiter={delimiter}
+              />
+              <HintText>{caption}</HintText>
+            </Radio>
+          ))}
+        </Flex>
       </Radio.Group>
       {/* Counts while the first load streams in would be partial, and an
           empty account has nothing to count. */}
@@ -109,14 +117,14 @@ const PathStructureCard = () => {
             type="success"
             showIcon
             className={styles.stats}
-            title={`${matches.size} of ${total} parameters match. ${total - matches.size} appear under Other paths.`}
+            title={`${matches.size} of ${total} parameters match. ${total - matches.size} appear under ${OTHER_PATHS_LABEL}.`}
           />
         ) : (
           <Alert
             type="warning"
             showIcon
             className={styles.stats}
-            title={`No parameters match this structure. All ${total} will appear under Other paths.`}
+            title={`No parameters match this structure. All ${total} will appear under ${OTHER_PATHS_LABEL}.`}
           />
         ))}
     </SettingsCard>

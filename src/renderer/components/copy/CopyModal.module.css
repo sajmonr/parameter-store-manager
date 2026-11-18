@@ -2,6 +2,7 @@
   min-width: 0;
 }
 
+/* Normal weight inside the bold modal title. */
 .sourceName {
   display: block;
   margin-top: 2px;
@@ -11,13 +12,10 @@
 
 /* The value being copied, on one line. */
 .source {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   min-width: 0;
-  padding: 10px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 8px;
+  border-radius: var(--ant-border-radius-lg);
   background: var(--ant-color-bg-layout);
 }
 
@@ -26,21 +24,12 @@
   min-width: 0;
 }
 
-.source :global(.ant-tag) {
-  margin: 0;
-}
-
-.tag {
-  margin: 0;
-}
-
 .toolbar {
-  min-height: 24px;
+  min-height: var(--ant-control-height-sm);
 }
 
 .filter {
   width: 200px;
-  margin-left: auto;
 }
 
 .list {
@@ -54,10 +43,7 @@
 }
 
 .row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
   cursor: pointer;
 }
 
@@ -82,9 +68,6 @@
 }
 
 .rowMain {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   min-width: 0;
 }
 
@@ -97,24 +80,12 @@
 
 /* Lines up with the name, after the checkbox and the dot. */
 .details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   padding-inline-start: 40px;
-  font-size: 12px;
+  font-size: var(--ant-font-size-sm);
 }
 
 .current {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
   min-width: 0;
-}
-
-.current :global(.ant-typography),
-.note,
-.kms :global(.ant-typography) {
-  font-size: 12px;
 }
 
 .currentValue {
@@ -125,6 +96,7 @@
   min-width: 0;
 }
 
+/* Code font in a select; antd has no font family token for inputs alone. */
 .kmsSelect {
   flex: 1;
   max-width: 300px;
@@ -133,30 +105,21 @@
 }
 
 .empty {
-  padding: 8px 0;
+  padding: var(--ant-padding-xs) 0;
 }
 
 .footer {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
   text-align: start;
 }
 
 .summary {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
-.hint {
-  font-size: 12px;
-}
-
+/* Icon colours come from status tokens. */
 .overwriteIcon {
-  margin-right: 6px;
+  margin-right: var(--ant-margin-xs);
   color: var(--ant-color-warning);
 }
 
@@ -166,8 +129,8 @@
 
 .sourcePicker {
   flex: none;
-  height: 28px;
-  border-radius: 6px;
+  height: var(--ant-control-height-sm);
+  border-radius: var(--ant-border-radius);
   background: var(--ant-color-bg-container);
 }
 
@@ -178,17 +141,8 @@
 }
 
 .sourceOption {
+  /* Flex has no inline mode. */
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.unsupported.unsupported {
-  font-size: 12px;
-}
-
-.pickHint {
-  font-size: 12px;
 }
 
 .pickIcon {

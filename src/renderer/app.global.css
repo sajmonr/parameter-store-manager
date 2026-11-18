@@ -1,4 +1,6 @@
-/* Native scrollbars and controls follow the theme; the backgrounds match antd's colorBgLayout. */
+/* Native scrollbars and controls follow the theme. The page's background
+   shows before antd's styles apply, so it can't use a token: these are
+   WINDOW_BACKGROUND (src/shared/windowBackground.ts). */
 :root {
   color-scheme: light dark;
 }
@@ -12,6 +14,6 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background: #000;
+    background: #000000;
   }
 }

@@ -1,10 +1,11 @@
-import { Segmented, Typography } from 'antd';
+import { Segmented } from 'antd';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useListComplete } from '../../state/views';
 import type { CompareFilter, Comparison } from '../../utils/compare';
 import { plural } from '../../utils/plural';
-import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './ParameterBreadcrumb.module.css';
+import EnvironmentLabel from '../common/EnvironmentLabel';
+import HintText from '../common/HintText';
 
 const FILTERS: { value: CompareFilter; label: string; color?: string }[] = [
   { value: 'all', label: 'All' },
@@ -27,19 +28,18 @@ const CompareFilterTabs = ({ comparison }: { comparison: Comparison }) => {
         options={FILTERS.map(({ value, label, color }) => ({
           value,
           label: (
-            <span className={styles.env}>
-              {color && <EnvironmentDot color={color} />}
-              {label}
-              <span className={styles.tabCount}>
-                {ready ? comparison.counts[value] : '–'}
-              </span>
-            </span>
+            <EnvironmentLabel
+              color={color}
+              name={label}
+              count={comparison.counts[value]}
+              loaded={ready}
+            />
           )
         }))}
       />
-      <Typography.Text type="secondary" className={styles.comparing}>
+      <HintText className={styles.comparing}>
         Comparing {plural(comparison.environments.length, 'environment')}
-      </Typography.Text>
+      </HintText>
     </>
   );
 };

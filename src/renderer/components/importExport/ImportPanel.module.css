@@ -1,13 +1,14 @@
+/* Normal weight inside the bold card title. */
 .subtitle {
-  font-size: 12px;
   font-weight: normal;
 }
 
 .dropZone {
-  padding: 16px;
+  padding: var(--ant-padding);
 }
 
 .dropIcon.dropIcon {
+  /* An icon, larger than any text size token. */
   font-size: 32px;
   color: var(--ant-color-primary);
 }

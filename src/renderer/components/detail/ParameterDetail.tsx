@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Flex, Tag, Typography } from 'antd';
+import { Alert, Flex, Tag } from 'antd';
 import { AppstoreOutlined } from '@ant-design/icons';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
@@ -16,6 +16,8 @@ import ValueWell from './ValueWell';
 import ValueEditor from './ValueEditor';
 import ParameterMeta from './ParameterMeta';
 import EnvironmentChips from './EnvironmentChips';
+import { isSecure } from '../../../shared/parameterTypes';
+import { OTHER_PATHS_LABEL } from '../../utils/labels';
 
 // The selected parameter. Rendered with key={name}, so editing and the
 // revealed value reset when the selection changes. With the structure on, it
@@ -35,32 +37,33 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
   return (
     <>
       <PaneHeader>
-        <Flex align="center" gap={8} wrap>
-          <Mono size={18} weight={600} style={{ wordBreak: 'break-all' }}>
+        <Flex align="center" gap="small" wrap>
+          <Mono size="large" weight={600} style={{ wordBreak: 'break-all' }}>
             {leafOf(parameter.Name, delimiter)}
           </Mono>
           <ParameterTypeTag type={parameter.Type} />
         </Flex>
         {place && (
-          <Flex align="center" gap={6} wrap style={{ margin: '6px 0 2px' }}>
+          <Flex
+            align="center"
+            gap="small"
+            wrap
+            style={{ margin: 'var(--ant-margin-xs) 0 var(--ant-margin-xxs)' }}
+          >
             <Tag color="blue" icon={<AppstoreOutlined />}>
               {place.service}
             </Tag>
             <Tag color={place.color}>{place.env}</Tag>
             {keyFolder && (
-              <Mono type="secondary" size={12}>
+              <Mono type="secondary" size="small">
                 {keyFolder}
               </Mono>
             )}
           </Flex>
         )}
-        <Typography.Text
-          type="secondary"
-          copyable={{ text: parameter.Name }}
-          style={{ fontFamily: 'var(--ant-font-family-code)', fontSize: 12 }}
-        >
+        <Mono type="secondary" size="small" copyable={{ text: parameter.Name }}>
           <BreakablePath path={parameter.Name} delimiter={delimiter} />
-        </Typography.Text>
+        </Mono>
       </PaneHeader>
       {editing ? (
         <ValueEditor parameter={parameter} onDone={() => setEditing(false)} />
@@ -72,7 +75,7 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
           />
           <ValueWell
             value={parameter.Value}
-            secure={parameter.Type === 'SecureString'}
+            secure={isSecure(parameter)}
             revealed={revealed}
             onToggleReveal={() => setRevealed(r => !r)}
           />
@@ -95,7 +98,7 @@ const ParameterDetail = ({ parameter }: { parameter: ParameterEntry }) => {
         <Alert
           type="info"
           showIcon
-          title={`This path doesn't match ${layoutPattern(structure.layout, delimiter)}, so it's listed under Other paths.`}
+          title={`This path doesn't match ${layoutPattern(structure.layout, delimiter)}, so it's listed under ${OTHER_PATHS_LABEL}.`}
         />
       )}
     </>
