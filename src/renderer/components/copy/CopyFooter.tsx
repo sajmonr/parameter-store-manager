@@ -2,6 +2,7 @@ import { Button, Flex, Typography } from 'antd';
 import { WarningFilled } from '@ant-design/icons';
 import type { copySummary } from '../../utils/copyValue';
 import styles from './CopyModal.module.css';
+import HintText from '../common/HintText';
 
 interface CopyFooterProps {
   count: number;
@@ -37,10 +38,10 @@ const CopyFooter = ({
           Select the environments to copy to
         </Typography.Text>
       )}
-      <Typography.Text type="secondary" className={styles.hint}>
+      <HintText>
         Only the value is copied. Types and descriptions in the targets stay as
         they are.
-      </Typography.Text>
+      </HintText>
     </Flex>
     <Flex gap="small" className={styles.buttons}>
       <Button onClick={onCancel} disabled={copying}>

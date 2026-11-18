@@ -5,6 +5,7 @@ import PathStructureCard from './PathStructureCard';
 import ServicesCard from './ServicesCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
+import HintText from '../common/HintText';
 
 // The whole card toggles the switch.
 const StructureSwitchCard = () => {
@@ -20,10 +21,10 @@ const StructureSwitchCard = () => {
           <Typography.Text strong id="structure-switch-label">
             Group by service and environment
           </Typography.Text>
-          <Typography.Text type="secondary" className={styles.cardDescription}>
+          <HintText className={styles.cardDescription}>
             Adds Services and Environments views to the parameter list. When
             off, parameters are shown by full path only.
-          </Typography.Text>
+          </HintText>
         </div>
         <Switch
           checked={enabled}

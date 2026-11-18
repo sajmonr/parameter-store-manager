@@ -17,6 +17,7 @@ import ReviewRow from './review/ReviewRow';
 import StatFilter from './review/StatFilter';
 import { notifySuccess } from '../../utils/notify';
 import LabeledSwitch from '../common/LabeledSwitch';
+import HintText from '../common/HintText';
 
 interface RunResult {
   written: number;
@@ -127,10 +128,10 @@ const ImportReview = ({
           >
             Overwrite parameters that already exist with a different value
           </LabeledSwitch>
-          <Typography.Text type="secondary" className={styles.hint}>
+          <HintText>
             Overwriting creates a new version. Unchanged parameters are always
             skipped.
-          </Typography.Text>
+          </HintText>
         </Flex>
         <ReviewFooter
           toWrite={toWrite.length}

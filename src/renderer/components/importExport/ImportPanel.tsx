@@ -15,6 +15,7 @@ import {
 } from '../../utils/formats';
 import ImportReview from './ImportReview';
 import styles from './ImportPanel.module.css';
+import HintText from '../common/HintText';
 
 export interface LoadedFile {
   name: string;
@@ -122,9 +123,9 @@ const ImportPanel = () => {
         title={
           <Flex vertical>
             Format
-            <Typography.Text type="secondary" className={styles.subtitle}>
+            <HintText className={styles.subtitle}>
               The format the file was exported in.
-            </Typography.Text>
+            </HintText>
           </Flex>
         }
       >

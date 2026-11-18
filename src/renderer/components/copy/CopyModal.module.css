@@ -115,10 +115,6 @@
   min-width: 0;
 }
 
-.hint {
-  font-size: var(--ant-font-size-sm);
-}
-
 .overwriteIcon {
   margin-right: var(--ant-margin-xs);
   color: var(--ant-color-warning);
@@ -144,14 +140,6 @@
 .sourceOption {
   /* Flex has no inline mode. */
   display: inline-flex;
-}
-
-.unsupported.unsupported {
-  font-size: var(--ant-font-size-sm);
-}
-
-.pickHint {
-  font-size: var(--ant-font-size-sm);
 }
 
 .pickIcon {

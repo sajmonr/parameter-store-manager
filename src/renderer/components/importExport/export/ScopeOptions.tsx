@@ -7,6 +7,7 @@ import { globUnder } from '../../../utils/search';
 import PathPreview from './PathPreview';
 import type { Scope } from './useExportForm';
 import styles from '../ExportPanel.module.css';
+import HintText from '../../common/HintText';
 
 interface ScopeOptionsProps {
   scope: Scope;
@@ -73,10 +74,10 @@ const ScopeOptions = ({
               />
             </AutoComplete>
             {byPath && matched && <PathPreview names={matched} />}
-            <Typography.Text type="secondary" className={styles.hint}>
+            <HintText>
               A path exports everything under it. <code>*</code> matches one
               segment, <code>**</code> any depth.
-            </Typography.Text>
+            </HintText>
           </Flex>
         </Flex>
         <Flex

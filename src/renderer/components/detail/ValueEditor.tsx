@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { Button, Flex, Form, Input, Typography } from 'antd';
+import { Button, Flex, Form, Input } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { isEditableType } from '../../../shared/parameterTypes';
 import { usePutParameter } from '../../state/parameters';
@@ -11,6 +11,7 @@ import { isSubmitShortcut } from '../../utils/keys';
 import styles from './ValueEditor.module.css';
 import { DESCRIPTION_PLACEHOLDER } from '../../utils/labels';
 import { notifyError, notifySuccess } from '../../utils/notify';
+import HintText from '../common/HintText';
 
 // Inline edit of the value and description. The name, type and KMS key
 // can't be changed here.
@@ -79,9 +80,9 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
         />
       </Form.Item>
       <Flex align="center" gap="small">
-        <Typography.Text type="secondary" className={styles.hint}>
+        <HintText className={styles.hint}>
           <InfoCircleOutlined /> Saves as version {(parameter.Version || 0) + 1}
-        </Typography.Text>
+        </HintText>
         <Button onClick={onDone}>Cancel</Button>
         <Button
           type="primary"

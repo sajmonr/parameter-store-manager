@@ -1,9 +1,10 @@
-import { Select, Typography, Flex } from 'antd';
+import { Select, Flex } from 'antd';
 import { isEditableType } from '../../../shared/parameterTypes';
 import type { SourceEnvironment } from '../../utils/copyValue';
 import { cx } from '../../utils/classNames';
 import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './CopyModal.module.css';
+import HintText from '../common/HintText';
 
 interface SourcePickerProps {
   options: SourceEnvironment[];
@@ -49,9 +50,7 @@ const SourcePicker = ({
           <EnvironmentDot color={data.dot} />
           {data.label}
           {data.unsupported && (
-            <Typography.Text type="secondary" className={styles.unsupported}>
-              {data.unsupported} not supported
-            </Typography.Text>
+            <HintText>{data.unsupported} not supported</HintText>
           )}
         </Flex>
       )}

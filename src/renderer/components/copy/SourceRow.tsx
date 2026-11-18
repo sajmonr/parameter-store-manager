@@ -10,6 +10,7 @@ import RevealButton from '../common/RevealButton';
 import SourcePicker from './SourcePicker';
 import type { Copyable } from './useCopyDialogState';
 import styles from './CopyModal.module.css';
+import HintText from '../common/HintText';
 
 interface SourceRowProps {
   copyable: Copyable;
@@ -67,16 +68,16 @@ const SourceRow = ({
         <ParameterTypeTag type={source.Type} />
       </Flex>
       {!isEditableType(source.Type) && (
-        <Typography.Text type="danger" className={styles.pickHint}>
+        <HintText type="danger">
           <CloseCircleFilled /> {source.Type} values can&apos;t be copied yet.
           Choose another environment.
-        </Typography.Text>
+        </HintText>
       )}
       {pickSource && (
-        <Typography.Text type="secondary" className={styles.pickHint}>
+        <HintText>
           <InfoCircleOutlined className={styles.pickIcon} /> Choose which
           environment to copy the value from.
-        </Typography.Text>
+        </HintText>
       )}
     </>
   );

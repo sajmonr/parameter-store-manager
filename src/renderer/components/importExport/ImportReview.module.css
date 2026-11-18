@@ -9,11 +9,6 @@
   font-weight: normal;
 }
 
-.meta,
-.hint {
-  font-size: var(--ant-font-size-sm);
-}
-
 .stat.stat {
   margin: 0;
   border-radius: 999px;
@@ -80,10 +75,6 @@
   /* Lines up with the name, after the status column. */
   padding-inline-start: 92px;
   padding-bottom: var(--ant-padding-xxs);
-  font-size: var(--ant-font-size-sm);
-}
-
-.fieldLabel.fieldLabel {
   font-size: var(--ant-font-size-sm);
 }
 

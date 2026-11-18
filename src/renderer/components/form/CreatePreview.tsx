@@ -1,4 +1,4 @@
-import { Button, Typography, Flex } from 'antd';
+import { Button, Flex } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
@@ -6,6 +6,8 @@ import { breakable } from '../../utils/paths';
 import Mono from '../common/Mono';
 import styles from './CreatePreview.module.css';
 import { cx } from '../../utils/classNames';
+import MetaText from '../common/MetaText';
+import HintText from '../common/HintText';
 
 export interface PreviewRow {
   name: string;
@@ -27,11 +29,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
         {breakable(row.name, delimiter)}
       </Mono>
     </Flex>
-    {row.meta && (
-      <Typography.Text type="secondary" className={styles.meta}>
-        {row.meta}
-      </Typography.Text>
-    )}
+    {row.meta && <MetaText>{row.meta}</MetaText>}
     {row.created && (
       <Flex align="center" justify="space-between" gap="small">
         <Flex
@@ -45,11 +43,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
         </Flex>
       </Flex>
     )}
-    {row.error && (
-      <Typography.Text type="danger" className={styles.meta}>
-        {row.error}
-      </Typography.Text>
-    )}
+    {row.error && <HintText type="danger">{row.error}</HintText>}
     {row.exists && !row.created && (
       <Flex align="center" gap="small">
         <Flex
@@ -82,9 +76,9 @@ const CreatePreview = ({
   delimiter: string;
 }) => (
   <div className={styles.well}>
-    <Typography.Text type="secondary" className={styles.label}>
+    <MetaText className={styles.label}>
       {rows.length > 1 ? `Creates ${rows.length} parameters` : 'Creates'}
-    </Typography.Text>
+    </MetaText>
     <Flex component="ul" vertical gap="small" className={styles.rows}>
       {rows.map(row => (
         <Row key={row.name} row={row} delimiter={delimiter} />

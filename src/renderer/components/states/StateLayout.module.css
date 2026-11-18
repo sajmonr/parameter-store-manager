@@ -6,7 +6,6 @@
 .hint {
   display: block;
   margin-top: var(--ant-margin-xxs);
-  font-size: var(--ant-font-size-sm);
 }
 
 .command {

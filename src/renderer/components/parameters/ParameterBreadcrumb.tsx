@@ -1,4 +1,4 @@
-import { Breadcrumb, Spin, Typography, Flex } from 'antd';
+import { Breadcrumb, Spin, Flex } from 'antd';
 import type { ReactNode } from 'react';
 import { useParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
@@ -19,6 +19,7 @@ import styles from './ParameterBreadcrumb.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
 import EnvironmentLabel from '../common/EnvironmentLabel';
 import NeutralBadge from '../common/NeutralBadge';
+import HintText from '../common/HintText';
 
 interface Crumb {
   key: string;
@@ -156,10 +157,10 @@ const ParameterBreadcrumb = ({
           className={styles.end}
         >
           {isOtherLocation(location) && (
-            <Typography.Text type="secondary" className={styles.hint} ellipsis>
+            <HintText ellipsis className={styles.hint}>
               Don&apos;t match{' '}
               {layoutPattern(context.structure.layout, context.delimiter)}
-            </Typography.Text>
+            </HintText>
           )}
           <SelectionBar checked={checked} />
         </Flex>

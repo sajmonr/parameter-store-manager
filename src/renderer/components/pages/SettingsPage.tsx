@@ -18,6 +18,7 @@ import {
   SETTINGS_MAX_WIDTH,
   SETTINGS_WIDE_MAX_WIDTH
 } from '../../utils/layout';
+import HintText from '../common/HintText';
 
 interface SectionInfo {
   key: SettingsSection;
@@ -99,9 +100,9 @@ const SettingsPage = () => {
               <Content />
             </section>
           ))}
-          <Typography.Text type="secondary" className={styles.footer}>
+          <HintText className={styles.footer}>
             Changes are saved automatically.
-          </Typography.Text>
+          </HintText>
         </div>
       </div>
     </Flex>

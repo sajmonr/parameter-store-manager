@@ -24,10 +24,6 @@
   padding-inline-start: var(--ant-padding-lg);
 }
 
-.hint {
-  font-size: var(--ant-font-size-sm);
-}
-
 .hint code {
   font-family: var(--ant-font-family-code);
 }

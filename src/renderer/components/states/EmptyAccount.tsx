@@ -5,6 +5,7 @@ import { uiActions } from '../../state/ui';
 import styles from './StateLayout.module.css';
 import { profileLabel } from '../../../shared/aws';
 import CenteredState from '../common/CenteredState';
+import HintText from '../common/HintText';
 
 const EmptyAccount = () => {
   const profile = profileLabel(useSettingsStore(settings => settings.profile));
@@ -17,11 +18,11 @@ const EmptyAccount = () => {
         description={
           <>
             <Typography.Text strong>No parameters in {region}</Typography.Text>
-            <Typography.Text type="secondary" className={styles.hint}>
+            <HintText className={styles.hint}>
               Profile <Typography.Text code>{profile}</Typography.Text> can read
               Parameter Store here, but nothing has been created yet. Wrong
               region? Change it in Settings.
-            </Typography.Text>
+            </HintText>
           </>
         }
       >

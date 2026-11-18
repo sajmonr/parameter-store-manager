@@ -9,7 +9,6 @@
 .label {
   display: block;
   margin-bottom: var(--ant-margin-xs);
-  font-size: var(--ant-font-size-sm);
 }
 
 .rows {
@@ -27,10 +26,6 @@
   min-width: 0;
   word-break: normal;
   overflow-wrap: normal;
-}
-
-.meta {
-  font-size: var(--ant-font-size-sm);
 }
 
 .tag {

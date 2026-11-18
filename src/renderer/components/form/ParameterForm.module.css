@@ -63,8 +63,6 @@
 
 .hint {
   flex: 1;
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-text-tertiary);
 }
 
 /* Clears the character count on the right of the value. */

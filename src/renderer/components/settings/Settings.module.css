@@ -14,10 +14,6 @@
   font-family: var(--ant-font-family-code);
 }
 
-.suffix {
-  font-size: var(--ant-font-size-sm);
-}
-
 .mono {
   font-family: var(--ant-font-family-code);
 }
@@ -34,7 +30,6 @@
 .cardDescription {
   display: block;
   font-weight: normal;
-  font-size: var(--ant-font-size-sm);
 }
 
 .flushBody.flushBody {
@@ -55,9 +50,7 @@
   font-size: var(--ant-font-size-sm);
 }
 
-.hint,
-.count,
-.caption {
+.count {
   font-size: var(--ant-font-size-sm);
 }
 

@@ -5,7 +5,3 @@
 .selected {
   color: var(--ant-color-primary);
 }
-
-.meta {
-  font-size: var(--ant-font-size-sm);
-}

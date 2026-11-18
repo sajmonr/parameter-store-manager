@@ -1,4 +1,4 @@
-import { Alert, Flex, Radio, theme, Typography } from 'antd';
+import { Alert, Flex, Radio, theme } from 'antd';
 import { DEFAULT_ENVIRONMENT_COLOR } from '../../../shared/structure';
 import type { Layout, Structure } from '../../../shared/structure';
 import { useParameters } from '../../state/parameters';
@@ -10,6 +10,7 @@ import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
 import { OTHER_PATHS_LABEL } from '../../utils/labels';
+import HintText from '../common/HintText';
 
 const layouts: { value: Layout; caption: string }[] = [
   { value: 'env-first', caption: 'Environment convention' },
@@ -96,9 +97,7 @@ const PathStructureCard = () => {
                 structure={structure}
                 delimiter={delimiter}
               />
-              <Typography.Text type="secondary" className={styles.caption}>
-                {caption}
-              </Typography.Text>
+              <HintText>{caption}</HintText>
             </Radio>
           ))}
         </Flex>

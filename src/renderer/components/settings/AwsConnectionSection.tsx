@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Card, Checkbox, Flex, Form, Select, Typography } from 'antd';
+import { Alert, Card, Checkbox, Flex, Form, Select } from 'antd';
 import type { ListProfilesResponse } from '../../../main/endpoints/aws/listProfiles/listProfiles.contract';
 import usePageVisible from '../../hooks/usePageVisible';
 import { profilesService } from '../../services';
@@ -8,6 +8,7 @@ import { useSettingsStore } from '../../state/settings';
 import { profileChoices, regionOptions } from '../../utils/awsSettings';
 import useSaveSettings from './useSaveSettings';
 import styles from './Settings.module.css';
+import MetaText from '../common/MetaText';
 
 const profileOptions = (profiles: ListProfilesResponse, current: string) =>
   profileChoices(profiles, current).map(({ value, name, suffix }) => ({
@@ -15,11 +16,7 @@ const profileOptions = (profiles: ListProfilesResponse, current: string) =>
     label: (
       <Flex justify="space-between" align="center" gap="small">
         <span>{name}</span>
-        {suffix && (
-          <Typography.Text type="secondary" className={styles.suffix}>
-            {suffix}
-          </Typography.Text>
-        )}
+        {suffix && <MetaText>{suffix}</MetaText>}
       </Flex>
     )
   }));

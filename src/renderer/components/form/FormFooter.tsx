@@ -1,8 +1,9 @@
-import { Button, Flex, Typography } from 'antd';
+import { Button, Flex } from 'antd';
 import { uiActions } from '../../state/ui';
 import { submitShortcutLabel } from '../../utils/keys';
 import PartialFailureAlert from '../common/PartialFailureAlert';
 import styles from './ParameterForm.module.css';
+import HintText from '../common/HintText';
 
 // What a partly failed create did, and the buttons.
 const FormFooter = ({
@@ -27,9 +28,9 @@ const FormFooter = ({
       />
     )}
     <Flex align="center" gap="small">
-      <Typography.Text type="secondary" className={styles.hint}>
+      <HintText className={styles.hint}>
         {submitShortcutLabel} to create
-      </Typography.Text>
+      </HintText>
       <Button onClick={uiActions.closePane}>Cancel</Button>
       <Button
         type="primary"

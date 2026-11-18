@@ -7,6 +7,7 @@ import { updateStructure } from '../../state/settingsChanges';
 import { cx } from '../../utils/classNames';
 import { addService } from '../../utils/structureEdits';
 import styles from './Settings.module.css';
+import HintText from '../common/HintText';
 
 // Typed into the add row, and checked when added.
 const AddServiceRow = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -54,9 +55,7 @@ const AddServiceRow = ({ onAdded }: { onAdded: (segment: string) => void }) => {
         <Button type="dashed" icon={<PlusOutlined />} onClick={add}>
           Add service
         </Button>
-        <Typography.Text type="secondary" className={styles.hint}>
-          New services start in every environment.
-        </Typography.Text>
+        <HintText>New services start in every environment.</HintText>
       </Flex>
       {error && (
         <Typography.Text type="danger" className={styles.fieldError}>

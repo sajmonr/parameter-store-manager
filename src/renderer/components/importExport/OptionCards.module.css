@@ -44,7 +44,3 @@
 .selected .icon {
   color: var(--ant-color-primary);
 }
-
-.description {
-  font-size: var(--ant-font-size-sm);
-}

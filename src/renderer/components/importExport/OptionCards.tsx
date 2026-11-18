@@ -3,6 +3,7 @@ import { Tooltip, Typography, Flex } from 'antd';
 import styles from './OptionCards.module.css';
 import { cx } from '../../utils/classNames';
 import { OPTION_CARD_MIN_WIDTH } from '../../utils/layout';
+import HintText from '../common/HintText';
 
 export interface CardOption<T extends string> {
   value: T;
@@ -62,9 +63,7 @@ const OptionCards = <T extends string>({
               <span className={styles.icon}>{option.icon}</span>
               <Typography.Text strong>{option.label}</Typography.Text>
             </Flex>
-            <Typography.Text type="secondary" className={styles.description}>
-              {option.description}
-            </Typography.Text>
+            <HintText>{option.description}</HintText>
           </Flex>
         </button>
       );

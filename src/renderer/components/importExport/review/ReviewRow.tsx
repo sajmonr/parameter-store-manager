@@ -13,6 +13,7 @@ import RevealButton from '../../common/RevealButton';
 import SecureLockIcon from '../../common/SecureLockIcon';
 import { STATUSES } from './importStatuses';
 import styles from '../ImportReview.module.css';
+import MetaText from '../../common/MetaText';
 
 // One field of a row: its new value, after the old one when it changes.
 // An empty value shows as "none"; an old value that didn't load (null)
@@ -53,9 +54,7 @@ const FieldChange = ({
     );
   return (
     <>
-      <Typography.Text type="secondary" className={styles.fieldLabel}>
-        {label}
-      </Typography.Text>
+      <MetaText>{label}</MetaText>
       <Flex
         component="span"
         align="center"
