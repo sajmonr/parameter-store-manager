@@ -3,9 +3,7 @@
 }
 
 .options.options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xs);
+  width: 100%;
 }
 
 /* A radio with what it chooses below it; the whole card selects it. */

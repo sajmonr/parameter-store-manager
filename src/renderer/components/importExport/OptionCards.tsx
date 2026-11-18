@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Tooltip, Typography, Flex } from 'antd';
 import styles from './OptionCards.module.css';
 import { cx } from '../../utils/classNames';
+import { OPTION_CARD_MIN_WIDTH } from '../../utils/layout';
 
 export interface CardOption<T extends string> {
   value: T;
@@ -18,7 +19,8 @@ interface OptionCardsProps<T extends string> {
   value: T;
   onChange: (value: T) => void;
   disabled?: boolean;
-  // Splits the full width between the cards, instead of 220px+ columns.
+  // Splits the full width between the cards, instead of wrapping them
+  // at OPTION_CARD_MIN_WIDTH.
   fill?: boolean;
 }
 
@@ -32,22 +34,16 @@ const OptionCards = <T extends string>({
   disabled = false,
   fill = false
 }: OptionCardsProps<T>) => (
-  <div
-    className={styles.grid}
-    style={
-      fill
-        ? { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }
-        : undefined
-    }
-    role="radiogroup"
-    aria-label={label}
-  >
+  <Flex wrap gap="var(--ant-margin-sm)" role="radiogroup" aria-label={label}>
     {options.map(option => {
       const selected = option.value === value;
       const card = (
         <button
           key={option.value}
           type="button"
+          style={{
+            flex: fill ? '1 1 0' : `1 1 ${OPTION_CARD_MIN_WIDTH}px`
+          }}
           role="radio"
           aria-label={`${option.label}: ${option.description}`}
           aria-checked={selected}
@@ -80,7 +76,7 @@ const OptionCards = <T extends string>({
         card
       );
     })}
-  </div>
+  </Flex>
 );
 
 export default OptionCards;

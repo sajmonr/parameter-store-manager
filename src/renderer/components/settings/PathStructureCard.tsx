@@ -1,4 +1,4 @@
-import { Alert, Radio, theme, Typography } from 'antd';
+import { Alert, Flex, Radio, theme, Typography } from 'antd';
 import { DEFAULT_ENVIRONMENT_COLOR } from '../../../shared/structure';
 import type { Layout, Structure } from '../../../shared/structure';
 import { useParameters } from '../../state/parameters';
@@ -77,29 +77,31 @@ const PathStructureCard = () => {
         }}
         className={styles.layouts}
       >
-        {layouts.map(({ value, caption }) => (
-          <Radio
-            key={value}
-            value={value}
-            classNames={{
-              root: styles.layoutOption,
-              icon: styles.layoutRadio,
-              label: styles.layoutLabel
-            }}
-          >
-            <div className={styles.layoutPattern}>
-              {layoutPattern(value, delimiter)}
-            </div>
-            <LayoutExample
-              layout={value}
-              structure={structure}
-              delimiter={delimiter}
-            />
-            <Typography.Text type="secondary" className={styles.caption}>
-              {caption}
-            </Typography.Text>
-          </Radio>
-        ))}
+        <Flex gap="var(--ant-margin-sm)">
+          {layouts.map(({ value, caption }) => (
+            <Radio
+              key={value}
+              value={value}
+              classNames={{
+                root: styles.layoutOption,
+                icon: styles.layoutRadio,
+                label: styles.layoutLabel
+              }}
+            >
+              <div className={styles.layoutPattern}>
+                {layoutPattern(value, delimiter)}
+              </div>
+              <LayoutExample
+                layout={value}
+                structure={structure}
+                delimiter={delimiter}
+              />
+              <Typography.Text type="secondary" className={styles.caption}>
+                {caption}
+              </Typography.Text>
+            </Radio>
+          ))}
+        </Flex>
       </Radio.Group>
       {/* Counts while the first load streams in would be partial, and an
           empty account has nothing to count. */}

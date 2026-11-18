@@ -61,15 +61,13 @@
   font-size: var(--ant-font-size-sm);
 }
 
-/* Path structure: two radio cards side by side. */
+/* Path structure: two radio cards side by side, sharing the width. */
 .layouts.layouts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ant-margin-sm);
   width: 100%;
 }
 
 .layoutOption.layoutOption {
+  flex: 1 1 0;
   min-width: 0;
   margin: 0;
   padding: var(--ant-padding-sm) var(--ant-padding);

@@ -23,7 +23,8 @@
   background: var(--ant-color-bg-container);
 }
 
-/* min-width: 0 lets this flex item shrink next to the pane. */
+/* Layout.Content can't be a Flex. min-width: 0 lets it shrink next to the
+   pane. */
 .main {
   display: flex;
   flex-direction: column;

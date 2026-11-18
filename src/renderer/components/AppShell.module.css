@@ -3,7 +3,8 @@
   background: var(--ant-color-bg-container);
 }
 
-/* The pages share one grid cell, so a hidden one keeps its size. */
+/* The pages share one grid cell, so a hidden one keeps its size. Flex
+   can't stack its children. */
 .pages {
   display: grid;
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);

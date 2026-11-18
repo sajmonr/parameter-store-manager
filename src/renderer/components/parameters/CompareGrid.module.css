@@ -18,6 +18,7 @@
   font-size: var(--ant-font-size-sm);
 }
 
+/* A grid, so the columns line up from row to row; Flex can't. */
 .row {
   display: grid;
   grid-template-columns: var(--compare-columns);

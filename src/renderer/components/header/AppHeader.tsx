@@ -3,6 +3,7 @@ import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
 import { uiActions } from '../../state/ui';
 import SearchInput from './SearchInput';
+import { SEARCH_MAX_WIDTH } from '../../utils/layout';
 import styles from './AppHeader.module.css';
 
 // The search, centred, and the actions on the right. Settings, including the
@@ -12,11 +13,12 @@ const AppHeader = () => {
 
   return (
     <Layout.Header className={styles.header}>
-      <div className={styles.row}>
-        <Flex className={styles.center}>
+      <Flex align="center" gap="var(--ant-margin-sm)" className={styles.row}>
+        <Flex flex="1 1 0" />
+        <Flex flex={`0 1 ${SEARCH_MAX_WIDTH}px`} className={styles.center}>
           <SearchInput />
         </Flex>
-        <Flex align="center" gap="small" className={styles.end}>
+        <Flex flex="1 1 0" justify="flex-end" align="center" gap="small">
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -33,7 +35,7 @@ const AppHeader = () => {
             />
           </Tooltip>
         </Flex>
-      </div>
+      </Flex>
     </Layout.Header>
   );
 };

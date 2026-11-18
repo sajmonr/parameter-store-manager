@@ -70,7 +70,8 @@
   min-width: 0;
 }
 
-/* What a new or changed row writes, under its name. */
+/* What a new or changed row writes, under its name. A grid, so the labels
+   form one column across the fields; Flex can't align across rows. */
 .details {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

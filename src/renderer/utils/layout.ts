@@ -7,6 +7,10 @@ import { NARROW_WIDTH } from '../../shared/layout';
 export const RAIL_WIDTH = 56;
 export const HEADER_HEIGHT = 52;
 
+// The header's search box.
+export const SEARCH_MIN_WIDTH = 200;
+export const SEARCH_MAX_WIDTH = 540;
+
 // The folder tree. Its width is remembered under SIDER_WIDTH_STORAGE_KEY
 // once the user resizes it; until then the default follows the window.
 export const SIDER_MIN_WIDTH = 180;
@@ -40,6 +44,9 @@ export const SETTINGS_WIDE_MAX_WIDTH = 880;
 
 // The copy dialog sits this far from the top; a long list scrolls inside
 // it.
+// Option cards wrap to the next row below this width.
+export const OPTION_CARD_MIN_WIDTH = 220;
+
 export const COPY_MODAL_WIDTH = 640;
 export const COPY_MODAL_TOP = 80;
 export const SET_MISSING_MENU_WIDTH = 300;
@@ -50,6 +57,7 @@ export const NARROW_QUERY = `(max-width: ${NARROW_WIDTH - 1}px)`;
 export const layoutVariables = {
   '--rail-width': `${RAIL_WIDTH}px`,
   '--header-height': `${HEADER_HEIGHT}px`,
+  '--search-min-width': `${SEARCH_MIN_WIDTH}px`,
   '--pane-width': `${PANE_WIDTH}px`,
   '--settings-nav-width': `${SETTINGS_NAV_WIDTH}px`
 } as CSSProperties;
