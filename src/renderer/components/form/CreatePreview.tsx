@@ -23,7 +23,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
   <li className={styles.row}>
     <div className={styles.name}>
       {row.color && <EnvironmentDot color={row.color} className={styles.dot} />}
-      <Mono small className={styles.path}>
+      <Mono size="small" className={styles.path}>
         {breakable(row.name, delimiter)}
       </Mono>
     </div>

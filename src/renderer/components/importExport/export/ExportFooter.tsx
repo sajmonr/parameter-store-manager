@@ -24,7 +24,7 @@ const ExportFooter = ({
   formatLabel,
   onExport
 }: ExportFooterProps) => (
-  <Flex vertical gap={8}>
+  <Flex vertical gap="small">
     {progress?.phase === 'values' && (
       <Progress
         percent={progress.total ? (progress.done / progress.total) * 100 : 100}
@@ -32,7 +32,7 @@ const ExportFooter = ({
         size="small"
       />
     )}
-    <Flex justify="flex-end" align="center" gap={8}>
+    <Flex justify="flex-end" align="center" gap="small">
       {status && (
         <Typography.Text type="secondary" className={styles.status}>
           {status}

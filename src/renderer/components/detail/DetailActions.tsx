@@ -79,7 +79,7 @@ const DetailActions = ({ parameter, onEdit }: DetailActionsProps) => {
   };
 
   return (
-    <Flex gap={8}>
+    <Flex gap="small">
       <Space.Compact>
         <Tooltip title={editable ? undefined : unsupported}>
           <Button icon={<EditOutlined />} onClick={onEdit} disabled={disabled}>

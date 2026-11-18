@@ -1,6 +1,6 @@
-import { Typography } from 'antd';
 import { useParameters } from '../../state/parameters';
 import TimeAgo from '../common/TimeAgo';
+import HintText from '../common/HintText';
 
 // When the parameters were last loaded. Nothing during the first load: the
 // count next to it already says it's loading.
@@ -19,12 +19,12 @@ const SyncStatus = () => {
   if (!content) return null;
 
   return (
-    <Typography.Text
+    <HintText
       type={!loading && error ? 'danger' : 'secondary'}
-      style={{ fontSize: 12, whiteSpace: 'nowrap' }}
+      style={{ whiteSpace: 'nowrap' }}
     >
       {content}
-    </Typography.Text>
+    </HintText>
   );
 };
 

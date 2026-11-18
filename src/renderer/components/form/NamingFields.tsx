@@ -136,7 +136,7 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
         help={fieldHelp || undefined}
         extra={
           (newFolders || switchLink) && (
-            <Flex vertical gap={4} className={styles.extra}>
+            <Flex vertical gap="var(--ant-margin-xxs)" className={styles.extra}>
               {newFolders && (
                 <Typography.Text type="secondary">
                   <FolderAddOutlined /> Creates new folder{' '}

@@ -38,7 +38,7 @@ const KeyRow = memo(
           )}
         >
           <Tooltip title={key}>
-            <Mono size={13} weight={600} ellipsis className={styles.keyName}>
+            <Mono size="small" weight={600} ellipsis className={styles.keyName}>
               {leafOf(key, delimiter)}
             </Mono>
           </Tooltip>

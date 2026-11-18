@@ -43,7 +43,7 @@ export const setMissingItems = ({
           Set value in <EnvironmentDot color={target.color} />
           {target.segment}
         </span>
-        <Mono small ellipsis={{ tooltip: path }}>
+        <Mono size="small" ellipsis={{ tooltip: path }}>
           {path}
         </Mono>
       </span>

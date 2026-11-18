@@ -42,7 +42,7 @@ const CopyFooter = ({
         they are.
       </Typography.Text>
     </div>
-    <Flex gap={8} className={styles.buttons}>
+    <Flex gap="small" className={styles.buttons}>
       <Button onClick={onCancel} disabled={copying}>
         Cancel
       </Button>

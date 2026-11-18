@@ -11,7 +11,7 @@ const FolderRow = ({ row }: { row: CompareFolderRow }) => {
     <div role="row" className={styles.folderRow}>
       <span className={styles.folderLabel}>
         <FolderOutlined />
-        <Mono size={13}>{row.folder.slice(0, -delimiter.length)}</Mono>
+        <Mono size="small">{row.folder.slice(0, -delimiter.length)}</Mono>
         <span className={styles.envCount}>{row.count}</span>
       </span>
     </div>

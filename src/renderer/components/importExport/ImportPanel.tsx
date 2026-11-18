@@ -76,7 +76,12 @@ const ImportPanel = () => {
           return false;
         }}
       >
-        <Flex vertical align="center" gap={4} className={styles.dropZone}>
+        <Flex
+          vertical
+          align="center"
+          gap="var(--ant-margin-xxs)"
+          className={styles.dropZone}
+        >
           <InboxOutlined className={styles.dropIcon} />
           <Typography.Text>
             Drop a {extension} file here, or{' '}
@@ -91,7 +96,7 @@ const ImportPanel = () => {
   }
 
   return (
-    <Flex vertical gap={16}>
+    <Flex vertical gap="middle">
       {/* Where the parameters go: the region in Settings, never the file's. */}
       <Alert
         type="info"

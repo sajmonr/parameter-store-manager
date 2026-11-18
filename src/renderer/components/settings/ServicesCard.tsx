@@ -58,7 +58,7 @@ const ServicesCard = () => {
       key: 'service',
       title: 'Service',
       render: (_, { segment }) => (
-        <Flex gap={8} align="center">
+        <Flex gap="small" align="center">
           <AppstoreOutlined className={styles.serviceIcon} />
           <span className={styles.mono}>{segment}</span>
           {added.includes(segment) && <Tag color="blue">new</Tag>}

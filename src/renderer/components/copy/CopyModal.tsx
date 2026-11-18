@@ -3,7 +3,7 @@ import { Flex, Modal, Typography } from 'antd';
 import { uiActions, useUiStore } from '../../state/ui';
 import type { CopyRequest } from '../../state/ui';
 import { useCopyTargets } from '../../state/views';
-import { COPY_MODAL_WIDTH } from '../../utils/layout';
+import { COPY_MODAL_TOP, COPY_MODAL_WIDTH } from '../../utils/layout';
 import useEscape from '../../hooks/useEscape';
 import useRetainWhileClosing from '../../hooks/useRetainWhileClosing';
 import Mono from '../common/Mono';
@@ -48,19 +48,22 @@ const CopyForm = ({
       open={open}
       afterClose={afterClose}
       width={COPY_MODAL_WIDTH}
-      style={{ top: 80, maxWidth: 'calc(100% - 32px)' }}
+      style={{
+        top: COPY_MODAL_TOP,
+        maxWidth: 'calc(100% - var(--ant-margin) * 2)'
+      }}
       styles={{
         container: {
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: 'calc(100vh - 112px)'
+          maxHeight: `calc(100vh - ${COPY_MODAL_TOP}px - var(--ant-margin-xl))`
         },
         body: { flex: 1, minHeight: 0, overflowY: 'auto' }
       }}
       title={
         <div className={styles.header}>
           <div>Synchronize environments</div>
-          <Mono type="secondary" small className={styles.sourceName}>
+          <Mono type="secondary" size="small" className={styles.sourceName}>
             {source.Name}
           </Mono>
         </div>
@@ -82,7 +85,7 @@ const CopyForm = ({
         />
       }
     >
-      <Flex vertical gap={12}>
+      <Flex vertical gap="var(--ant-margin-sm)">
         <SourceRow
           copyable={copyable}
           onChangeSource={state.changeSource}

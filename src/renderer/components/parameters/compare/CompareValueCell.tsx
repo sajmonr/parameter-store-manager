@@ -53,7 +53,7 @@ const CompareValueCell = ({
           value={Value}
           secure={secure}
           revealed={revealed}
-          size={13}
+          size="small"
           ellipsis
           className={styles.value}
         />

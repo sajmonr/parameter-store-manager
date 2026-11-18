@@ -26,7 +26,7 @@ const FormFooter = ({
         className={styles.alert}
       />
     )}
-    <Flex align="center" gap={8}>
+    <Flex align="center" gap="small">
       <Typography.Text type="secondary" className={styles.hint}>
         {submitShortcutLabel} to create
       </Typography.Text>

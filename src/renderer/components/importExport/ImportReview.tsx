@@ -92,7 +92,7 @@ const ImportReview = ({
         />
       }
     >
-      <Flex vertical gap={16}>
+      <Flex vertical gap="middle">
         <StatFilter counts={counts} shown={shown} onShow={setShown} />
         {fileRegion && fileRegion !== region && (
           <Alert
@@ -118,7 +118,7 @@ const ImportReview = ({
             />
           ))}
         </ul>
-        <Flex vertical gap={4}>
+        <Flex vertical gap="var(--ant-margin-xxs)">
           <LabeledSwitch
             id="import-overwrite"
             checked={overwrite}

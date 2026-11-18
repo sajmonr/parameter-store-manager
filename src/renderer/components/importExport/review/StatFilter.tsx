@@ -15,7 +15,7 @@ const StatFilter = ({
   shown: ImportStatus | null;
   onShow: (status: ImportStatus | null) => void;
 }) => (
-  <Flex gap={8} wrap role="group" aria-label="Summary">
+  <Flex gap="small" wrap role="group" aria-label="Summary">
     {STAT_ORDER.filter(
       status => ALWAYS_COUNTED.has(status) || counts[status]
     ).map(status => {

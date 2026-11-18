@@ -12,7 +12,7 @@ describe('text variants', () => {
       <>
         <HintText>Hint</HintText>
         <MetaText tone="tertiary">Meta</MetaText>
-        <Mono small>/a/b</Mono>
+        <Mono size="small">/a/b</Mono>
       </>
     );
     expect(screen.getByText('Hint')).toHaveStyle({ fontSize: '12px' });

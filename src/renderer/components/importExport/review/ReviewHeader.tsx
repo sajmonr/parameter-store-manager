@@ -15,7 +15,7 @@ const ReviewHeader = ({ file }: { file: LoadedFile }) => {
     region
   ].filter(Boolean);
   return (
-    <Flex align="center" gap={10}>
+    <Flex align="center" gap="small">
       <span className={styles.fileIcon}>{FORMAT_ICONS[file.format]}</span>
       <Flex vertical className={styles.fileTitle}>
         <Mono ellipsis={{ tooltip: file.name }}>{file.name}</Mono>

@@ -13,7 +13,7 @@ const profileOptions = (profiles: ListProfilesResponse, current: string) =>
   profileChoices(profiles, current).map(({ value, name, suffix }) => ({
     value,
     label: (
-      <Flex justify="space-between" align="center" gap={8}>
+      <Flex justify="space-between" align="center" gap="small">
         <span>{name}</span>
         {suffix && (
           <Typography.Text type="secondary" className={styles.suffix}>
@@ -81,7 +81,7 @@ const AwsConnectionSection = () => {
             onChange={(profile: string) => save({ profile })}
           />
         </Form.Item>
-        <Flex gap={12}>
+        <Flex gap="var(--ant-margin-sm)">
           <Form.Item
             label="SSM region"
             htmlFor="settings-ssm-region"

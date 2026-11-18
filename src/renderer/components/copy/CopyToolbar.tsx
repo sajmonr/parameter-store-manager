@@ -27,7 +27,7 @@ const CopyToolbar = ({
   onFilter,
   disabled
 }: CopyToolbarProps) => (
-  <Flex align="center" gap={12} className={styles.toolbar}>
+  <Flex align="center" gap="var(--ant-margin-sm)" className={styles.toolbar}>
     <Checkbox
       checked={allState.checked}
       indeterminate={allState.indeterminate}

@@ -16,7 +16,7 @@ const AppHeader = () => {
         <div className={styles.center}>
           <SearchInput />
         </div>
-        <Flex align="center" gap={8} className={styles.end}>
+        <Flex align="center" gap="small" className={styles.end}>
           <Button
             type="primary"
             icon={<PlusOutlined />}

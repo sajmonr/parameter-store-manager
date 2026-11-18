@@ -46,7 +46,7 @@ const TargetTypeNotes = ({
       <HintText>
         <InfoCircleOutlined /> This environment stores it as a SecureString, so
         the value will be encrypted with{' '}
-        <Mono small>{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
+        <Mono size="small">{parameter?.KeyId ?? DEFAULT_KMS_KEY}</Mono>.
       </HintText>
     );
   }
@@ -118,7 +118,7 @@ const TargetRow = ({
             <MaskedValue
               value={parameter.Value}
               secure={isSecureType(targetType)}
-              small
+              size="small"
               ellipsis
               className={styles.currentValue}
             />
@@ -130,7 +130,7 @@ const TargetRow = ({
         {status === 'new' && selected && isSecureType(sourceType) && (
           <Flex
             align="center"
-            gap={8}
+            gap="small"
             className={styles.kms}
             // Picking a key doesn't toggle the row.
             onClick={event => event.stopPropagation()}

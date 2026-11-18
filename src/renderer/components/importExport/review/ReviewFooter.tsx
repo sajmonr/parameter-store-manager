@@ -66,7 +66,7 @@ const ReviewFooter = ({
           retryDisabled={!retryable || loading}
         />
       )}
-      <Flex justify="flex-end" align="center" gap={8}>
+      <Flex justify="flex-end" align="center" gap="small">
         {loading && !importing && (
           <Typography.Text type="secondary" className={styles.status}>
             {WAITING_FOR_PARAMETERS}

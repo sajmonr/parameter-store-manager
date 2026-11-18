@@ -9,7 +9,7 @@ const ExportSection = ({
   label: string;
   children: ReactNode;
 }) => (
-  <Flex vertical gap={8}>
+  <Flex vertical gap="small">
     <Typography.Text strong>{label}</Typography.Text>
     {children}
   </Flex>

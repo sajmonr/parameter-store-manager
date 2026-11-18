@@ -14,12 +14,12 @@ interface ValueCellProps {
 const ValueCell = ({ parameter, revealed, onToggleReveal }: ValueCellProps) => {
   const secure = isSecure(parameter);
   return (
-    <Flex align="center" gap={2}>
+    <Flex align="center" gap="var(--ant-margin-xxs)">
       <MaskedValue
         value={parameter.Value}
         secure={secure}
         revealed={revealed}
-        size={13}
+        size="small"
         ellipsis
         style={{ minWidth: 0, marginRight: 4 }}
       />

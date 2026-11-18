@@ -15,7 +15,7 @@ const DecryptOption = ({
   canImport: boolean;
   disabled: boolean;
 }) => (
-  <Flex vertical gap={12}>
+  <Flex vertical gap="var(--ant-margin-sm)">
     <LabeledSwitch
       id="export-decrypt"
       checked={checked}

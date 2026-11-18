@@ -38,7 +38,10 @@ export const SETTINGS_NAV_WIDTH = 232;
 export const SETTINGS_MAX_WIDTH = 680;
 export const SETTINGS_WIDE_MAX_WIDTH = 880;
 
+// The copy dialog sits this far from the top; a long list scrolls inside
+// it.
 export const COPY_MODAL_WIDTH = 640;
+export const COPY_MODAL_TOP = 80;
 export const SET_MISSING_MENU_WIDTH = 300;
 
 // Below this width the detail pane becomes a drawer.

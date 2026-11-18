@@ -16,7 +16,7 @@ const ExportPanel = () => {
   const { format, exporting, selected, counted } = form;
 
   return (
-    <Flex vertical gap={16}>
+    <Flex vertical gap="middle">
       <Card title="Format">
         <FormatCards
           mode="export"
@@ -35,7 +35,7 @@ const ExportPanel = () => {
           ) : null
         }
       >
-        <Flex vertical gap={20}>
+        <Flex vertical gap="var(--ant-margin-md)">
           <ExportSection label="Parameters">
             <ScopeOptions
               scope={form.scope}

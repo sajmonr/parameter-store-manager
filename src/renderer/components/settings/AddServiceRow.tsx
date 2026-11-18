@@ -37,7 +37,7 @@ const AddServiceRow = ({ onAdded }: { onAdded: (segment: string) => void }) => {
 
   return (
     <div className={styles.cardFooter}>
-      <Flex gap={8} align="center" wrap>
+      <Flex gap="small" align="center" wrap>
         <Input
           aria-label="New service"
           aria-invalid={!!error}

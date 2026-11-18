@@ -21,7 +21,7 @@ const ServiceEnvironmentCell = ({
 }) => {
   const count = countAt(checked ? byServiceEnv : inOther, service, env);
   return (
-    <Flex gap={8} align="center">
+    <Flex gap="small" align="center">
       <Checkbox
         checked={checked}
         aria-label={`${service} in ${env}`}

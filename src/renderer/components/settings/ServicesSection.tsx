@@ -15,7 +15,7 @@ const StructureSwitchCard = () => {
 
   return (
     <Card className={styles.switchCard} onClick={toggle}>
-      <Flex justify="space-between" align="center" gap={16}>
+      <Flex justify="space-between" align="center" gap="middle">
         <div>
           <Typography.Text strong id="structure-switch-label">
             Group by service and environment
@@ -40,7 +40,7 @@ const StructureSwitchCard = () => {
 const ServicesSection = () => {
   const enabled = useSettingsStore(settings => settings.structure.enabled);
   return (
-    <Flex vertical gap={16}>
+    <Flex vertical gap="middle">
       <StructureSwitchCard />
       {enabled && (
         <>

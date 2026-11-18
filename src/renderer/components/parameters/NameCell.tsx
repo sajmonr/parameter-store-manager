@@ -22,7 +22,7 @@ const NameCell = ({ parameter, selected }: NameCellProps) => {
   return (
     <div className={styles.cell}>
       <Mono
-        size={13}
+        size="small"
         weight={600}
         ellipsis
         className={selected ? styles.selected : undefined}

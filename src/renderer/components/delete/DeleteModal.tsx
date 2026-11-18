@@ -91,7 +91,7 @@ const DeleteModal = () => {
       open={!!request}
       title={
         shown && (
-          <Flex gap={8} align="baseline">
+          <Flex gap="small" align="baseline">
             <ExclamationCircleFilled className={styles.icon} />
             <span className={styles.title}>{titleOf(shown, delimiter)}</span>
           </Flex>

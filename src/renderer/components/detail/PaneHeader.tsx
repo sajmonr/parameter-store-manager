@@ -5,7 +5,7 @@ import { uiActions } from '../../state/ui';
 
 // The title row of the pane, with a close button on the right.
 const PaneHeader = ({ children }: { children: ReactNode }) => (
-  <Flex align="flex-start" justify="space-between" gap={8}>
+  <Flex align="flex-start" justify="space-between" gap="small">
     <div style={{ minWidth: 0 }}>{children}</div>
     <Button
       type="text"
