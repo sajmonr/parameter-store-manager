@@ -14,7 +14,6 @@ export const ALL_PARAMETER_TYPES = [
   PARAMETER_TYPE.SecureString,
   PARAMETER_TYPE.StringList
 ] as const;
-export type AnyParameterType = (typeof ALL_PARAMETER_TYPES)[number];
 
 // The types the app can save.
 export const PARAMETER_TYPES = [

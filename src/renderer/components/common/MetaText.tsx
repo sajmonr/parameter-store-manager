@@ -5,12 +5,11 @@ import { COUNT_PLACEHOLDER } from '../../utils/labels';
 
 // How faint the text is: secondary for details, tertiary for counts next to
 // a label, quaternary for what's barely there.
-export type MetaTone = 'secondary' | 'tertiary' | 'quaternary';
+type MetaTone = 'secondary' | 'tertiary' | 'quaternary';
 
-export type MetaTextProps = Omit<
-  ComponentProps<typeof Typography.Text>,
-  'type'
-> & { tone?: MetaTone };
+type MetaTextProps = Omit<ComponentProps<typeof Typography.Text>, 'type'> & {
+  tone?: MetaTone;
+};
 
 // Small text about something else: a count, a date, a source.
 const MetaText = forwardRef<HTMLSpanElement, MetaTextProps>(
@@ -32,7 +31,7 @@ const MetaText = forwardRef<HTMLSpanElement, MetaTextProps>(
 );
 MetaText.displayName = 'MetaText';
 
-export type CountTextProps = Omit<MetaTextProps, 'children'> & {
+type CountTextProps = Omit<MetaTextProps, 'children'> & {
   count: number;
   // Until the first load finishes, the count shows a placeholder: it would
   // keep rolling as names arrive.
