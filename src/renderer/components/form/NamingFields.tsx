@@ -64,6 +64,7 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
     <Flex
       component="span"
       align="baseline"
+      justify="space-between"
       gap="var(--ant-margin-sm)"
       className={styles.labelRow}
     >
@@ -80,6 +81,7 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
     <Flex
       component="span"
       align="baseline"
+      justify="space-between"
       gap="var(--ant-margin-sm)"
       className={styles.labelRow}
     >

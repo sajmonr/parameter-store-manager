@@ -48,9 +48,7 @@
 }
 
 .end {
-  flex: 0 1 auto;
   min-width: 0;
-  margin-left: auto;
 }
 
 .hint {

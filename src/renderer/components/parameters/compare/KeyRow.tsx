@@ -30,6 +30,7 @@ const KeyRow = memo(
     return (
       <div role="row" className={styles.row}>
         <Flex
+          justify="space-between"
           align="center"
           gap="small"
           role="rowheader"

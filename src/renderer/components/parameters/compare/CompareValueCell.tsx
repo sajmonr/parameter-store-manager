@@ -63,6 +63,7 @@ const CompareValueCell = ({
 
   return (
     <Flex
+      justify="space-between"
       align="center"
       gap="small"
       role="cell"

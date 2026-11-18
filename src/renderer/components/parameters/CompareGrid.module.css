@@ -55,7 +55,6 @@
 /* On the right of the key, so they stay visible while scrolling sideways. */
 .tags {
   flex: none;
-  margin-left: auto;
 }
 
 .warning {
@@ -108,7 +107,6 @@
    edge. */
 .actions {
   flex: none;
-  margin-left: auto;
 }
 
 .chip {

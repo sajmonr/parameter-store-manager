@@ -27,18 +27,25 @@ const CopyToolbar = ({
   onFilter,
   disabled
 }: CopyToolbarProps) => (
-  <Flex align="center" gap="var(--ant-margin-sm)" className={styles.toolbar}>
-    <Checkbox
-      checked={allState.checked}
-      indeterminate={allState.indeterminate}
-      disabled={!allState.selectable.length || disabled}
-      onChange={event => onSelectAll(event.target.checked)}
-    >
-      Select all
-    </Checkbox>
-    <Typography.Text type="secondary">
-      {selected} of {plural(selectable, 'environment')} selected
-    </Typography.Text>
+  <Flex
+    align="center"
+    justify="space-between"
+    gap="var(--ant-margin-sm)"
+    className={styles.toolbar}
+  >
+    <Flex align="center" gap="var(--ant-margin-sm)">
+      <Checkbox
+        checked={allState.checked}
+        indeterminate={allState.indeterminate}
+        disabled={!allState.selectable.length || disabled}
+        onChange={event => onSelectAll(event.target.checked)}
+      >
+        Select all
+      </Checkbox>
+      <Typography.Text type="secondary">
+        {selected} of {plural(selectable, 'environment')} selected
+      </Typography.Text>
+    </Flex>
     {filtering && (
       <Input
         allowClear

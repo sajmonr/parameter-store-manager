@@ -56,7 +56,6 @@
 }
 
 .open {
-  margin-left: auto;
   height: 22px;
   font-size: var(--ant-font-size-sm);
 }

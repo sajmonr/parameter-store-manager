@@ -148,7 +148,13 @@ const ParameterBreadcrumb = ({
         ) : (
           <NeutralBadge count={count} showZero overflowCount={99999} />
         )}
-        <Flex align="center" gap="var(--ant-margin-sm)" className={styles.end}>
+        <Flex
+          flex="auto"
+          align="center"
+          justify="flex-end"
+          gap="var(--ant-margin-sm)"
+          className={styles.end}
+        >
           {isOtherLocation(location) && (
             <Typography.Text type="secondary" className={styles.hint} ellipsis>
               Don&apos;t match{' '}

@@ -33,7 +33,7 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
       </Typography.Text>
     )}
     {row.created && (
-      <Flex align="center" gap="small">
+      <Flex align="center" justify="space-between" gap="small">
         <Flex
           component="span"
           align="center"
