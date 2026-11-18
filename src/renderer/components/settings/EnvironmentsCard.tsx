@@ -2,20 +2,16 @@ import { useState } from 'react';
 import { Button } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { segmentError } from '../../../shared/structure';
-import { usePathDelimiter, useSettingsStore } from '../../state/settings';
-import { updateStructure } from '../../state/settingsChanges';
+import { useSettingsStore } from '../../state/settings';
 import { useStructuredParameters } from '../../state/views';
 import {
-  addEnvironment,
   moveEnvironment,
   nextColor,
   removeEnvironment,
-  renameEnvironment,
   setEnvironmentColor
 } from '../../utils/structureEdits';
 import { EnvironmentColorPicker } from './EnvironmentColor';
-import SegmentInput from './SegmentInput';
+import EnvironmentSegmentInput from './EnvironmentSegmentInput';
 import SettingsCard from './SettingsCard';
 import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
@@ -36,7 +32,6 @@ const LOCKED: ReadonlySet<string> = new Set([ADDED_KEY]);
 
 const EnvironmentsCard = () => {
   const structure = useSettingsStore(settings => settings.structure);
-  const delimiter = usePathDelimiter();
   const update = useUpdateStructure();
   const { byEnv } = useStructuredParameters();
   // The colour of the row being added, or null when there is none.
@@ -79,38 +74,14 @@ const EnvironmentsCard = () => {
     {
       key: 'segment',
       title: 'Path segment',
-      render: (_, row) =>
-        row.added ? (
-          <SegmentInput
-            label="New environment"
-            value=""
-            autoFocus
-            validate={value => segmentError(value, delimiter, segments)}
-            onSave={segment =>
-              updateStructure(current =>
-                addEnvironment(current, segment, row.color)
-              ).then(() => setAddedColor(null))
-            }
-            onCancel={() => setAddedColor(null)}
-          />
-        ) : (
-          <SegmentInput
-            label={`Environment ${row.segment}`}
-            value={row.segment}
-            validate={value =>
-              segmentError(
-                value,
-                delimiter,
-                segments.filter(s => s !== row.segment)
-              )
-            }
-            onSave={segment =>
-              updateStructure(current =>
-                renameEnvironment(current, row.segment, segment)
-              )
-            }
-          />
-        )
+      render: (_, row) => (
+        <EnvironmentSegmentInput
+          segment={row.added ? null : row.segment}
+          color={row.color}
+          segments={segments}
+          onAdded={() => setAddedColor(null)}
+        />
+      )
     },
     {
       key: 'count',
