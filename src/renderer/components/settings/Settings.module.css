@@ -46,10 +46,10 @@
   cursor: pointer;
 }
 
-.fieldError {
-  display: block;
-  margin-top: var(--ant-margin-xxs);
-  font-size: var(--ant-font-size-sm);
+/* A field outside a form, such as in a table row: no gap below it unless
+   it shows an error. */
+.inlineField.inlineField {
+  margin-bottom: 0;
 }
 
 /* Path structure: two radio cards side by side, sharing the width. */

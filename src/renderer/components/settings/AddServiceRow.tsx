@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Flex, Input, Typography } from 'antd';
+import { Button, Flex, Form, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { segmentError } from '../../../shared/structure';
 import { usePathDelimiter, useSettingsStore } from '../../state/settings';
@@ -8,6 +8,8 @@ import { cx } from '../../utils/classNames';
 import { addService } from '../../utils/structureEdits';
 import styles from './Settings.module.css';
 import HintText from '../common/HintText';
+import { describeError } from '../../utils/awsErrors';
+import type { ErrorLike } from '../../utils/awsErrors';
 
 // Typed into the add row, and checked when added.
 const AddServiceRow = ({ onAdded }: { onAdded: (segment: string) => void }) => {
@@ -32,36 +34,36 @@ const AddServiceRow = ({ onAdded }: { onAdded: (segment: string) => void }) => {
         // A name typed while the save ran is kept.
         setName(current => (current === name ? '' : current));
       },
-      (saveError: Error) => setError(saveError.message)
+      (saveError: unknown) => setError(describeError(saveError as ErrorLike))
     );
   };
 
   return (
     <div className={styles.cardFooter}>
-      <Flex gap="small" align="center" wrap>
-        <Input
-          aria-label="New service"
-          aria-invalid={!!error}
-          placeholder="service-name"
-          value={name}
-          status={error ? 'error' : undefined}
-          className={cx(styles.mono, styles.serviceInput)}
-          onChange={event => {
-            setName(event.target.value);
-            setError(null);
-          }}
-          onPressEnter={add}
-        />
+      <Flex gap="small" align="flex-start" wrap>
+        <Form.Item
+          validateStatus={error ? 'error' : undefined}
+          help={error}
+          className={styles.inlineField}
+        >
+          <Input
+            aria-label="New service"
+            aria-invalid={!!error}
+            placeholder="service-name"
+            value={name}
+            className={cx(styles.mono, styles.serviceInput)}
+            onChange={event => {
+              setName(event.target.value);
+              setError(null);
+            }}
+            onPressEnter={add}
+          />
+        </Form.Item>
         <Button type="dashed" icon={<PlusOutlined />} onClick={add}>
           Add service
         </Button>
         <HintText>New services start in every environment.</HintText>
       </Flex>
-      {error && (
-        <Typography.Text type="danger" className={styles.fieldError}>
-          {error}
-        </Typography.Text>
-      )}
     </div>
   );
 };

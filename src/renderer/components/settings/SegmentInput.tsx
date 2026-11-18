@@ -1,4 +1,4 @@
-import { Input, Typography } from 'antd';
+import { Form, Input } from 'antd';
 import useDraft from './useDraft';
 import styles from './Settings.module.css';
 
@@ -31,12 +31,15 @@ const SegmentInput = ({
   });
 
   return (
-    <>
+    <Form.Item
+      validateStatus={error ? 'error' : undefined}
+      help={error}
+      className={styles.inlineField}
+    >
       <Input
         aria-label={label}
         aria-invalid={!!error}
         value={draft}
-        status={error ? 'error' : undefined}
         // A save in flight would replace a newer draft.
         readOnly={saving}
         autoFocus={autoFocus}
@@ -46,12 +49,7 @@ const SegmentInput = ({
         onKeyDown={onKeyDown}
         onBlur={() => (onCancel && !draft ? onCancel() : commit())}
       />
-      {error && (
-        <Typography.Text type="danger" className={styles.fieldError}>
-          {error}
-        </Typography.Text>
-      )}
-    </>
+    </Form.Item>
   );
 };
 
