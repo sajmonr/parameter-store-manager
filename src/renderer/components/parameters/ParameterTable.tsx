@@ -1,40 +1,22 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Table, Tooltip } from 'antd';
-import type { GetRef, TableColumnsType } from 'antd';
-import { AppstoreOutlined } from '@ant-design/icons';
+import type { GetRef } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useCheckContext, useLocation } from '../../state/views';
 import { isEnvironmentLocation, isServiceLocation } from '../../utils/location';
 import { isGroupRow, tableRowsOf } from '../../utils/tableRows';
-import type { TableRow as Row } from '../../utils/tableRows';
 import useElementSize from '../../hooks/useElementSize';
-import usePageVisible from '../../hooks/usePageVisible';
-import NameCell from './NameCell';
-import ValueCell from './ValueCell';
 import styles from './ParameterTable.module.css';
-import { isSecure } from '../../../shared/parameterTypes';
 import {
   TABLE_CHECKBOX_COLUMN_WIDTH,
-  TABLE_HEADER_HEIGHT,
-  TABLE_LOCK_COLUMN_WIDTH
+  TABLE_HEADER_HEIGHT
 } from '../../utils/layout';
-import SecureLockIcon from '../common/SecureLockIcon';
-
-// A group row spans every column.
-const spanGroupRow = (columns: number) => (row: Row) => ({
-  colSpan: isGroupRow(row) ? columns : 1
-});
-const hideInGroupRow = (row: Row) => ({ colSpan: isGroupRow(row) ? 0 : 1 });
-
-// ↑/↓ move the selection unless the user is typing or using another widget.
-const isArrowNavigationTarget = (target: EventTarget | null) =>
-  !(target instanceof Element) ||
-  !target.closest(
-    'input, textarea, select, [contenteditable], [role="tree"], .ant-modal, .ant-popover, .ant-drawer'
-  );
+import { cx } from '../../utils/classNames';
+import useArrowNavigation from './useArrowNavigation';
+import useTableColumns from './useTableColumns';
 
 interface ParameterTableProps {
   parameters: ParameterEntry[];
@@ -65,7 +47,6 @@ const ParameterTable = ({
     () => tableRowsOf(parameters, location, context),
     [parameters, location, context]
   );
-  const pageVisible = usePageVisible();
   const revealed = useUiStore(state => state.revealed);
   const [ref, { width, height }] = useElementSize();
   const tableRef = useRef<GetRef<typeof Table>>(null);
@@ -79,80 +60,15 @@ const ParameterTable = ({
     }
   }, [selectedName, location]);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-      if (!pageVisible || !parameters.length) return;
-      if (!isArrowNavigationTarget(event.target)) return;
-      event.preventDefault();
-      const index = parameters.findIndex(p => p.Name === selectedName);
-      let next = 0;
-      if (index >= 0) {
-        next =
-          event.key === 'ArrowDown'
-            ? Math.min(parameters.length - 1, index + 1)
-            : Math.max(0, index - 1);
-      }
-      const nextParameter = parameters[next];
-      if (nextParameter) uiActions.selectParameter(nextParameter.Name);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [parameters, selectedName, pageVisible]);
-
-  const columns = useMemo<TableColumnsType<Row>>(
-    () => [
-      {
-        title: nameTitle,
-        key: 'name',
-        width: Math.round(
-          (width - TABLE_CHECKBOX_COLUMN_WIDTH - TABLE_LOCK_COLUMN_WIDTH) * 0.45
-        ),
-        onCell: spanGroupRow(3),
-        render: (_, row) =>
-          isGroupRow(row) ? (
-            <span className={styles.group}>
-              <AppstoreOutlined />
-              <span className={styles.groupName}>{row.service}</span>
-              <span className={styles.groupCount}>{row.count}</span>
-            </span>
-          ) : (
-            <NameCell parameter={row} selected={row.Name === selectedName} />
-          )
-      },
-      {
-        title: 'Value',
-        key: 'value',
-        onCell: hideInGroupRow,
-        render: (_, parameter) =>
-          !isGroupRow(parameter) && (
-            <ValueCell
-              parameter={parameter}
-              revealed={revealed.has(parameter.Name)}
-              onToggleReveal={() => uiActions.toggleReveal(parameter.Name)}
-            />
-          )
-      },
-      {
-        key: 'lock',
-        width: TABLE_LOCK_COLUMN_WIDTH,
-        align: 'center',
-        onCell: hideInGroupRow,
-        render: (_, parameter) =>
-          !isGroupRow(parameter) && isSecure(parameter) && <SecureLockIcon />
-      }
-    ],
-    [width, selectedName, revealed, nameTitle]
-  );
+  useArrowNavigation(parameters, selectedName);
+  const columns = useTableColumns({ width, nameTitle, selectedName, revealed });
 
   return (
     <div ref={ref} className={styles.container}>
       {width > 0 && height > 0 && (
         <Table
           ref={tableRef}
-          className={
-            placeholder ? `${styles.table} ${styles.placeholder}` : styles.table
-          }
+          className={cx(styles.table, !!placeholder && styles.placeholder)}
           size="small"
           virtual
           pagination={false}
