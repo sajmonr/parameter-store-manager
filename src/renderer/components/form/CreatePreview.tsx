@@ -1,11 +1,10 @@
-import { Button, Flex } from 'antd';
+import { Button, Flex, Tag } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
 import { breakable } from '../../utils/paths';
 import Mono from '../common/Mono';
 import styles from './CreatePreview.module.css';
-import { cx } from '../../utils/classNames';
 import MetaText from '../common/MetaText';
 import HintText from '../common/HintText';
 
@@ -31,33 +30,20 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
     </Flex>
     {row.meta && <MetaText>{row.meta}</MetaText>}
     {row.created && (
-      <Flex align="center" justify="space-between" gap="small">
-        <Flex
-          component="span"
-          align="center"
-          gap="var(--ant-margin-xxs)"
-          className={cx(styles.tag, styles.created)}
-        >
-          <CheckCircleFilled />
+      <span>
+        <Tag color="success" icon={<CheckCircleFilled />}>
           Created
-        </Flex>
-      </Flex>
+        </Tag>
+      </span>
     )}
     {row.error && <HintText type="danger">{row.error}</HintText>}
     {row.exists && !row.created && (
       <Flex align="center" gap="small">
-        <Flex
-          component="span"
-          align="center"
-          gap="var(--ant-margin-xxs)"
-          className={cx(styles.tag, styles.exists)}
-        >
-          <CloseCircleFilled />
+        <Tag color="error" icon={<CloseCircleFilled />}>
           Already exists
-        </Flex>
+        </Tag>
         <Button
           size="small"
-          className={styles.open}
           onClick={() => uiActions.selectParameter(row.name)}
         >
           Open →

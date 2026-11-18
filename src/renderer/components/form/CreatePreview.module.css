@@ -27,35 +27,3 @@
   word-break: normal;
   overflow-wrap: normal;
 }
-
-.tag {
-  /* Flex has no inline mode. */
-  display: inline-flex;
-  padding: 0 var(--ant-padding-xs);
-  border: 1px solid;
-  border-radius: var(--ant-border-radius-sm);
-  font-size: var(--ant-font-size-sm);
-  line-height: 20px;
-}
-
-.exists {
-  background: var(--ant-color-error-bg);
-  border-color: var(--ant-color-error-border);
-  color: var(--ant-color-error);
-}
-
-.created {
-  background: var(--ant-color-success-bg);
-  border-color: var(--ant-color-success-border);
-  color: var(--ant-color-success);
-}
-
-.open {
-  height: 22px;
-  font-size: var(--ant-font-size-sm);
-}
-
-.open:hover {
-  color: var(--ant-color-primary);
-  border-color: var(--ant-color-primary);
-}
