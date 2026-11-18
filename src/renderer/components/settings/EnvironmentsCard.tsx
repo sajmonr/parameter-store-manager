@@ -17,6 +17,7 @@ import { useUpdateStructure } from './useSaveSettings';
 import styles from './Settings.module.css';
 import RemoveSegmentButton from './RemoveSegmentButton';
 import SortableTable, { DragHandle } from './SortableTable';
+import { SETTINGS_COLUMN_WIDTH } from '../../utils/layout';
 
 interface EnvironmentRow {
   key: string;
@@ -48,13 +49,13 @@ const EnvironmentsCard = () => {
   const columns: TableColumnsType<EnvironmentRow> = [
     {
       key: 'sort',
-      width: 40,
+      width: SETTINGS_COLUMN_WIDTH.drag,
       render: (_, row) => !row.added && <DragHandle label={row.segment} />
     },
     {
       key: 'color',
       title: 'Color',
-      width: 64,
+      width: SETTINGS_COLUMN_WIDTH.color,
       render: (_, row) => (
         <EnvironmentColorPicker
           color={row.color}
@@ -86,12 +87,12 @@ const EnvironmentsCard = () => {
     {
       key: 'count',
       title: 'Parameters',
-      width: 110,
+      width: SETTINGS_COLUMN_WIDTH.count,
       render: (_, row) => !row.added && (byEnv.get(row.segment) ?? 0)
     },
     {
       key: 'remove',
-      width: 56,
+      width: SETTINGS_COLUMN_WIDTH.remove,
       render: (_, row) =>
         row.added ? (
           <Button

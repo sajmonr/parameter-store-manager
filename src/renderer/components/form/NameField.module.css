@@ -12,7 +12,7 @@
 
 .popup {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + var(--ant-margin-xxs));
   left: 0;
   right: 0;
   z-index: 10;

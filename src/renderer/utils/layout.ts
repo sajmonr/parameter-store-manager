@@ -47,6 +47,15 @@ export const SETTINGS_WIDE_MAX_WIDTH = 880;
 // Option cards wrap to the next row below this width.
 export const OPTION_CARD_MIN_WIDTH = 220;
 
+// The settings tables' fixed columns.
+export const SETTINGS_COLUMN_WIDTH = {
+  drag: 40,
+  color: 64,
+  count: 110,
+  total: 72,
+  remove: 56
+};
+
 export const COPY_MODAL_WIDTH = 640;
 export const COPY_MODAL_TOP = 80;
 export const SET_MISSING_MENU_WIDTH = 300;
@@ -58,6 +67,7 @@ export const layoutVariables = {
   '--rail-width': `${RAIL_WIDTH}px`,
   '--header-height': `${HEADER_HEIGHT}px`,
   '--search-min-width': `${SEARCH_MIN_WIDTH}px`,
+  '--search-max-width': `${SEARCH_MAX_WIDTH}px`,
   '--pane-width': `${PANE_WIDTH}px`,
   '--settings-nav-width': `${SETTINGS_NAV_WIDTH}px`
 } as CSSProperties;

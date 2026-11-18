@@ -1,7 +1,7 @@
 .search {
   flex: 1;
-  max-width: 540px;
-  min-width: 200px;
+  max-width: var(--search-max-width);
+  min-width: var(--search-min-width);
 }
 
 /* Code font for typed paths and globs; antd has no font family token for

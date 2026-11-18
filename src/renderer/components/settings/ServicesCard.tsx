@@ -20,6 +20,7 @@ import AddServiceRow from './AddServiceRow';
 import RemoveSegmentButton from './RemoveSegmentButton';
 import ServiceEnvironmentCell from './ServiceEnvironmentCell';
 import Mono from '../common/Mono';
+import { SETTINGS_COLUMN_WIDTH } from '../../utils/layout';
 
 const ServicesCard = () => {
   const structure = useSettingsStore(settings => settings.structure);
@@ -68,12 +69,12 @@ const ServicesCard = () => {
     {
       key: 'total',
       title: 'Total',
-      width: 72,
+      width: SETTINGS_COLUMN_WIDTH.total,
       render: (_, { segment }) => byService.get(segment) ?? 0
     },
     {
       key: 'remove',
-      width: 56,
+      width: SETTINGS_COLUMN_WIDTH.remove,
       render: (_, { segment }) => (
         <RemoveSegmentButton
           segment={segment}

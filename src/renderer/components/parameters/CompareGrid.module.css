@@ -170,7 +170,7 @@
   /* Flex has no inline mode. */
   display: inline-flex;
   position: sticky;
-  left: 16px;
+  left: var(--ant-padding);
   padding: var(--ant-padding-xs) 0;
   margin-left: var(--ant-margin);
   font-weight: 600;
@@ -183,7 +183,7 @@
   top: 96px;
   left: 50%;
   z-index: 3;
-  width: min(420px, calc(100% - 32px));
+  width: min(420px, calc(100% - var(--ant-margin-xl)));
   transform: translateX(-50%);
   box-shadow: var(--ant-box-shadow-secondary);
 }
