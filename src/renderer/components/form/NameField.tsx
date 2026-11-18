@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Input, Tooltip } from 'antd';
+import { Input, Tooltip, Flex } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
 import type { Suggestion } from '../../utils/naming';
 import styles from './NameField.module.css';
@@ -134,7 +134,9 @@ const NameField = ({
                 placement="left"
                 mouseEnterDelay={0.6}
               >
-                <div
+                <Flex
+                  align="center"
+                  gap="small"
                   id={optionId(index)}
                   role="option"
                   aria-selected={index === active}
@@ -151,7 +153,7 @@ const NameField = ({
                     <span className={styles.parent}>{suggestion.parent}</span>
                     {suggestion.child}
                   </span>
-                </div>
+                </Flex>
               </Tooltip>
             ))}
           </div>

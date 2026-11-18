@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Badge, Button, Tooltip } from 'antd';
+import { Badge, Button, Tooltip, Flex } from 'antd';
 import {
   SettingOutlined,
   SwapOutlined,
@@ -85,7 +85,14 @@ const ImportExportItem = () => {
 
 // The app's pages, with Settings pinned to the bottom.
 const Rail = () => (
-  <nav className={styles.rail} aria-label="Pages">
+  <Flex
+    component="nav"
+    vertical
+    align="center"
+    gap="var(--ant-margin-xxs)"
+    className={styles.rail}
+    aria-label="Pages"
+  >
     <RailItem
       page="parameters"
       label="Parameters"
@@ -101,7 +108,7 @@ const Rail = () => (
       icon={<SettingOutlined />}
       onClick={() => uiActions.openSettings()}
     />
-  </nav>
+  </Flex>
 );
 
 export default Rail;

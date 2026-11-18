@@ -10,9 +10,6 @@
 
 /* A radio with what it chooses below it; the whole card selects it. */
 .option {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xs);
   padding: var(--ant-padding-sm) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border);
   border-radius: var(--ant-border-radius-lg);
@@ -25,9 +22,6 @@
 }
 
 .optionBody {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xs);
   /* Lines up with the radio's label. */
   padding-inline-start: var(--ant-padding-lg);
 }
@@ -44,9 +38,6 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
   font-size: var(--ant-font-size-sm);
 }
 

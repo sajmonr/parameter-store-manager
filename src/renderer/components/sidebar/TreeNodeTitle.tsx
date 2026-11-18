@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { COUNT_PLACEHOLDER } from '../../utils/labels';
 import type { Location } from '../../utils/location';
 import { cx } from '../../utils/classNames';
@@ -32,7 +33,12 @@ const TreeNodeTitle = ({
   highlight
 }: TreeNodeTitleProps) => (
   <TreeNodeMenu location={location} label={label} treeNames={treeNames}>
-    <span className={styles.title}>
+    <Flex
+      component="span"
+      align="baseline"
+      gap="small"
+      className={styles.title}
+    >
       {color && <EnvironmentDot color={color} className={styles.dot} />}
       <span className={styles.label} title={label}>
         {highlight === undefined ? (
@@ -44,7 +50,7 @@ const TreeNodeTitle = ({
       <span className={cx(styles.count, (!loaded || !count) && styles.empty)}>
         {loaded ? count : COUNT_PLACEHOLDER}
       </span>
-    </span>
+    </Flex>
   </TreeNodeMenu>
 );
 

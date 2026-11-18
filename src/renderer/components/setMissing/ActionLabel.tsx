@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Typography } from 'antd';
+import { Typography, Flex } from 'antd';
 import styles from './SetMissingMenu.module.css';
 
 // A menu action: what it does, and below it a detail.
@@ -10,12 +10,12 @@ const ActionLabel = ({
   title: ReactNode;
   detail: string;
 }) => (
-  <span className={styles.action}>
-    <span className={styles.actionTitle}>{title}</span>
+  <Flex component="span" vertical className={styles.action}>
+    <Flex component="span">{title}</Flex>
     <Typography.Text type="secondary" className={styles.actionDetail}>
       {detail}
     </Typography.Text>
-  </span>
+  </Flex>
 );
 
 export default ActionLabel;

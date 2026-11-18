@@ -51,9 +51,6 @@
 }
 
 .group {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   font-size: var(--ant-font-size-sm);
   font-weight: 600;
 }

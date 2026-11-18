@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { PageVisibleContext } from '../hooks/usePageVisible';
@@ -47,7 +48,7 @@ const AppShell = () => {
   }, []);
 
   return (
-    <div className={styles.shell} style={layoutVariables}>
+    <Flex className={styles.shell} style={layoutVariables}>
       <Rail />
       <main className={styles.pages}>
         <PageFrame page="parameters">
@@ -60,7 +61,7 @@ const AppShell = () => {
           <SettingsPage />
         </PageFrame>
       </main>
-    </div>
+    </Flex>
   );
 };
 

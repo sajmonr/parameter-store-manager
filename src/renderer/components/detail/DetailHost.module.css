@@ -1,7 +1,4 @@
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin);
   padding: var(--ant-padding-md) var(--ant-padding-lg);
 }
 

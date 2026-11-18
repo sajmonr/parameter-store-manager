@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import type { StructureEnvironment } from '../../../../shared/structure';
 import { cx } from '../../../utils/classNames';
 import EnvironmentLabel from '../../common/EnvironmentLabel';
@@ -16,11 +17,22 @@ const CompareHeaderRow = ({
   ready: boolean;
 }) => (
   <div role="row" className={cx(styles.row, styles.headerRow)}>
-    <div role="columnheader" className={styles.keyCell}>
+    <Flex
+      align="center"
+      gap="small"
+      role="columnheader"
+      className={styles.keyCell}
+    >
       Key
-    </div>
+    </Flex>
     {environments.map(({ segment, color }, index) => (
-      <div key={segment} role="columnheader" className={styles.cell}>
+      <Flex
+        align="center"
+        gap="small"
+        key={segment}
+        role="columnheader"
+        className={styles.cell}
+      >
         <EnvironmentLabel
           color={color}
           name={segment}
@@ -28,7 +40,7 @@ const CompareHeaderRow = ({
           loaded={ready}
           ellipsis
         />
-      </div>
+      </Flex>
     ))}
   </div>
 );

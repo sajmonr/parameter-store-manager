@@ -1,4 +1,4 @@
-import { Breadcrumb, Spin, Typography } from 'antd';
+import { Breadcrumb, Spin, Typography, Flex } from 'antd';
 import type { ReactNode } from 'react';
 import { useParameters } from '../../state/parameters';
 import { useLocationContext } from '../../state/settings';
@@ -141,14 +141,14 @@ const ParameterBreadcrumb = ({
 
   return (
     <div className={styles.header}>
-      <div className={styles.row}>
+      <Flex align="center" gap="small" className={styles.row}>
         <Breadcrumb items={items} className={styles.breadcrumb} />
         {loading ? (
           <Spin size="small" aria-label="Counting parameters" />
         ) : (
           <NeutralBadge count={count} showZero overflowCount={99999} />
         )}
-        <div className={styles.end}>
+        <Flex align="center" gap="var(--ant-margin-sm)" className={styles.end}>
           {isOtherLocation(location) && (
             <Typography.Text type="secondary" className={styles.hint} ellipsis>
               Don&apos;t match{' '}
@@ -156,8 +156,8 @@ const ParameterBreadcrumb = ({
             </Typography.Text>
           )}
           <SelectionBar checked={checked} />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
       <ServiceBar comparison={comparison} />
     </div>
   );

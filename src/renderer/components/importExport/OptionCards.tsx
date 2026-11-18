@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Tooltip, Typography } from 'antd';
+import { Tooltip, Typography, Flex } from 'antd';
 import styles from './OptionCards.module.css';
 import { cx } from '../../utils/classNames';
 
@@ -61,13 +61,15 @@ const OptionCards = <T extends string>({
             if (!option.unavailable && !disabled) onChange(option.value);
           }}
         >
-          <span className={styles.header}>
-            <span className={styles.icon}>{option.icon}</span>
-            <Typography.Text strong>{option.label}</Typography.Text>
-          </span>
-          <Typography.Text type="secondary" className={styles.description}>
-            {option.description}
-          </Typography.Text>
+          <Flex component="span" vertical gap="small">
+            <Flex component="span" align="center" gap="small">
+              <span className={styles.icon}>{option.icon}</span>
+              <Typography.Text strong>{option.label}</Typography.Text>
+            </Flex>
+            <Typography.Text type="secondary" className={styles.description}>
+              {option.description}
+            </Typography.Text>
+          </Flex>
         </button>
       );
       return option.unavailable ? (

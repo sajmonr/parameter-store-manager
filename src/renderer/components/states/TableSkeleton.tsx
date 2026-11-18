@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import SkeletonBar, { PLACEHOLDER_WIDTHS } from '../common/SkeletonBar';
 import styles from './StateLayout.module.css';
 
@@ -6,15 +7,20 @@ import styles from './StateLayout.module.css';
 const TableSkeleton = () => (
   <div aria-busy="true" aria-label="Loading parameters">
     {PLACEHOLDER_WIDTHS.map(([name, value], index) => (
-      <div key={index} className={styles.skeletonRow}>
-        <div className={styles.skeletonName}>
+      <Flex
+        align="center"
+        gap="middle"
+        key={index}
+        className={styles.skeletonRow}
+      >
+        <Flex vertical gap="small" className={styles.skeletonName}>
           <SkeletonBar width={name} height={14} />
           <SkeletonBar width={30} height={10} />
-        </div>
+        </Flex>
         <div className={styles.skeletonValue}>
           <SkeletonBar width={value} height={14} />
         </div>
-      </div>
+      </Flex>
     ))}
   </div>
 );

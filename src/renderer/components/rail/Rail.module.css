@@ -1,9 +1,5 @@
 .rail {
-  display: flex;
   flex: none;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ant-margin-xxs);
   width: var(--rail-width);
   padding: var(--ant-padding-xs) 0;
   background: var(--ant-color-bg-layout);

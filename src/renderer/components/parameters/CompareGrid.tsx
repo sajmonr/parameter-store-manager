@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useParameters } from '../../state/parameters';
@@ -62,7 +63,7 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
   } as CSSProperties;
 
   return (
-    <div className={styles.frame}>
+    <Flex vertical className={styles.frame}>
       <div className={styles.scroll}>
         <div
           role="table"
@@ -96,7 +97,7 @@ const CompareGrid = ({ comparison, keys, ready, failed }: CompareGridProps) => {
       </div>
       {!ready && !failed && <CompareProgress />}
       {failed && <LoadFailed />}
-    </div>
+    </Flex>
   );
 };
 

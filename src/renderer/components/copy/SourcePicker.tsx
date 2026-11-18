@@ -1,4 +1,4 @@
-import { Select, Typography } from 'antd';
+import { Select, Typography, Flex } from 'antd';
 import { isEditableType } from '../../../shared/parameterTypes';
 import type { SourceEnvironment } from '../../utils/copyValue';
 import { cx } from '../../utils/classNames';
@@ -40,7 +40,12 @@ const SourcePicker = ({
         disabled: !isEditableType(type)
       }))}
       optionRender={({ data }) => (
-        <span className={styles.sourceOption}>
+        <Flex
+          component="span"
+          align="center"
+          gap="small"
+          className={styles.sourceOption}
+        >
           <EnvironmentDot color={data.dot} />
           {data.label}
           {data.unsupported && (
@@ -48,7 +53,7 @@ const SourcePicker = ({
               {data.unsupported} not supported
             </Typography.Text>
           )}
-        </span>
+        </Flex>
       )}
     />
   );

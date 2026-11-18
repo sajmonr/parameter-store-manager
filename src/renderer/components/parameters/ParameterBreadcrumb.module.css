@@ -6,10 +6,6 @@
 
 .row {
   height: var(--header-height);
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -55,9 +51,6 @@
   flex: 0 1 auto;
   min-width: 0;
   margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-sm);
 }
 
 .hint {
@@ -67,9 +60,6 @@
 
 /* The tabs scroll sideways when they don't fit; the mode switch never does. */
 .serviceBar {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-sm);
   padding-bottom: var(--ant-padding-sm);
 }
 
@@ -81,14 +71,11 @@
 .tabs {
   flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-sm);
   overflow-x: auto;
   scrollbar-width: thin;
   /* Keeps the scrollbar clear of the tabs. */
   padding-bottom: var(--ant-padding-xxs);
-  margin-bottom: -4px;
+  margin-bottom: calc(var(--ant-padding-xxs) * -1);
 }
 
 /* A cut-off edge fades out. A mask uses only the alpha of its colours, so

@@ -87,11 +87,14 @@ const TargetRow = ({
   };
 
   return (
-    <li
+    <Flex
+      component="li"
+      vertical
+      gap="var(--ant-margin-xxs)"
       className={cx(styles.row, same && styles.same, selected && styles.picked)}
       onClick={toggle}
     >
-      <div className={styles.rowMain}>
+      <Flex align="center" gap="small" className={styles.rowMain}>
         <Checkbox
           checked={selected}
           disabled={same || disabled}
@@ -110,9 +113,9 @@ const TargetRow = ({
             Keeps {targetType}
           </Tag>
         )}
-      </div>
-      <div className={styles.details}>
-        <div className={styles.current}>
+      </Flex>
+      <Flex vertical gap="var(--ant-margin-xxs)" className={styles.details}>
+        <Flex align="baseline" gap="small" className={styles.current}>
           <MetaText>Current</MetaText>
           {parameter ? (
             <MaskedValue
@@ -125,7 +128,7 @@ const TargetRow = ({
           ) : (
             <MetaText>{NOT_SET_LABEL}</MetaText>
           )}
-        </div>
+        </Flex>
         {!same && <TargetTypeNotes source={source} target={target} />}
         {status === 'new' && selected && isSecureType(sourceType) && (
           <Flex
@@ -148,8 +151,8 @@ const TargetRow = ({
           </Flex>
         )}
         {error && <HintText type="danger">{error}</HintText>}
-      </div>
-    </li>
+      </Flex>
+    </Flex>
   );
 };
 

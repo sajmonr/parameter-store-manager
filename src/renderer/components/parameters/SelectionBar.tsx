@@ -1,4 +1,4 @@
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Flex } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import styles from './SelectionBar.module.css';
@@ -11,7 +11,13 @@ const SelectionBar = ({ checked }: { checked: string[] }) => {
   if (!checked.length) return null;
   return (
     <NeutralBadge solid count={checked.length} overflowCount={9999}>
-      <div role="toolbar" aria-label="Selection" className={styles.bar}>
+      <Flex
+        align="center"
+        gap="small"
+        role="toolbar"
+        aria-label="Selection"
+        className={styles.bar}
+      >
         <Tooltip title="Clear selection">
           <Button
             type="text"
@@ -35,7 +41,7 @@ const SelectionBar = ({ checked }: { checked: string[] }) => {
         >
           Delete
         </Button>
-      </div>
+      </Flex>
     </NeutralBadge>
   );
 };

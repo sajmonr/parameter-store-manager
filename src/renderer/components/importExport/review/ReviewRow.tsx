@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Tag, Tooltip, Typography } from 'antd';
+import { Tag, Tooltip, Typography, Flex } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { isSecureType } from '../../../../shared/parameterTypes';
 import type { ImportRow } from '../../../utils/importPlan';
@@ -56,7 +56,12 @@ const FieldChange = ({
       <Typography.Text type="secondary" className={styles.fieldLabel}>
         {label}
       </Typography.Text>
-      <span className={styles.change}>
+      <Flex
+        component="span"
+        align="center"
+        gap="small"
+        className={styles.change}
+      >
         {from !== undefined && (
           <>
             {show(from, true)}
@@ -65,7 +70,7 @@ const FieldChange = ({
         )}
         {show(to, false)}
         {action}
-      </span>
+      </Flex>
     </>
   );
 };
@@ -142,7 +147,7 @@ const ReviewRow = ({
   const { entry, status } = row;
   const { label, color, tooltip } = STATUSES[status];
   const main = (
-    <div className={styles.rowMain}>
+    <Flex align="center" gap="small" className={styles.rowMain}>
       <span className={styles.statusColumn}>
         {error ? (
           <Tag color="error">failed</Tag>
@@ -160,13 +165,18 @@ const ReviewRow = ({
         {entry.name}
       </Mono>
       {isSecureType(entry.type) && <SecureLockIcon muted />}
-    </div>
+    </Flex>
   );
   return (
-    <li className={cx(styles.row, !written && styles.dimmed)}>
+    <Flex
+      component="li"
+      vertical
+      gap="var(--ant-margin-xxs)"
+      className={cx(styles.row, !written && styles.dimmed)}
+    >
       {error ? <Tooltip title={error}>{main}</Tooltip> : main}
       <RowDetails row={row} />
-    </li>
+    </Flex>
   );
 };
 

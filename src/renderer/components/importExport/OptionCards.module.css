@@ -5,9 +5,6 @@
 }
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xs);
   padding: var(--ant-padding-sm) var(--ant-padding-sm);
   text-align: left;
   font: inherit;
@@ -43,12 +40,6 @@
 
 .unavailable:hover {
   border-color: var(--ant-color-border);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
 }
 
 .icon {

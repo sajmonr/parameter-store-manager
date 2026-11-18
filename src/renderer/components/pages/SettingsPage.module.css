@@ -1,6 +1,5 @@
 /* The section menu on the left; the chosen section scrolls on the right. */
 .layout {
-  display: flex;
   height: 100%;
 }
 

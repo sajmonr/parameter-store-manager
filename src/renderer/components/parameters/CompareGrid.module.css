@@ -3,8 +3,6 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Scrolls both ways; the header row and the key column are sticky in it. */
@@ -39,9 +37,6 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
   padding: var(--ant-padding-xs) var(--ant-padding-sm) var(--ant-padding-xs)
     var(--ant-padding);
@@ -60,9 +55,6 @@
 /* On the right of the key, so they stay visible while scrolling sideways. */
 .tags {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xxs);
   margin-left: auto;
 }
 
@@ -82,9 +74,6 @@
 }
 
 .cell {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
   padding: var(--ant-padding-xs) var(--ant-padding-sm);
 }
@@ -119,9 +108,6 @@
    edge. */
 .actions {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xxs);
   margin-left: auto;
 }
 
@@ -137,6 +123,7 @@
 /* A button: its menu sets the value in that environment. */
 .notSet {
   composes: chip;
+  /* A button, which Flex can't render with a button's props. */
   display: inline-flex;
   align-items: center;
   gap: var(--ant-margin-xxs);
@@ -183,11 +170,10 @@
 
 /* Stays in view while the row scrolls sideways. */
 .folderLabel {
+  /* Flex has no inline mode. */
+  display: inline-flex;
   position: sticky;
   left: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   padding: var(--ant-padding-xs) 0;
   margin-left: var(--ant-margin);
   font-weight: 600;

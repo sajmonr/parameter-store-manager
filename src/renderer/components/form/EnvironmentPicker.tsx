@@ -1,7 +1,8 @@
-import { Checkbox } from 'antd';
+import { Checkbox, Flex } from 'antd';
 import type { StructureEnvironment } from '../../../shared/structure';
 import EnvironmentDot from '../common/EnvironmentDot';
 import styles from './EnvironmentPicker.module.css';
+import { cx } from '../../utils/classNames';
 
 interface EnvironmentPickerProps {
   environments: StructureEnvironment[];
@@ -24,15 +25,16 @@ const EnvironmentPicker = ({
     );
 
   return (
-    <div className={styles.chips} role="group" aria-label="Environments">
+    <Flex gap="small" wrap role="group" aria-label="Environments">
       {environments.map(({ segment, color }) => {
         const checked = value.includes(segment);
         return (
-          <label
+          <Flex
+            component="label"
+            align="center"
+            gap="small"
             key={segment}
-            className={
-              checked ? `${styles.chip} ${styles.checked}` : styles.chip
-            }
+            className={cx(styles.chip, checked && styles.checked)}
           >
             <Checkbox
               checked={checked}
@@ -40,10 +42,10 @@ const EnvironmentPicker = ({
             />
             <EnvironmentDot color={color} />
             {segment}
-          </label>
+          </Flex>
         );
       })}
-    </div>
+    </Flex>
   );
 };
 

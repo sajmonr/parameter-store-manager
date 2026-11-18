@@ -23,8 +23,8 @@ const CopyFooter = ({
   onCancel,
   onCopy
 }: CopyFooterProps) => (
-  <div className={styles.footer}>
-    <div className={styles.summary}>
+  <Flex align="flex-end" gap="middle" className={styles.footer}>
+    <Flex vertical gap="var(--ant-margin-xxs)" className={styles.summary}>
       {count ? (
         <Typography.Text>
           {summary.overwrites > 0 && (
@@ -41,7 +41,7 @@ const CopyFooter = ({
         Only the value is copied. Types and descriptions in the targets stay as
         they are.
       </Typography.Text>
-    </div>
+    </Flex>
     <Flex gap="small" className={styles.buttons}>
       <Button onClick={onCancel} disabled={copying}>
         Cancel
@@ -55,7 +55,7 @@ const CopyFooter = ({
         {okText}
       </Button>
     </Flex>
-  </div>
+  </Flex>
 );
 
 export default CopyFooter;

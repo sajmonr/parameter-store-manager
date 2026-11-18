@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import type { MenuProps } from 'antd';
 import { CopyOutlined, EditOutlined } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
@@ -38,15 +39,25 @@ export const setMissingItems = ({
     type: 'group',
     key: 'target',
     label: (
-      <span className={styles.header}>
-        <span className={styles.env}>
+      <Flex
+        component="span"
+        vertical
+        gap="var(--ant-margin-xxs)"
+        className={styles.header}
+      >
+        <Flex
+          component="span"
+          align="center"
+          gap="small"
+          className={styles.env}
+        >
           Set value in <EnvironmentDot color={target.color} />
           {target.segment}
-        </span>
+        </Flex>
         <Mono size="small" ellipsis={{ tooltip: path }}>
           {path}
         </Mono>
-      </span>
+      </Flex>
     )
   },
   { type: 'divider' },
@@ -58,10 +69,15 @@ export const setMissingItems = ({
           label: (
             <ActionLabel
               title={
-                <span className={styles.env}>
+                <Flex
+                  component="span"
+                  align="center"
+                  gap="small"
+                  className={styles.env}
+                >
                   Copy from <EnvironmentDot color={current.color} />
                   {current.segment}
-                </span>
+                </Flex>
               }
               detail={
                 currentUnsupported

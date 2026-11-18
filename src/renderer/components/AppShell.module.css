@@ -1,5 +1,4 @@
 .shell {
-  display: flex;
   height: 100vh;
   background: var(--ant-color-bg-container);
 }

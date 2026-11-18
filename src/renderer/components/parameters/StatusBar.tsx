@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useParameters } from '../../state/parameters';
 import { useUiStore } from '../../state/ui';
 import {
@@ -29,13 +30,18 @@ const StatusBar = ({ compared }: { compared: Compared | null }) => {
   ].filter(Boolean);
 
   return (
-    <div className={styles.bar}>
-      <span className={styles.start}>
+    <Flex align="center" justify="space-between" className={styles.bar}>
+      <Flex
+        component="span"
+        align="center"
+        gap="small"
+        className={styles.start}
+      >
         <span>{statusText(loadState, loaded, visible, total, compared)}</span>
         <SyncStatus />
-      </span>
+      </Flex>
       {hints.length > 0 && <span>{hints.join(' · ')}</span>}
-    </div>
+    </Flex>
   );
 };
 

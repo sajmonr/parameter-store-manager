@@ -1,15 +1,11 @@
 /* The menu's header: where the value goes. */
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
   min-width: 0;
 }
 
 .env {
+  /* Flex has no inline mode. */
   display: inline-flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
 }
 
 .header > .env {
@@ -17,14 +13,8 @@
 }
 
 .action {
-  display: flex;
-  flex-direction: column;
   padding: 2px 0;
   white-space: normal;
-}
-
-.actionTitle {
-  display: flex;
 }
 
 .actionDetail.actionDetail {

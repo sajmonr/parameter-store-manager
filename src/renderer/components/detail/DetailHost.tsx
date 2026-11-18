@@ -1,4 +1,4 @@
-import { Drawer } from 'antd';
+import { Drawer, Flex } from 'antd';
 import { useParameters } from '../../state/parameters';
 import { uiActions, useUiStore } from '../../state/ui';
 import { useSelectedParameter } from '../../state/views';
@@ -49,7 +49,11 @@ const DetailHost = ({ narrow }: { narrow: boolean }) => {
         keyboard={false}
         styles={{ body: { padding: 0 } }}
       >
-        {content && <div className={styles.content}>{content}</div>}
+        {content && (
+          <Flex vertical gap="middle" className={styles.content}>
+            {content}
+          </Flex>
+        )}
       </Drawer>
     );
   }

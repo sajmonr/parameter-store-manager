@@ -1,4 +1,4 @@
-import { Tag, Tooltip } from 'antd';
+import { Tag, Tooltip, Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useParameters } from '../../state/parameters';
 import type { ParameterEntry } from '../../state/parameters';
@@ -43,7 +43,7 @@ const EnvironmentChips = ({
   const current = sources.find(chip => chip.state === 'current')!;
 
   return (
-    <div className={styles.chips}>
+    <Flex gap="small" wrap className={styles.chips}>
       {chips.map(({ segment, color, name, state }) => {
         if (state === 'current') {
           return (
@@ -106,7 +106,7 @@ const EnvironmentChips = ({
           </Tooltip>
         );
       })}
-    </div>
+    </Flex>
   );
 };
 

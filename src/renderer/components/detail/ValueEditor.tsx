@@ -54,7 +54,6 @@ const ValueEditor = ({ parameter, onDone }: ValueEditorProps) => {
   return (
     <Form
       layout="vertical"
-      className={styles.form}
       onKeyDown={event => {
         if (isSubmitShortcut(event)) save();
       }}

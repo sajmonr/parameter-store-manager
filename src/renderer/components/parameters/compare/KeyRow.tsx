@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Tag, Tooltip } from 'antd';
+import { Tag, Tooltip, Flex } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../../shared/structure';
 import { usePathDelimiter } from '../../../state/settings';
@@ -29,7 +29,9 @@ const KeyRow = memo(
     const { key, folder, cells, missing, unreadable, differs } = row;
     return (
       <div role="row" className={styles.row}>
-        <div
+        <Flex
+          align="center"
+          gap="small"
           role="rowheader"
           className={cx(
             styles.keyCell,
@@ -42,7 +44,12 @@ const KeyRow = memo(
               {leafOf(key, delimiter)}
             </Mono>
           </Tooltip>
-          <span className={styles.tags}>
+          <Flex
+            component="span"
+            align="center"
+            gap="var(--ant-margin-xxs)"
+            className={styles.tags}
+          >
             {unreadable.length > 0 && (
               <Tooltip
                 title={`Can't read the value in ${unreadable.join(', ')}, so it isn't compared`}
@@ -66,8 +73,8 @@ const KeyRow = memo(
             {(differs || missing.length > 0) && (
               <SyncAction row={row} environments={environments} />
             )}
-          </span>
-        </div>
+          </Flex>
+        </Flex>
         {environments.map(env => {
           const { segment } = env;
           const parameter = cells.get(segment);

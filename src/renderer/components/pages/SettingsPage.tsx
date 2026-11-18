@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Menu, Typography } from 'antd';
+import { Menu, Typography, Flex } from 'antd';
 import {
   AppstoreOutlined,
   BgColorsOutlined,
@@ -67,7 +67,7 @@ const SettingsPage = () => {
   const current = useUiStore(state => state.settingsSection);
 
   return (
-    <div className={styles.layout}>
+    <Flex className={styles.layout}>
       <nav className={styles.nav} aria-label="Settings sections">
         <Typography.Title level={4} className={styles.title}>
           Settings
@@ -104,7 +104,7 @@ const SettingsPage = () => {
           </Typography.Text>
         </div>
       </div>
-    </div>
+    </Flex>
   );
 };
 

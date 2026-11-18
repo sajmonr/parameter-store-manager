@@ -1,4 +1,4 @@
-import { Button, Typography } from 'antd';
+import { Button, Typography, Flex } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { uiActions } from '../../state/ui';
 import EnvironmentDot from '../common/EnvironmentDot';
@@ -20,25 +20,30 @@ export interface PreviewRow {
 }
 
 const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
-  <li className={styles.row}>
-    <div className={styles.name}>
+  <Flex component="li" vertical gap="var(--ant-margin-xxs)">
+    <Flex align="baseline" gap="small">
       {row.color && <EnvironmentDot color={row.color} className={styles.dot} />}
       <Mono size="small" className={styles.path}>
         {breakable(row.name, delimiter)}
       </Mono>
-    </div>
+    </Flex>
     {row.meta && (
       <Typography.Text type="secondary" className={styles.meta}>
         {row.meta}
       </Typography.Text>
     )}
     {row.created && (
-      <div className={styles.status}>
-        <span className={cx(styles.tag, styles.created)}>
+      <Flex align="center" gap="small">
+        <Flex
+          component="span"
+          align="center"
+          gap="var(--ant-margin-xxs)"
+          className={cx(styles.tag, styles.created)}
+        >
           <CheckCircleFilled />
           Created
-        </span>
-      </div>
+        </Flex>
+      </Flex>
     )}
     {row.error && (
       <Typography.Text type="danger" className={styles.meta}>
@@ -46,11 +51,16 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
       </Typography.Text>
     )}
     {row.exists && !row.created && (
-      <div className={styles.status}>
-        <span className={cx(styles.tag, styles.exists)}>
+      <Flex align="center" gap="small">
+        <Flex
+          component="span"
+          align="center"
+          gap="var(--ant-margin-xxs)"
+          className={cx(styles.tag, styles.exists)}
+        >
           <CloseCircleFilled />
           Already exists
-        </span>
+        </Flex>
         <Button
           size="small"
           className={styles.open}
@@ -58,9 +68,9 @@ const Row = ({ row, delimiter }: { row: PreviewRow; delimiter: string }) => (
         >
           Open →
         </Button>
-      </div>
+      </Flex>
     )}
-  </li>
+  </Flex>
 );
 
 // What the form will create, one row per parameter.
@@ -75,11 +85,11 @@ const CreatePreview = ({
     <Typography.Text type="secondary" className={styles.label}>
       {rows.length > 1 ? `Creates ${rows.length} parameters` : 'Creates'}
     </Typography.Text>
-    <ul className={styles.rows}>
+    <Flex component="ul" vertical gap="small" className={styles.rows}>
       {rows.map(row => (
         <Row key={row.name} row={row} delimiter={delimiter} />
       ))}
-    </ul>
+    </Flex>
   </div>
 );
 

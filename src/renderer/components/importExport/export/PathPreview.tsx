@@ -1,4 +1,4 @@
-import { Typography } from 'antd';
+import { Typography, Flex } from 'antd';
 import Mono from '../../common/Mono';
 import styles from '../ExportPanel.module.css';
 
@@ -15,7 +15,13 @@ const PathPreview = ({ names }: { names: string[] }) => {
   }
   const rest = names.length - PREVIEW_SIZE;
   return (
-    <ul className={styles.preview} aria-label="Matching parameters">
+    <Flex
+      component="ul"
+      vertical
+      gap="var(--ant-margin-xxs)"
+      className={styles.preview}
+      aria-label="Matching parameters"
+    >
       {names.slice(0, PREVIEW_SIZE).map(name => (
         <li key={name}>
           <Mono ellipsis={{ tooltip: name }} className={styles.previewName}>
@@ -30,7 +36,7 @@ const PathPreview = ({ names }: { names: string[] }) => {
           </Typography.Text>
         </li>
       )}
-    </ul>
+    </Flex>
   );
 };
 

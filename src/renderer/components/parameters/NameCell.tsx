@@ -1,4 +1,4 @@
-import { Typography } from 'antd';
+import { Typography, Flex } from 'antd';
 import type { ParameterEntry } from '../../state/parameters';
 import { usePathDelimiter } from '../../state/settings';
 import { useRelativeFolder } from '../../state/views';
@@ -20,7 +20,7 @@ const NameCell = ({ parameter, selected }: NameCellProps) => {
   const relativeFolder = useRelativeFolder(Name);
 
   return (
-    <div className={styles.cell}>
+    <Flex vertical className={styles.cell}>
       <Mono
         size="small"
         weight={600}
@@ -33,7 +33,7 @@ const NameCell = ({ parameter, selected }: NameCellProps) => {
         {relativeFolder && `${relativeFolder} · `}
         <TimeAgo date={LastModifiedDate} />
       </Typography.Text>
-    </div>
+    </Flex>
   );
 };
 

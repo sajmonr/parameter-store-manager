@@ -1,4 +1,4 @@
-import { AutoComplete, Input, Radio, Typography } from 'antd';
+import { AutoComplete, Input, Radio, Typography, Flex } from 'antd';
 import { FolderOutlined } from '@ant-design/icons';
 import { usePathDelimiter, useSettingsStore } from '../../../state/settings';
 import { cx } from '../../../utils/classNames';
@@ -43,12 +43,14 @@ const ScopeOptions = ({
       onChange={event => onScope(event.target.value as Scope)}
       className={styles.options}
     >
-      <div
+      <Flex
+        vertical
+        gap="small"
         className={cx(styles.option, byPath && styles.optionSelected)}
         onClick={() => !disabled && onScope('path')}
       >
         <Radio value="path">Path or glob</Radio>
-        <div className={styles.optionBody}>
+        <Flex vertical gap="small" className={styles.optionBody}>
           <AutoComplete
             value={path}
             onChange={onPath}
@@ -74,9 +76,11 @@ const ScopeOptions = ({
             A path exports everything under it. <code>*</code> matches one
             segment, <code>**</code> any depth.
           </Typography.Text>
-        </div>
-      </div>
-      <div
+        </Flex>
+      </Flex>
+      <Flex
+        vertical
+        gap="small"
         className={cx(styles.option, !byPath && styles.optionSelected)}
         onClick={() => !disabled && onScope('all')}
       >
@@ -84,7 +88,7 @@ const ScopeOptions = ({
         <Typography.Text type="secondary" className={styles.optionBody}>
           {plural(total, 'parameter')} · Every path in {region}
         </Typography.Text>
-      </div>
+      </Flex>
     </Radio.Group>
   );
 };

@@ -11,9 +11,6 @@
 
 /* The value being copied, on one line. */
 .source {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
   padding: var(--ant-padding-xs) var(--ant-padding-sm);
   border: 1px solid var(--ant-color-border-secondary);
@@ -46,9 +43,6 @@
 }
 
 .row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
   padding: var(--ant-padding-xs) var(--ant-padding-sm);
   cursor: pointer;
 }
@@ -74,9 +68,6 @@
 }
 
 .rowMain {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -89,17 +80,11 @@
 
 /* Lines up with the name, after the checkbox and the dot. */
 .details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
   padding-inline-start: 40px;
   font-size: var(--ant-font-size-sm);
 }
 
 .current {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -123,18 +108,12 @@
 }
 
 .footer {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--ant-margin);
   text-align: start;
 }
 
 .summary {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
 }
 
 .hint {
@@ -164,9 +143,8 @@
 }
 
 .sourceOption {
+  /* Flex has no inline mode. */
   display: inline-flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
 }
 
 .unsupported.unsupported {

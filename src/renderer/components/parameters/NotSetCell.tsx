@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { StructureEnvironment } from '../../../shared/structure';
 import { useLocationContext } from '../../state/settings';
@@ -6,6 +7,7 @@ import { parse } from '../../utils/structure';
 import SetMissingMenu from '../setMissing/SetMissingMenu';
 import styles from './CompareGrid.module.css';
 import { NOT_SET_LABEL } from '../../utils/labels';
+import { cx } from '../../utils/classNames';
 
 interface NotSetCellProps {
   // The environment without the key.
@@ -29,7 +31,7 @@ const NotSetCell = ({ env, row, environments }: NotSetCellProps) => {
   const service = parse(first.Name, structure, delimiter)?.service ?? '';
 
   return (
-    <div role="cell" className={styles.cell}>
+    <Flex align="center" gap="small" role="cell" className={styles.cell}>
       <SetMissingMenu
         service={service}
         parameterKey={row.key}
@@ -40,7 +42,7 @@ const NotSetCell = ({ env, row, environments }: NotSetCellProps) => {
         {open => (
           <button
             type="button"
-            className={open ? `${styles.notSet} ${styles.open}` : styles.notSet}
+            className={cx(styles.notSet, open && styles.open)}
             // Not a click on the cell.
             onClick={event => event.stopPropagation()}
           >
@@ -49,7 +51,7 @@ const NotSetCell = ({ env, row, environments }: NotSetCellProps) => {
           </button>
         )}
       </SetMissingMenu>
-    </div>
+    </Flex>
   );
 };
 

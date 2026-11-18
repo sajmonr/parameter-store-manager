@@ -13,24 +13,9 @@
 }
 
 .rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xs);
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
-}
-
-.name {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ant-margin-xs);
 }
 
 .dot {
@@ -48,16 +33,9 @@
   font-size: var(--ant-font-size-sm);
 }
 
-.status {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
-}
-
 .tag {
+  /* Flex has no inline mode. */
   display: inline-flex;
-  align-items: center;
-  gap: var(--ant-margin-xxs);
   padding: 0 var(--ant-padding-xs);
   border: 1px solid;
   border-radius: var(--ant-border-radius-sm);

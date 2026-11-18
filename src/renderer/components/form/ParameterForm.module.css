@@ -17,10 +17,7 @@
 }
 
 .labelRow {
-  display: flex;
   flex: 1;
-  align-items: baseline;
-  gap: var(--ant-margin-sm);
   min-width: 0;
 }
 

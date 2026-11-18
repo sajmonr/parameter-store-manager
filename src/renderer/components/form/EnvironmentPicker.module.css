@@ -1,13 +1,4 @@
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ant-margin-xs);
-}
-
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   height: 28px;
   padding: 0 var(--ant-padding-xs) 0 var(--ant-padding-xs);
   border: 1px solid var(--ant-color-border);

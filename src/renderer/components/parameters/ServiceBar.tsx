@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import { useEffect } from 'react';
 import {
   useCompareMode,
@@ -33,8 +34,14 @@ const ServiceBar = ({ comparison }: { comparison: Comparison | null }) => {
   if (!isServiceLocation(location) || !tabs.length) return null;
 
   return (
-    <div className={styles.serviceBar}>
-      <div
+    <Flex
+      align="center"
+      gap="var(--ant-margin-sm)"
+      className={styles.serviceBar}
+    >
+      <Flex
+        align="center"
+        gap="var(--ant-margin-sm)"
         ref={scrollRef}
         className={cx(
           styles.tabs,
@@ -47,9 +54,9 @@ const ServiceBar = ({ comparison }: { comparison: Comparison | null }) => {
         ) : (
           <EnvironmentTabs tabs={tabs} env={location.env} />
         )}
-      </div>
+      </Flex>
       <ModeSwitch compare={compare} />
-    </div>
+    </Flex>
   );
 };
 

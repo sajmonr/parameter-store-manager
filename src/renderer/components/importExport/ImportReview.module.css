@@ -63,16 +63,10 @@
 }
 
 .row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ant-margin-xxs);
   padding: var(--ant-padding-xxs) var(--ant-padding-sm);
 }
 
 .rowMain {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -93,9 +87,6 @@
 }
 
 .change {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 

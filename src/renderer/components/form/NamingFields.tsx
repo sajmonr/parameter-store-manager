@@ -61,18 +61,28 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
   const prefixEnv =
     naming.envs.length === 1 ? naming.envs[0]! : '{environment}';
   const keyLabel = (
-    <span className={styles.labelRow}>
+    <Flex
+      component="span"
+      align="baseline"
+      gap="var(--ant-margin-sm)"
+      className={styles.labelRow}
+    >
       Key
       <span className={styles.prefix}>
         <span className={styles.prefixText}>
           under {pathOf(prefixEnv, naming.service, '', structure, delimiter)}
         </span>
       </span>
-    </span>
+    </Flex>
   );
 
   const environmentsLabel = (
-    <span className={styles.labelRow}>
+    <Flex
+      component="span"
+      align="baseline"
+      gap="var(--ant-margin-sm)"
+      className={styles.labelRow}
+    >
       Environments
       {environments.length > 1 && (
         <Typography.Link
@@ -87,7 +97,7 @@ const NamingFields = ({ naming: state }: { naming: NamingState }) => {
           {allEnvs ? 'Clear' : 'Select all'}
         </Typography.Link>
       )}
-    </span>
+    </Flex>
   );
 
   return (

@@ -1,3 +1,4 @@
+import { Flex } from 'antd';
 import SkeletonBar, { PLACEHOLDER_WIDTHS } from '../../common/SkeletonBar';
 import styles from '../CompareGrid.module.css';
 
@@ -5,13 +6,13 @@ import styles from '../CompareGrid.module.css';
 const PlaceholderRows = ({ columns }: { columns: number }) =>
   PLACEHOLDER_WIDTHS.map(([key, value], index) => (
     <div key={index} role="row" className={styles.row}>
-      <div className={styles.keyCell}>
+      <Flex align="center" gap="small" className={styles.keyCell}>
         <SkeletonBar width={key} />
-      </div>
+      </Flex>
       {Array.from({ length: columns }, (_, column) => (
-        <div key={column} className={styles.cell}>
+        <Flex align="center" gap="small" key={column} className={styles.cell}>
           <SkeletonBar width={((value + column * 15) % 60) + 25} />
-        </div>
+        </Flex>
       ))}
     </div>
   ));

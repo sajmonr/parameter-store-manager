@@ -1,8 +1,5 @@
 .bar {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   padding: var(--ant-padding-xxs) var(--ant-padding-xs) var(--ant-padding-xxs)
     var(--ant-padding-xxs);
   border: 1px solid var(--ant-color-border-secondary);

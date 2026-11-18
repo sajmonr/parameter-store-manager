@@ -18,9 +18,6 @@
 }
 
 .title {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ant-margin-xs);
   min-width: 0;
 }
 
@@ -68,10 +65,4 @@
 .menuPath {
   font-size: var(--ant-font-size-sm);
   word-break: break-all;
-}
-
-.menuItem {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ant-margin);
 }

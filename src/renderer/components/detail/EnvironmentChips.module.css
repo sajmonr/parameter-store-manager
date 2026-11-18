@@ -1,10 +1,5 @@
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ant-margin-xs);
-}
-
 .chips > * {
+  /* The tags are antd's, so they can't be Flex. */
   display: inline-flex;
   align-items: center;
   gap: var(--ant-margin-xs);

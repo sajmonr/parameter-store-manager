@@ -1,4 +1,4 @@
-import { Tag, Typography } from 'antd';
+import { Tag, Typography, Flex } from 'antd';
 import { CloseCircleFilled, InfoCircleOutlined } from '@ant-design/icons';
 import { isEditableType, isSecure } from '../../../shared/parameterTypes';
 import { useParameters } from '../../state/parameters';
@@ -36,7 +36,7 @@ const SourceRow = ({
 
   return (
     <>
-      <div className={styles.source}>
+      <Flex align="center" gap="small" className={styles.source}>
         <Typography.Text type="secondary">From</Typography.Text>
         {sources.length > 1 ? (
           <SourcePicker
@@ -65,7 +65,7 @@ const SourceRow = ({
           />
         )}
         <ParameterTypeTag type={source.Type} />
-      </div>
+      </Flex>
       {!isEditableType(source.Type) && (
         <Typography.Text type="danger" className={styles.pickHint}>
           <CloseCircleFilled /> {source.Type} values can&apos;t be copied yet.

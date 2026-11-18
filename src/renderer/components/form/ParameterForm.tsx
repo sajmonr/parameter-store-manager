@@ -12,7 +12,6 @@ import ParameterFields, { initialValuesOf } from './ParameterFields';
 import useCreateSubmit from './useCreateSubmit';
 import type { FormValues } from './useCreateSubmit';
 import useNaming from './useNaming';
-import styles from './ParameterForm.module.css';
 
 // Creates a parameter, or the same key in several environments of a service.
 // `prefill` comes from Duplicate or from setting a missing value; without it
@@ -56,7 +55,6 @@ const ParameterForm = ({
         form={form}
         layout="vertical"
         initialValues={initialValues}
-        className={styles.form}
         onKeyDown={event => {
           if (isSubmitShortcut(event)) onSubmit();
         }}

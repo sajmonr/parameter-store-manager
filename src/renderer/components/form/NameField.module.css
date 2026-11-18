@@ -28,9 +28,6 @@
 }
 
 .option {
-  display: flex;
-  align-items: center;
-  gap: var(--ant-margin-xs);
   padding: var(--ant-padding-xxs) var(--ant-padding-xs);
   border-radius: var(--ant-border-radius-sm);
   cursor: pointer;

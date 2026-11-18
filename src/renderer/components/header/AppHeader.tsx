@@ -13,9 +13,9 @@ const AppHeader = () => {
   return (
     <Layout.Header className={styles.header}>
       <div className={styles.row}>
-        <div className={styles.center}>
+        <Flex className={styles.center}>
           <SearchInput />
-        </div>
+        </Flex>
         <Flex align="center" gap="small" className={styles.end}>
           <Button
             type="primary"

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Tooltip } from 'antd';
+import { Tooltip, Flex } from 'antd';
 import { isSecure } from '../../../../shared/parameterTypes';
 import type { ParameterEntry } from '../../../state/parameters';
 import { uiActions } from '../../../state/ui';
@@ -62,7 +62,9 @@ const CompareValueCell = ({
   }
 
   return (
-    <div
+    <Flex
+      align="center"
+      gap="small"
       role="cell"
       className={cx(styles.cell, styles.present, selected && styles.selected)}
       tabIndex={0}
@@ -76,7 +78,12 @@ const CompareValueCell = ({
       }}
     >
       {value}
-      <span className={styles.actions}>
+      <Flex
+        component="span"
+        align="center"
+        gap="var(--ant-margin-xxs)"
+        className={styles.actions}
+      >
         {secure && <SecureLockIcon />}
         {secure && Value !== undefined && (
           <RevealButton
@@ -85,8 +92,8 @@ const CompareValueCell = ({
           />
         )}
         {!unreadable && <CopyButton text={Value} />}
-      </span>
-    </div>
+      </Flex>
+    </Flex>
   );
 };
 

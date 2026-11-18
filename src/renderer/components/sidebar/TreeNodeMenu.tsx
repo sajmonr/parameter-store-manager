@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Dropdown } from 'antd';
+import { Dropdown, Flex } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useLocationContext } from '../../state/settings';
 import { uiActions } from '../../state/ui';
@@ -61,10 +61,10 @@ const TreeNodeMenu = ({
             icon: <DeleteOutlined />,
             disabled: !names.length,
             label: (
-              <span className={styles.menuItem}>
+              <Flex component="span" justify="space-between" gap="middle">
                 Delete tree
                 <span className={styles.count}>{names.length}</span>
-              </span>
+              </Flex>
             )
           }
         ],
